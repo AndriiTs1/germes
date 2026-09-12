@@ -8,28 +8,30 @@ datasource db {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  email     String     @unique
-  name      String?
-  isActive  Boolean    @default(true)
-  roles     UserRole[]
-  customers Customer[]
-  suppliers Supplier[]
+  id          String       @id @default(uuid())
+  email       String       @unique
+  name        String?
+  isActive    Boolean      @default(true)
+  roles       UserRole[]
+  customers   Customer[]
+  suppliers   Supplier[]
   salesOrders SalesOrder[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  auditLogs   AuditLog[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@map("users")
 }
 
 model Role {
-  id          String     @id @default(uuid())
-  code        String     @unique
+  id          String           @id @default(uuid())
+  code        String           @unique
   name        String
   description String?
   users       UserRole[]
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  permissions RolePermission[]
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
 
   @@map("roles")
 }
@@ -45,19 +47,66 @@ model UserRole {
   @@map("user_roles")
 }
 
+// Stable, machine-readable application capability.
+// Convention: code is treated as IMMUTABLE once shipped — never rename an
+// existing code (application code and RolePermission rows depend on it
+// literally). Deprecate by removing RolePermission grants, not by editing code.
+model Permission {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+
+  @@map("permissions")
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+
+  role       Role       @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  permission Permission @relation(fields: [permissionId], references: [id], onDelete: Cascade)
+
+  @@id([roleId, permissionId])
+  @@index([permissionId])
+  @@map("role_permissions")
+}
+
+// Generic, polymorphic, append-only activity record.
+// entityType/entityId are deliberately NOT real foreign keys — this table
+// must stay decoupled from every current and future business entity.
+model AuditLog {
+  id         String   @id @default(uuid())
+  actorId    String?
+  entityType String
+  entityId   String
+  action     String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  actor User? @relation(fields: [actorId], references: [id], onDelete: SetNull)
+
+  @@index([entityType, entityId])
+  @@index([actorId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}
+
 model Product {
-  id             String             @id @default(uuid())
-  sku            String             @unique
-  name           String
-  category       String?
-  brand          String?
-  unit           String             @default("kg")
-  isActive       Boolean            @default(true)
-  batches        Batch[]
-  reservations   StockReservation[]
+  id              String             @id @default(uuid())
+  sku             String             @unique
+  name            String
+  category        String?
+  brand           String?
+  unit            String             @default("kg")
+  isActive        Boolean            @default(true)
+  batches         Batch[]
+  reservations    StockReservation[]
   salesOrderItems SalesOrderItem[]
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
 
   @@map("products")
 }
@@ -84,20 +133,20 @@ enum BatchStatus {
 }
 
 model Batch {
-  id             String             @id @default(uuid())
+  id             String      @id @default(uuid())
   batchNumber    String
   productId      String
-  receivedKg     Decimal?           @db.Decimal(14, 3)
+  receivedKg     Decimal?    @db.Decimal(14, 3)
   productionDate DateTime?
   expiryDate     DateTime?
   manufacturer   String?
   country        String?
-  temperature    Decimal?           @db.Decimal(5, 2)
-  unitCost       Decimal?           @db.Decimal(14, 4)
-  status         BatchStatus        @default(AVAILABLE)
+  temperature    Decimal?    @db.Decimal(5, 2)
+  unitCost       Decimal?    @db.Decimal(14, 4)
+  status         BatchStatus @default(AVAILABLE)
   notes          String?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @updatedAt
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
 
   product        Product            @relation(fields: [productId], references: [id])
   stockMovements StockMovement[]
@@ -147,17 +196,17 @@ enum ReservationStatus {
 }
 
 model StockReservation {
-  id         String            @id @default(uuid())
+  id           String            @id @default(uuid())
   productId    String
   batchId      String?
   salesOrderId String?
   quantityKg   Decimal           @db.Decimal(14, 3)
-  status     ReservationStatus @default(ACTIVE)
-  expiresAt  DateTime?
-  reference  String?
-  notes      String?
-  createdAt  DateTime          @default(now())
-  updatedAt  DateTime          @updatedAt
+  status       ReservationStatus @default(ACTIVE)
+  expiresAt    DateTime?
+  reference    String?
+  notes        String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   product    Product     @relation(fields: [productId], references: [id])
   batch      Batch?      @relation(fields: [batchId], references: [id])
@@ -179,35 +228,35 @@ enum CustomerStatus {
 }
 
 model Customer {
-  id              String         @id @default(uuid())
-  code            String         @unique
-  name            String
-  legalName       String?
-  taxId           String?
-  status          CustomerStatus @default(POTENTIAL)
+  id        String         @id @default(uuid())
+  code      String         @unique
+  name      String
+  legalName String?
+  taxId     String?
+  status    CustomerStatus @default(POTENTIAL)
 
-  contactPerson   String?
-  phone           String?
-  email           String?
-  address         String?
-  country         String?
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  country       String?
 
-  creditLimit     Decimal?       @db.Decimal(14, 2)
-  paymentTermDays Int            @default(0)
+  creditLimit     Decimal? @db.Decimal(14, 2)
+  paymentTermDays Int      @default(0)
 
-  responsibleId   String?
-  lastContactAt   DateTime?
-  lastPurchaseAt  DateTime?
-  nextActionAt    DateTime?
-  notes           String?
+  responsibleId  String?
+  lastContactAt  DateTime?
+  lastPurchaseAt DateTime?
+  nextActionAt   DateTime?
+  notes          String?
 
-  isActive        Boolean        @default(true)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  responsible User? @relation(fields: [responsibleId], references: [id])
-  salesOrders  SalesOrder[]
-  receivables  Receivable[]
+  responsible User?        @relation(fields: [responsibleId], references: [id])
+  salesOrders SalesOrder[]
+  receivables Receivable[]
 
   @@index([status])
   @@index([responsibleId])
@@ -226,32 +275,32 @@ enum SupplierStatus {
 }
 
 model Supplier {
-  id              String         @id @default(uuid())
-  code            String         @unique
-  name            String
-  legalName       String?
-  taxId           String?
-  status          SupplierStatus @default(POTENTIAL)
+  id        String         @id @default(uuid())
+  code      String         @unique
+  name      String
+  legalName String?
+  taxId     String?
+  status    SupplierStatus @default(POTENTIAL)
 
-  contactPerson   String?
-  phone           String?
-  email           String?
-  address         String?
-  country         String?
+  contactPerson String?
+  phone         String?
+  email         String?
+  address       String?
+  country       String?
 
-  paymentTermDays Int            @default(0)
+  paymentTermDays Int  @default(0)
   rating          Int?
 
-  responsibleId   String?
-  lastContactAt   DateTime?
-  nextActionAt    DateTime?
-  notes           String?
+  responsibleId String?
+  lastContactAt DateTime?
+  nextActionAt  DateTime?
+  notes         String?
 
-  isActive        Boolean        @default(true)
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  responsible User? @relation(fields: [responsibleId], references: [id])
+  responsible User?     @relation(fields: [responsibleId], references: [id])
   payables    Payable[]
 
   @@index([status])
@@ -260,6 +309,7 @@ model Supplier {
   @@index([nextActionAt])
   @@map("suppliers")
 }
+
 enum SalesOrderStatus {
   DRAFT
   CONFIRMED
@@ -277,21 +327,21 @@ model SalesOrder {
   responsibleId String?
   status        SalesOrderStatus @default(DRAFT)
 
-  orderDate     DateTime         @default(now())
+  orderDate     DateTime  @default(now())
   requestedDate DateTime?
   shippedAt     DateTime?
 
-  currency      String           @default("UAH")
-  notes         String?
+  currency String  @default("UAH")
+  notes    String?
 
-  createdAt     DateTime         @default(now())
-  updatedAt     DateTime         @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  customer      Customer         @relation(fields: [customerId], references: [id])
-  responsible   User?            @relation(fields: [responsibleId], references: [id])
-  items         SalesOrderItem[]
-  reservations  StockReservation[]
-  receivables   Receivable[]
+  customer     Customer           @relation(fields: [customerId], references: [id])
+  responsible  User?              @relation(fields: [responsibleId], references: [id])
+  items        SalesOrderItem[]
+  reservations StockReservation[]
+  receivables  Receivable[]
 
   @@index([customerId])
   @@index([responsibleId])
@@ -301,18 +351,18 @@ model SalesOrder {
 }
 
 model SalesOrderItem {
-  id          String     @id @default(uuid())
+  id           String @id @default(uuid())
   salesOrderId String
-  productId   String
+  productId    String
 
-  quantityKg  Decimal    @db.Decimal(14, 3)
-  pricePerKg  Decimal    @db.Decimal(14, 4)
+  quantityKg Decimal @db.Decimal(14, 3)
+  pricePerKg Decimal @db.Decimal(14, 4)
 
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  salesOrder  SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
-  product     Product    @relation(fields: [productId], references: [id])
+  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product    Product    @relation(fields: [productId], references: [id])
 
   @@index([salesOrderId])
   @@index([productId])
@@ -341,7 +391,7 @@ model Receivable {
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
-  customer   Customer   @relation(fields: [customerId], references: [id])
+  customer   Customer    @relation(fields: [customerId], references: [id])
   salesOrder SalesOrder? @relation(fields: [salesOrderId], references: [id])
 
   @@index([customerId])

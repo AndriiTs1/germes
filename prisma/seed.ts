@@ -62,6 +62,212 @@ async function main() {
   const roleByCode = Object.fromEntries(roleRows.map((role) => [role.code, role]));
 
   // --------------------------------------------------
+  // Permissions
+  //
+  // NOTE: The delete-then-recreate RolePermission strategy below is valid
+  // ONLY while OWNER/ADMIN/SALES/PROCUREMENT/WAREHOUSE/ACCOUNTING remain
+  // seed-managed system roles and this seed file is the single source of
+  // truth for their grants. If Germes later supports runtime/custom role
+  // permission editing (an admin screen that grants or revokes permissions
+  // per role), this seed MUST stop blindly overwriting RolePermission for
+  // those roles, or it will silently discard administrator-configured
+  // grants every time the seed runs.
+  // --------------------------------------------------
+
+  const permissionCatalog: { code: string; description: string; roles: string[] }[] = [
+    {
+      code: "dashboard.command_center.read",
+      description: "View the Owner Command Center",
+      roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "sales.orders.read",
+      description: "View sales orders",
+      roles: ["OWNER", "ADMIN", "SALES", "WAREHOUSE", "ACCOUNTING"],
+    },
+    {
+      code: "sales.orders.create",
+      description: "Create a sales order",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "sales.orders.update",
+      description: "Edit or transition a sales order's status",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "sales.reservations.read",
+      description: "View stock reservations",
+      roles: ["OWNER", "ADMIN", "SALES", "WAREHOUSE"],
+    },
+    {
+      code: "sales.reservations.create",
+      description: "Reserve stock for a sales order",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "sales.reservations.release",
+      description: "Manually release or cancel a stock reservation",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "inventory.shipments.process",
+      description: "Mark a sales order as shipped (physical fulfillment)",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE"],
+    },
+    {
+      code: "customers.read",
+      description: "View customer records",
+      roles: ["OWNER", "ADMIN", "SALES", "ACCOUNTING"],
+    },
+    {
+      code: "customers.create",
+      description: "Create a customer",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "customers.update",
+      description: "Edit customer contact/status information",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "customers.credit_limit.update",
+      description: "Change a customer's credit limit or payment terms",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING"],
+    },
+    {
+      code: "suppliers.read",
+      description: "View supplier records",
+      roles: ["OWNER", "ADMIN", "PROCUREMENT", "ACCOUNTING"],
+    },
+    {
+      code: "suppliers.create",
+      description: "Create a supplier",
+      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+    },
+    {
+      code: "suppliers.update",
+      description: "Edit supplier information",
+      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+    },
+    {
+      code: "procurement.overview.read",
+      description: "View procurement planning and reorder dashboards",
+      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+    },
+    {
+      code: "inventory.stock.read",
+      description: "View aggregate stock levels (actual, reserved, free)",
+      roles: ["OWNER", "ADMIN", "SALES", "PROCUREMENT", "WAREHOUSE", "ACCOUNTING"],
+    },
+    {
+      code: "inventory.batches.read",
+      description: "View batch-level traceability detail (expiry, origin, cost)",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE", "PROCUREMENT", "ACCOUNTING"],
+    },
+    {
+      code: "inventory.stock_movements.create",
+      description: "Record a stock receipt, transfer, write-off, or adjustment",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE"],
+    },
+    {
+      code: "inventory.warehouses.read",
+      description: "View the warehouse list",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE", "PROCUREMENT"],
+    },
+    {
+      code: "inventory.warehouses.manage",
+      description: "Create or edit warehouse records",
+      roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "finance.receivables.read",
+      description: "View accounts receivable",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING", "SALES"],
+    },
+    {
+      code: "finance.receivables.update",
+      description: "Update accounts receivable records and status",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING"],
+    },
+    {
+      code: "finance.payables.read",
+      description: "View accounts payable",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING", "PROCUREMENT"],
+    },
+    {
+      code: "finance.payables.update",
+      description: "Update accounts payable records and status",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING"],
+    },
+    {
+      code: "finance.dashboard.read",
+      description: "View finance analytics (cash flow, margin)",
+      roles: ["OWNER", "ADMIN", "ACCOUNTING"],
+    },
+    {
+      code: "team.users.read",
+      description: "View the user/team list",
+      roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "team.users.manage",
+      description: "Create or deactivate users and assign roles",
+      roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "documents.read",
+      description: "View attached documents",
+      roles: ["OWNER", "ADMIN", "SALES", "PROCUREMENT", "WAREHOUSE", "ACCOUNTING"],
+    },
+    {
+      code: "documents.manage",
+      description: "Upload, attach, or remove documents",
+      roles: ["OWNER", "ADMIN", "SALES", "PROCUREMENT", "WAREHOUSE", "ACCOUNTING"],
+    },
+    {
+      code: "settings.roles.manage",
+      description: "Manage role-to-permission assignments",
+      roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "settings.system.read",
+      description: "View general settings",
+      roles: ["OWNER", "ADMIN"],
+    },
+  ];
+
+  for (const permission of permissionCatalog) {
+    await prisma.permission.upsert({
+      where: { code: permission.code },
+      update: { description: permission.description },
+      create: { code: permission.code, description: permission.description },
+    });
+  }
+
+  const permissionRows = await prisma.permission.findMany();
+  const permissionByCode = Object.fromEntries(
+    permissionRows.map((permission) => [permission.code, permission]),
+  );
+
+  await prisma.rolePermission.deleteMany({
+    where: {
+      roleId: { in: roles.map((role) => roleByCode[role.code].id) },
+    },
+  });
+
+  const rolePermissionRows = permissionCatalog.flatMap((permission) =>
+    permission.roles.map((roleCode) => ({
+      roleId: roleByCode[roleCode].id,
+      permissionId: permissionByCode[permission.code].id,
+    })),
+  );
+
+  await prisma.rolePermission.createMany({
+    data: rolePermissionRows,
+  });
+
+  // --------------------------------------------------
   // Demo users
   // --------------------------------------------------
 
