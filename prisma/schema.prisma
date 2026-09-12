@@ -1,0 +1,373 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  name      String?
+  isActive  Boolean    @default(true)
+  roles     UserRole[]
+  customers Customer[]
+  suppliers Supplier[]
+  salesOrders SalesOrder[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@map("users")
+}
+
+model Role {
+  id          String     @id @default(uuid())
+  code        String     @unique
+  name        String
+  description String?
+  users       UserRole[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@map("roles")
+}
+
+model UserRole {
+  userId String
+  roleId String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+  @@id([userId, roleId])
+  @@map("user_roles")
+}
+
+model Product {
+  id             String             @id @default(uuid())
+  sku            String             @unique
+  name           String
+  category       String?
+  brand          String?
+  unit           String             @default("kg")
+  isActive       Boolean            @default(true)
+  batches        Batch[]
+  reservations   StockReservation[]
+  salesOrderItems SalesOrderItem[]
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  @@map("products")
+}
+
+model Warehouse {
+  id                String          @id @default(uuid())
+  code              String          @unique
+  name              String
+  address           String?
+  isActive          Boolean         @default(true)
+  outgoingMovements StockMovement[] @relation("StockMovementFromWarehouse")
+  incomingMovements StockMovement[] @relation("StockMovementToWarehouse")
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+
+  @@map("warehouses")
+}
+
+enum BatchStatus {
+  AVAILABLE
+  QUARANTINE
+  BLOCKED
+  DEPLETED
+}
+
+model Batch {
+  id             String             @id @default(uuid())
+  batchNumber    String
+  productId      String
+  receivedKg     Decimal?           @db.Decimal(14, 3)
+  productionDate DateTime?
+  expiryDate     DateTime?
+  manufacturer   String?
+  country        String?
+  temperature    Decimal?           @db.Decimal(5, 2)
+  unitCost       Decimal?           @db.Decimal(14, 4)
+  status         BatchStatus        @default(AVAILABLE)
+  notes          String?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @updatedAt
+
+  product        Product            @relation(fields: [productId], references: [id])
+  stockMovements StockMovement[]
+  reservations   StockReservation[]
+
+  @@unique([batchNumber, productId])
+  @@index([expiryDate])
+  @@index([status])
+  @@map("batches")
+}
+
+enum StockMovementType {
+  RECEIPT
+  SHIPMENT
+  TRANSFER
+  WRITE_OFF
+  ADJUSTMENT
+}
+
+model StockMovement {
+  id              String            @id @default(uuid())
+  type            StockMovementType
+  batchId         String
+  fromWarehouseId String?
+  toWarehouseId   String?
+  quantityKg      Decimal           @db.Decimal(14, 3)
+  reference       String?
+  notes           String?
+  createdAt       DateTime          @default(now())
+
+  batch         Batch      @relation(fields: [batchId], references: [id])
+  fromWarehouse Warehouse? @relation("StockMovementFromWarehouse", fields: [fromWarehouseId], references: [id])
+  toWarehouse   Warehouse? @relation("StockMovementToWarehouse", fields: [toWarehouseId], references: [id])
+
+  @@index([batchId])
+  @@index([fromWarehouseId])
+  @@index([toWarehouseId])
+  @@index([createdAt])
+  @@map("stock_movements")
+}
+
+enum ReservationStatus {
+  ACTIVE
+  RELEASED
+  EXPIRED
+  CONSUMED
+}
+
+model StockReservation {
+  id         String            @id @default(uuid())
+  productId    String
+  batchId      String?
+  salesOrderId String?
+  quantityKg   Decimal           @db.Decimal(14, 3)
+  status     ReservationStatus @default(ACTIVE)
+  expiresAt  DateTime?
+  reference  String?
+  notes      String?
+  createdAt  DateTime          @default(now())
+  updatedAt  DateTime          @updatedAt
+
+  product    Product     @relation(fields: [productId], references: [id])
+  batch      Batch?      @relation(fields: [batchId], references: [id])
+  salesOrder SalesOrder? @relation(fields: [salesOrderId], references: [id])
+
+  @@index([productId])
+  @@index([batchId])
+  @@index([salesOrderId])
+  @@index([status])
+  @@index([expiresAt])
+  @@map("stock_reservations")
+}
+
+enum CustomerStatus {
+  ACTIVE
+  POTENTIAL
+  INACTIVE
+  BLOCKED
+}
+
+model Customer {
+  id              String         @id @default(uuid())
+  code            String         @unique
+  name            String
+  legalName       String?
+  taxId           String?
+  status          CustomerStatus @default(POTENTIAL)
+
+  contactPerson   String?
+  phone           String?
+  email           String?
+  address         String?
+  country         String?
+
+  creditLimit     Decimal?       @db.Decimal(14, 2)
+  paymentTermDays Int            @default(0)
+
+  responsibleId   String?
+  lastContactAt   DateTime?
+  lastPurchaseAt  DateTime?
+  nextActionAt    DateTime?
+  notes           String?
+
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  responsible User? @relation(fields: [responsibleId], references: [id])
+  salesOrders  SalesOrder[]
+  receivables  Receivable[]
+
+  @@index([status])
+  @@index([responsibleId])
+  @@index([lastContactAt])
+  @@index([lastPurchaseAt])
+  @@index([nextActionAt])
+  @@map("customers")
+}
+
+enum SupplierStatus {
+  ACTIVE
+  POTENTIAL
+  IN_PROGRESS
+  INACTIVE
+  BLOCKED
+}
+
+model Supplier {
+  id              String         @id @default(uuid())
+  code            String         @unique
+  name            String
+  legalName       String?
+  taxId           String?
+  status          SupplierStatus @default(POTENTIAL)
+
+  contactPerson   String?
+  phone           String?
+  email           String?
+  address         String?
+  country         String?
+
+  paymentTermDays Int            @default(0)
+  rating          Int?
+
+  responsibleId   String?
+  lastContactAt   DateTime?
+  nextActionAt    DateTime?
+  notes           String?
+
+  isActive        Boolean        @default(true)
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  responsible User? @relation(fields: [responsibleId], references: [id])
+  payables    Payable[]
+
+  @@index([status])
+  @@index([responsibleId])
+  @@index([lastContactAt])
+  @@index([nextActionAt])
+  @@map("suppliers")
+}
+enum SalesOrderStatus {
+  DRAFT
+  CONFIRMED
+  PROCESSING
+  READY
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+model SalesOrder {
+  id            String           @id @default(uuid())
+  orderNumber   String           @unique
+  customerId    String
+  responsibleId String?
+  status        SalesOrderStatus @default(DRAFT)
+
+  orderDate     DateTime         @default(now())
+  requestedDate DateTime?
+  shippedAt     DateTime?
+
+  currency      String           @default("UAH")
+  notes         String?
+
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+
+  customer      Customer         @relation(fields: [customerId], references: [id])
+  responsible   User?            @relation(fields: [responsibleId], references: [id])
+  items         SalesOrderItem[]
+  reservations  StockReservation[]
+  receivables   Receivable[]
+
+  @@index([customerId])
+  @@index([responsibleId])
+  @@index([status])
+  @@index([orderDate])
+  @@map("sales_orders")
+}
+
+model SalesOrderItem {
+  id          String     @id @default(uuid())
+  salesOrderId String
+  productId   String
+
+  quantityKg  Decimal    @db.Decimal(14, 3)
+  pricePerKg  Decimal    @db.Decimal(14, 4)
+
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  salesOrder  SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product     Product    @relation(fields: [productId], references: [id])
+
+  @@index([salesOrderId])
+  @@index([productId])
+  @@map("sales_order_items")
+}
+
+enum FinanceStatus {
+  OPEN
+  PARTIALLY_PAID
+  PAID
+  OVERDUE
+  CANCELLED
+}
+
+model Receivable {
+  id           String        @id @default(uuid())
+  customerId   String
+  salesOrderId String?
+  amount       Decimal       @db.Decimal(14, 2)
+  paidAmount   Decimal       @default(0) @db.Decimal(14, 2)
+  currency     String        @default("UAH")
+  dueDate      DateTime?
+  status       FinanceStatus @default(OPEN)
+  reference    String?
+  notes        String?
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  customer   Customer   @relation(fields: [customerId], references: [id])
+  salesOrder SalesOrder? @relation(fields: [salesOrderId], references: [id])
+
+  @@index([customerId])
+  @@index([salesOrderId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("receivables")
+}
+
+model Payable {
+  id         String        @id @default(uuid())
+  supplierId String
+  amount     Decimal       @db.Decimal(14, 2)
+  paidAmount Decimal       @default(0) @db.Decimal(14, 2)
+  currency   String        @default("UAH")
+  dueDate    DateTime?
+  status     FinanceStatus @default(OPEN)
+  reference  String?
+  notes      String?
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id])
+
+  @@index([supplierId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("payables")
+}

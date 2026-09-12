@@ -39,3 +39,17 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/lib/generated/prisma
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Local AI / Prisma skills
+.agents/
+.claude/
+.windsurf/
+skills-lock.json
+prisma/seed.roles.backup.ts
