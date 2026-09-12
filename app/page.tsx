@@ -8,7 +8,7 @@ export default function Home() {
   return (
     <DashboardShell>
       <div className="pb-4">
-        <h1 className="text-[26px] font-semibold tracking-tight text-slate-900">
+        <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           Command Center
         </h1>
 

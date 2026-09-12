@@ -26,7 +26,7 @@ export function CashFlow() {
   const areaPath = `${linePath} L ${lastPoint.x} ${VIEW_H} L ${firstPoint.x} ${VIEW_H} Z`;
 
   return (
-    <AnalyticsCard title="Cash Flow">
+    <AnalyticsCard title="Cash Flow" className="h-[180px] md:h-[210px]">
       <div className="mt-2 flex items-baseline gap-1.5">
         <span className="text-[22px] leading-none font-semibold tracking-tight text-slate-900">
           {value}
@@ -43,7 +43,7 @@ export function CashFlow() {
         <svg
           viewBox={`0 0 ${VIEW_W} ${VIEW_H}`}
           preserveAspectRatio="none"
-          className="h-[64px] w-full overflow-visible"
+          className="h-[70px] w-full overflow-visible md:h-[64px]"
           aria-hidden="true"
         >
           <path d={areaPath} className="fill-emerald-500/10" stroke="none" />
