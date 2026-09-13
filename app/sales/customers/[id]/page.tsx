@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 
 const CUSTOMERS_READ_PERMISSION = "customers.read";
 const RECEIVABLES_READ_PERMISSION = "finance.receivables.read";
+const SALES_ORDERS_CREATE_PERMISSION = "sales.orders.create";
 
 export default async function SalesCustomerDetailPage(props: PageProps<"/sales/customers/[id]">) {
   let user: Awaited<ReturnType<typeof requirePermission>>;
@@ -30,6 +31,7 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
   const canReadReceivables = permissionCodes.includes(RECEIVABLES_READ_PERMISSION);
+  const canCreateOrder = permissionCodes.includes(SALES_ORDERS_CREATE_PERMISSION);
 
   const { id } = await props.params;
   const customer = await getSalesCustomerDetail(user.id, id, {
@@ -77,14 +79,25 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
             </span>
           </div>
 
-          <form action={logout}>
-            <button
-              type="submit"
-              className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
-            >
-              Sign out
-            </button>
-          </form>
+          <div className="flex shrink-0 items-center gap-4">
+            {canCreateOrder ? (
+              <Link
+                href={`/sales/orders/new?customerId=${customer.id}`}
+                className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+              >
+                New Order
+              </Link>
+            ) : null}
+
+            <form action={logout}>
+              <button
+                type="submit"
+                className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
         <p className="mt-1 text-[13px] text-slate-500">{customer.code}</p>
       </div>
