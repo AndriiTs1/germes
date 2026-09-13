@@ -1,4 +1,5 @@
 import { Users } from "lucide-react";
+import Link from "next/link";
 
 import { formatMoney, formatShortDate } from "@/components/sales/format";
 import { CUSTOMER_STATUS_LABELS, CUSTOMER_STATUS_STYLES } from "@/components/sales/customer-status";
@@ -74,9 +75,10 @@ function activeOrdersLabel(count: number): string {
 }
 
 /**
- * >=1024px: real <table>. <1024px: compact cards — same split convention
- * as OrdersList. No row/card is clickable — Customer Detail doesn't exist
- * yet, so this stage is list-only, per the current stage's explicit scope.
+ * >=1024px: real <table>, with only the customer name cell linking to
+ * /sales/customers/[id] (matching OrdersList's orderNumber-cell pattern —
+ * the <tr> itself is never wrapped/clickable). <1024px: the whole card is
+ * a single Link, matching OrdersList's mobile convention exactly.
  */
 export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
   if (customers.length === 0) {
@@ -118,7 +120,12 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
             {customers.map((customer) => (
               <tr key={customer.id} className="text-[13px]">
                 <td className="max-w-[220px] px-4 py-3">
-                  <p className="truncate font-medium text-slate-900">{customer.name}</p>
+                  <Link
+                    href={`/sales/customers/${customer.id}`}
+                    className="block truncate rounded-sm font-medium text-slate-900 underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+                  >
+                    {customer.name}
+                  </Link>
                   <p className="truncate text-[11.5px] text-slate-400">
                     {customer.code}
                     {customer.activeOrdersCount > 0
@@ -156,60 +163,62 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
           const contact = customer.email ?? customer.phone;
 
           return (
-            <li
-              key={customer.id}
-              className="rounded-2xl border border-slate-200/70 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]"
-            >
-              <div className="flex items-center justify-between gap-2">
-                <span className="truncate text-[13px] font-semibold text-slate-900">
-                  {customer.name}
-                </span>
-                <StatusBadge status={customer.status} />
-              </div>
-              <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
-                {customer.code}
-                {contact ? ` · ${contact}` : ""}
-              </p>
-              {customer.activeOrdersCount > 0 ? (
+            <li key={customer.id}>
+              <Link
+                href={`/sales/customers/${customer.id}`}
+                className="block rounded-2xl border border-slate-200/70 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)] transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <span className="truncate text-[13px] font-semibold text-slate-900">
+                    {customer.name}
+                  </span>
+                  <StatusBadge status={customer.status} />
+                </div>
                 <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
-                  {activeOrdersLabel(customer.activeOrdersCount)}
+                  {customer.code}
+                  {contact ? ` · ${contact}` : ""}
                 </p>
-              ) : null}
+                {customer.activeOrdersCount > 0 ? (
+                  <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
+                    {activeOrdersLabel(customer.activeOrdersCount)}
+                  </p>
+                ) : null}
 
-              <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-[11.5px]">
-                <div>
-                  <p className="text-slate-400">Last purchase</p>
-                  <p className="mt-0.5 font-medium text-slate-700">
-                    {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Next action</p>
-                  <p className="mt-0.5 font-medium text-slate-700">
-                    {customer.nextActionAt ? formatShortDate(customer.nextActionAt) : "—"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-slate-400">Receivable</p>
-                  <div className="mt-0.5">
-                    <ReceivableLines
-                      receivables={customer.receivables}
-                      variant="outstanding"
-                      align="start"
-                    />
+                <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-[11.5px]">
+                  <div>
+                    <p className="text-slate-400">Last purchase</p>
+                    <p className="mt-0.5 font-medium text-slate-700">
+                      {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt) : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Next action</p>
+                    <p className="mt-0.5 font-medium text-slate-700">
+                      {customer.nextActionAt ? formatShortDate(customer.nextActionAt) : "—"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Receivable</p>
+                    <div className="mt-0.5">
+                      <ReceivableLines
+                        receivables={customer.receivables}
+                        variant="outstanding"
+                        align="start"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-slate-400">Overdue</p>
+                    <div className="mt-0.5">
+                      <ReceivableLines
+                        receivables={customer.receivables}
+                        variant="overdue"
+                        align="start"
+                      />
+                    </div>
                   </div>
                 </div>
-                <div>
-                  <p className="text-slate-400">Overdue</p>
-                  <div className="mt-0.5">
-                    <ReceivableLines
-                      receivables={customer.receivables}
-                      variant="overdue"
-                      align="start"
-                    />
-                  </div>
-                </div>
-              </div>
+              </Link>
             </li>
           );
         })}
