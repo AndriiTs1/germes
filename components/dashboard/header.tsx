@@ -46,7 +46,12 @@ export function DashboardHeader({
         <input
           type="text"
           placeholder="Search..."
-          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-[13px] text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
+          // text-base md:text-[13px] (not a fixed text-[13px]): a real
+          // text-entry control, visible from md up on touch-capable
+          // devices (tablet/compact desktop) — iOS Safari auto-zooms the
+          // visual viewport when a focused input's computed font-size is
+          // below 16px.
+          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
         />
       </div>
 
@@ -59,7 +64,9 @@ export function DashboardHeader({
         <input
           type="text"
           placeholder="Search customers, orders, products..."
-          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-[13px] text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
+          // text-base md:text-[13px] — same iOS Safari auto-zoom
+          // prevention as the compact variant above.
+          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
         />
       </div>
 

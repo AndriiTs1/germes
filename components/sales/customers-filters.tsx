@@ -72,7 +72,11 @@ export function CustomersFilters({ q, status }: CustomersFiltersProps) {
             name="q"
             defaultValue={q}
             placeholder="Search customers..."
-            className="h-9 w-full min-w-[200px] rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-9 text-[13px] text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
+            // text-base md:text-[13px] (not a fixed text-[13px]): a real
+            // text-entry control — iOS Safari auto-zooms the visual
+            // viewport when a focused input's computed font-size is below
+            // 16px, same fix already applied to orders-filters.tsx.
+            className="h-9 w-full min-w-[200px] rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-9 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
           />
         </div>
       </form>
