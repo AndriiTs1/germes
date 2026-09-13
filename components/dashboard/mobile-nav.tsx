@@ -10,6 +10,7 @@ import type { UserDisplay } from "@/components/dashboard/user-display";
 type MobileNavProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
+  activePath: string;
 };
 
 /**
@@ -22,7 +23,7 @@ type MobileNavProps = {
  * requireUser()/permission check) — this component never fetches or
  * imports any auth/permission module itself.
  */
-export function MobileNav({ permissionCodes, userDisplay }: MobileNavProps) {
+export function MobileNav({ permissionCodes, userDisplay, activePath }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -93,6 +94,7 @@ export function MobileNav({ permissionCodes, userDisplay }: MobileNavProps) {
                 <SidebarContent
                   permissionCodes={permissionCodes}
                   userDisplay={userDisplay}
+                  activePath={activePath}
                   onNavigate={() => setOpen(false)}
                 />
               </div>

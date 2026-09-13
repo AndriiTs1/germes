@@ -10,6 +10,7 @@ import { requireUser } from "@/lib/auth/require-user";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 
 const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
+const SALES_WORKSPACE_PERMISSION = "sales.orders.read";
 
 export default async function Home() {
   let user: Awaited<ReturnType<typeof requireUser>>;
@@ -22,15 +23,21 @@ export default async function Home() {
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
   if (!permissionCodes.includes(COMMAND_CENTER_PERMISSION)) {
+    // Permission-driven landing resolver, not role-based: the first
+    // workspace whose gate permission this user actually holds wins.
+    if (permissionCodes.includes(SALES_WORKSPACE_PERMISSION)) {
+      redirect("/sales");
+    }
+
     return (
-      <DashboardShell user={user} permissionCodes={permissionCodes}>
+      <DashboardShell user={user} permissionCodes={permissionCodes} activePath="/">
         <NoWorkspaceAvailable />
       </DashboardShell>
     );
   }
 
   return (
-    <DashboardShell user={user} permissionCodes={permissionCodes}>
+    <DashboardShell user={user} permissionCodes={permissionCodes} activePath="/">
       <div className="pb-4">
         <div className="flex items-center justify-between">
           <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">

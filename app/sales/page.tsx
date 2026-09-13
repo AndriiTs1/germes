@@ -1,0 +1,57 @@
+import { redirect } from "next/navigation";
+import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { SalesWorkspace } from "@/components/sales/sales-workspace";
+import { logout } from "@/lib/auth/actions";
+import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
+import { requirePermission } from "@/lib/permissions/require-permission";
+
+const SALES_WORKSPACE_PERMISSION = "sales.orders.read";
+
+export default async function SalesPage() {
+  let user: Awaited<ReturnType<typeof requirePermission>>;
+  try {
+    // requirePermission() already fails closed for both "not authenticated"
+    // and "authenticated but missing this permission" — either way, "/"
+    // is the correct place to send them: it re-resolves to /login, the
+    // Command Center, or NoWorkspaceAvailable based on their real
+    // permissions, with no risk of a loop back to /sales.
+    user = await requirePermission(SALES_WORKSPACE_PERMISSION);
+  } catch {
+    redirect("/");
+  }
+
+  const permissionCodes = await getPermissionCodesForUser(user.id);
+
+  return (
+    <DashboardShell
+      user={user}
+      permissionCodes={permissionCodes}
+      activePath="/sales"
+      showPeriodControl={false}
+    >
+      <div className="pb-4">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
+              Sales Workspace
+            </h1>
+            <p className="mt-1 text-[13px] text-slate-500">
+              Your customers, orders and actions
+            </p>
+          </div>
+
+          <form action={logout}>
+            <button
+              type="submit"
+              className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
+            >
+              Sign out
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <SalesWorkspace userId={user.id} permissionCodes={permissionCodes} />
+    </DashboardShell>
+  );
+}

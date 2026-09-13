@@ -30,6 +30,13 @@ export type ListSalesOrdersOptions = {
 export type ListSalesOrdersResult = {
   orders: SalesOrderListItem[];
   nextCursor: string | null;
+  /**
+   * True count of orders matching the same where-clause (via a separate
+   * count() query, not orders.length) — the page slice above is limited,
+   * so its length would undercount whenever there are more matching rows
+   * than the requested page size.
+   */
+  totalCount: number;
 };
 
 /**
@@ -44,27 +51,32 @@ export async function listSalesOrders(
 ): Promise<ListSalesOrdersResult> {
   const { limit = 20, cursor, onlyActive = false } = options;
 
-  const orders = await prisma.salesOrder.findMany({
-    where: {
-      responsibleId: currentUserId,
-      status: onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined,
-    },
-    select: {
-      id: true,
-      orderNumber: true,
-      status: true,
-      orderDate: true,
-      requestedDate: true,
-      shippedAt: true,
-      currency: true,
-      customer: { select: { id: true, name: true } },
-      items: { select: { quantityKg: true, pricePerKg: true } },
-    },
-    orderBy: { orderDate: "desc" },
-    take: limit + 1,
-    cursor: cursor ? { id: cursor } : undefined,
-    skip: cursor ? 1 : undefined,
-  });
+  const where = {
+    responsibleId: currentUserId,
+    status: onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined,
+  };
+
+  const [orders, totalCount] = await Promise.all([
+    prisma.salesOrder.findMany({
+      where,
+      select: {
+        id: true,
+        orderNumber: true,
+        status: true,
+        orderDate: true,
+        requestedDate: true,
+        shippedAt: true,
+        currency: true,
+        customer: { select: { id: true, name: true } },
+        items: { select: { quantityKg: true, pricePerKg: true } },
+      },
+      orderBy: { orderDate: "desc" },
+      take: limit + 1,
+      cursor: cursor ? { id: cursor } : undefined,
+      skip: cursor ? 1 : undefined,
+    }),
+    prisma.salesOrder.count({ where }),
+  ]);
 
   const hasMore = orders.length > limit;
   const page = hasMore ? orders.slice(0, limit) : orders;
@@ -97,5 +109,6 @@ export async function listSalesOrders(
   return {
     orders: items,
     nextCursor: hasMore ? page[page.length - 1].id : null,
+    totalCount,
   };
 }

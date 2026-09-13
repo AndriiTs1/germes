@@ -8,6 +8,7 @@ import type { UserDisplay } from "@/components/dashboard/user-display";
 type SidebarContentProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
+  activePath: string;
   onNavigate?: () => void;
 };
 
@@ -20,8 +21,13 @@ type SidebarContentProps = {
  * exactly as it can be today. All auth/permission data arrives as plain
  * props, already computed server-side by the page + DashboardShell.
  */
-export function SidebarContent({ permissionCodes, userDisplay, onNavigate }: SidebarContentProps) {
-  const visibleSections = filterNavSections(navSections, permissionCodes);
+export function SidebarContent({
+  permissionCodes,
+  userDisplay,
+  activePath,
+  onNavigate,
+}: SidebarContentProps) {
+  const visibleSections = filterNavSections(navSections, permissionCodes, activePath);
 
   return (
     <>

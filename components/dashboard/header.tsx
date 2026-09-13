@@ -7,12 +7,20 @@ import type { UserDisplay } from "@/components/dashboard/user-display";
 type DashboardHeaderProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
+  activePath: string;
+  /** Defaults to true — preserves the Owner Command Center header exactly. */
+  showPeriodControl?: boolean;
 };
 
-export function DashboardHeader({ permissionCodes, userDisplay }: DashboardHeaderProps) {
+export function DashboardHeader({
+  permissionCodes,
+  userDisplay,
+  activePath,
+  showPeriodControl = true,
+}: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
-      <MobileNav permissionCodes={permissionCodes} userDisplay={userDisplay} />
+      <MobileNav permissionCodes={permissionCodes} userDisplay={userDisplay} activePath={activePath} />
 
       <div className="flex shrink-0 items-center gap-2 xl:hidden">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-slate-900 text-[12px] font-semibold text-white">
@@ -23,8 +31,27 @@ export function DashboardHeader({ permissionCodes, userDisplay }: DashboardHeade
         </span>
       </div>
 
-      {/* Desktop / tablet: real search field */}
-      <div className="relative hidden min-w-0 flex-1 md:block md:max-w-[220px] xl:max-w-[420px]">
+      {/*
+        Tablet / compact desktop: same field, shorter placeholder — a native
+        <input> placeholder can't respond to a media query, so this is a
+        second element gated by the same named breakpoints (md/xl) already
+        driving the width change, rather than truncating text that doesn't
+        fit.
+      */}
+      <div className="relative hidden min-w-0 flex-1 md:block md:max-w-[220px] xl:hidden">
+        <Search
+          className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+          strokeWidth={1.75}
+        />
+        <input
+          type="text"
+          placeholder="Search..."
+          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-[13px] text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none"
+        />
+      </div>
+
+      {/* Large desktop: full search field with the original placeholder, unchanged. */}
+      <div className="relative hidden min-w-0 flex-1 xl:block xl:max-w-[420px]">
         <Search
           className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
           strokeWidth={1.75}
@@ -46,7 +73,7 @@ export function DashboardHeader({ permissionCodes, userDisplay }: DashboardHeade
       </button>
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
-        <PeriodControl className="hidden md:flex" />
+        {showPeriodControl ? <PeriodControl className="hidden md:flex" /> : null}
 
         <button
           type="button"
