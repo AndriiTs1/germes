@@ -5,13 +5,24 @@ import { createPortal } from "react-dom";
 import { Menu, X } from "lucide-react";
 
 import { SidebarContent } from "@/components/dashboard/sidebar-content";
+import type { UserDisplay } from "@/components/dashboard/user-display";
+
+type MobileNavProps = {
+  permissionCodes: string[];
+  userDisplay: UserDisplay;
+};
 
 /**
  * Menu trigger + drawer used below the `xl` breakpoint, where the permanent
  * `DashboardSidebar` is hidden. Renders the same `SidebarContent` so nav
  * hierarchy never drifts between desktop and mobile/tablet.
+ *
+ * permissionCodes/userDisplay arrive as plain, already-computed props from
+ * the server (DashboardHeader -> DashboardShell -> the page's own
+ * requireUser()/permission check) — this component never fetches or
+ * imports any auth/permission module itself.
  */
-export function MobileNav() {
+export function MobileNav({ permissionCodes, userDisplay }: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -79,7 +90,11 @@ export function MobileNav() {
                   <X className="h-4 w-4" strokeWidth={1.75} />
                 </button>
 
-                <SidebarContent onNavigate={() => setOpen(false)} />
+                <SidebarContent
+                  permissionCodes={permissionCodes}
+                  userDisplay={userDisplay}
+                  onNavigate={() => setOpen(false)}
+                />
               </div>
             </div>,
             document.body,

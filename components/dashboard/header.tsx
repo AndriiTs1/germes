@@ -2,11 +2,17 @@ import { Bell, Search } from "lucide-react";
 
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { PeriodControl } from "@/components/dashboard/period-control";
+import type { UserDisplay } from "@/components/dashboard/user-display";
 
-export function DashboardHeader() {
+type DashboardHeaderProps = {
+  permissionCodes: string[];
+  userDisplay: UserDisplay;
+};
+
+export function DashboardHeader({ permissionCodes, userDisplay }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
-      <MobileNav />
+      <MobileNav permissionCodes={permissionCodes} userDisplay={userDisplay} />
 
       <div className="flex shrink-0 items-center gap-2 xl:hidden">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-slate-900 text-[12px] font-semibold text-white">
@@ -53,8 +59,11 @@ export function DashboardHeader() {
 
         <div className="mx-1 hidden h-6 w-px bg-slate-200 sm:block" />
 
-        <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-medium text-white ring-2 ring-white">
-          AN
+        <div
+          title={userDisplay.name}
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-medium text-white ring-2 ring-white"
+        >
+          {userDisplay.initials}
         </div>
       </div>
     </header>
