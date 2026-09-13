@@ -1,19 +1,11 @@
+import Link from "next/link";
 import { Package } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { formatKg, formatMoney, formatShortDate } from "@/components/sales/format";
+import { ORDER_STATUS_STYLES } from "@/components/sales/order-status";
 import type { SalesOrderListItem } from "@/lib/services/sales/list-sales-orders";
 import { cn } from "@/lib/utils";
-
-const statusStyles: Record<string, string> = {
-  DRAFT: "bg-slate-100 text-slate-600",
-  CONFIRMED: "bg-blue-50 text-blue-600",
-  PROCESSING: "bg-amber-50 text-amber-600",
-  READY: "bg-violet-50 text-violet-600",
-  SHIPPED: "bg-teal-50 text-teal-600",
-  COMPLETED: "bg-emerald-50 text-emerald-600",
-  CANCELLED: "bg-rose-50 text-rose-600",
-};
 
 export function ActiveOrdersCard({
   orders,
@@ -23,7 +15,18 @@ export function ActiveOrdersCard({
   className?: string;
 }) {
   return (
-    <OperationsCard title="Active Orders" className={className}>
+    <OperationsCard
+      title="Active Orders"
+      className={className}
+      action={
+        <Link
+          href="/sales/orders"
+          className="text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-700"
+        >
+          View all
+        </Link>
+      }
+    >
       {orders.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
           <Package className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
@@ -51,7 +54,7 @@ export function ActiveOrdersCard({
                   <span
                     className={cn(
                       "rounded-full px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap",
-                      statusStyles[order.status] ?? "bg-slate-100 text-slate-600",
+                      ORDER_STATUS_STYLES[order.status] ?? "bg-slate-100 text-slate-600",
                     )}
                   >
                     {order.status}

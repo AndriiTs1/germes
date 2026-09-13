@@ -1,4 +1,4 @@
-import { Prisma } from "@/lib/generated/prisma/client";
+import { Prisma, type SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
@@ -21,10 +21,16 @@ export type SalesOrderListItem = {
 export type ListSalesOrdersOptions = {
   /** Page size. Defaults to 20. */
   limit?: number;
-  /** SalesOrder.id to resume after — simple cursor pagination. */
+  /** SalesOrder.id to resume after — simple cursor pagination. Ignored when `page` is set. */
   cursor?: string;
-  /** Excludes COMPLETED/CANCELLED when true. */
+  /** 1-indexed offset pagination — simpler to reflect in a URL than cursor. Takes precedence over `cursor`. */
+  page?: number;
+  /** Excludes COMPLETED/CANCELLED when true. Ignored when `status` is set. */
   onlyActive?: boolean;
+  /** Exact status filter (e.g. COMPLETED, CANCELLED). Takes precedence over `onlyActive`. */
+  status?: SalesOrderStatus;
+  /** Matches orderNumber OR customer.name, case-insensitive, via Prisma — never filtered in JS. */
+  search?: string;
 };
 
 export type ListSalesOrdersResult = {
@@ -37,6 +43,10 @@ export type ListSalesOrdersResult = {
    * than the requested page size.
    */
   totalCount: number;
+  /** 1-indexed current page (always 1 when using cursor-based pagination). */
+  page: number;
+  /** Total number of pages of size `limit`, at least 1. */
+  pageCount: number;
 };
 
 /**
@@ -44,17 +54,37 @@ export type ListSalesOrdersResult = {
  * recent first. Total value is not stored on SalesOrder, so it is derived
  * from SalesOrderItem (quantityKg * pricePerKg) using Prisma.Decimal
  * arithmetic — never JS floating point.
+ *
+ * All existing callers (onlyActive/cursor/limit only) keep working exactly
+ * as before — `status`/`search`/`page` are purely additive.
  */
 export async function listSalesOrders(
   currentUserId: string,
   options: ListSalesOrdersOptions = {},
 ): Promise<ListSalesOrdersResult> {
-  const { limit = 20, cursor, onlyActive = false } = options;
+  const { limit = 20, cursor, page, onlyActive = false, status, search } = options;
 
-  const where = {
+  const trimmedSearch = search?.trim();
+  const usePageMode = page !== undefined;
+  const currentPage = usePageMode && page! > 0 ? Math.floor(page!) : 1;
+
+  const where: Prisma.SalesOrderWhereInput = {
     responsibleId: currentUserId,
-    status: onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined,
+    status: status ?? (onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
+    OR: trimmedSearch
+      ? [
+          { orderNumber: { contains: trimmedSearch, mode: "insensitive" } },
+          { customer: { name: { contains: trimmedSearch, mode: "insensitive" } } },
+        ]
+      : undefined,
   };
+
+  // Every key below is always present with a plain value (never a
+  // conditionally-spread key) — a conditional spread here previously broke
+  // TypeScript's inference of the `select` shape (see Stage 8C history).
+  const take = usePageMode ? limit : limit + 1;
+  const skip = usePageMode ? (currentPage - 1) * limit : cursor ? 1 : undefined;
+  const cursorArg = usePageMode || !cursor ? undefined : { id: cursor };
 
   const [orders, totalCount] = await Promise.all([
     prisma.salesOrder.findMany({
@@ -71,17 +101,17 @@ export async function listSalesOrders(
         items: { select: { quantityKg: true, pricePerKg: true } },
       },
       orderBy: { orderDate: "desc" },
-      take: limit + 1,
-      cursor: cursor ? { id: cursor } : undefined,
-      skip: cursor ? 1 : undefined,
+      take,
+      skip,
+      cursor: cursorArg,
     }),
     prisma.salesOrder.count({ where }),
   ]);
 
-  const hasMore = orders.length > limit;
-  const page = hasMore ? orders.slice(0, limit) : orders;
+  const hasMoreViaCursor = !usePageMode && orders.length > limit;
+  const pageRows = hasMoreViaCursor ? orders.slice(0, limit) : orders;
 
-  const items: SalesOrderListItem[] = page.map((order) => {
+  const items: SalesOrderListItem[] = pageRows.map((order) => {
     let totalValue = new Prisma.Decimal(0);
     let totalQuantityKg = new Prisma.Decimal(0);
 
@@ -108,7 +138,9 @@ export async function listSalesOrders(
 
   return {
     orders: items,
-    nextCursor: hasMore ? page[page.length - 1].id : null,
+    nextCursor: hasMoreViaCursor ? pageRows[pageRows.length - 1].id : null,
     totalCount,
+    page: currentPage,
+    pageCount: Math.max(1, Math.ceil(totalCount / limit)),
   };
 }

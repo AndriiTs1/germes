@@ -1,4 +1,4 @@
-import { LayoutDashboard, ShoppingCart, type LucideIcon } from "lucide-react";
+import { ClipboardList, LayoutDashboard, ShoppingCart, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -17,11 +17,11 @@ export type NavSection = {
 /**
  * Single source of truth for desktop and mobile navigation.
  *
- * Only routes that exist today are listed here. Procurement/Inventory/
- * Finance/Customers/Suppliers/Team/Documents/Settings are intentionally
- * omitted rather than linked with a placeholder href — those workspaces
- * don't have real pages yet. Adding one later is a one-line addition: a
- * real href plus its exact Permission.code.
+ * Only routes that exist today are listed here. Customers/Reservations/
+ * Receivables/Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents/
+ * Settings are intentionally omitted rather than linked with a placeholder
+ * href — those pages don't exist yet. Adding one later is a one-line
+ * addition: a real href plus its exact Permission.code.
  */
 export const navSections: NavSection[] = [
   {
@@ -46,16 +46,27 @@ export const navSections: NavSection[] = [
       },
     ],
   },
+  {
+    label: "Sell",
+    items: [
+      {
+        label: "Orders",
+        href: "/sales/orders",
+        requiredPermission: "sales.orders.read",
+        icon: ClipboardList,
+      },
+    ],
+  },
 ];
 
 /**
- * "/" matches only "/"; any other item matches its own path or a future
- * descendant path (e.g. "/sales" would also match "/sales/orders" once
- * that route exists) — no router abstraction, just a plain prefix check.
+ * Exact match only. Sidebar items are a flat list of siblings, not a
+ * nested tree — "Sales" and "Orders" are two separate top-level entries
+ * that happen to share a path prefix, not parent/child, so "/sales/orders"
+ * must activate "Orders" alone, never also "Sales".
  */
 function isNavItemActive(href: string, activePath: string): boolean {
-  if (href === "/") return activePath === "/";
-  return activePath === href || activePath.startsWith(`${href}/`);
+  return activePath === href;
 }
 
 /**
