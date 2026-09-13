@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Package } from "lucide-react";
 
 import { formatKg, formatMoney, formatShortDate } from "@/components/sales/format";
@@ -67,9 +68,14 @@ export function OrdersList({ orders, emptyMessage }: OrdersListProps) {
           </thead>
           <tbody className="divide-y divide-slate-100">
             {orders.map((order) => (
-              <tr key={order.id} className="text-[13px]">
+              <tr key={order.id} className="text-[13px] transition-colors hover:bg-slate-50">
                 <td className="max-w-[140px] truncate px-4 py-3 font-medium text-slate-900">
-                  {order.orderNumber}
+                  <Link
+                    href={`/sales/orders/${order.id}`}
+                    className="rounded-sm text-slate-900 underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+                  >
+                    {order.orderNumber}
+                  </Link>
                 </td>
                 <td className="max-w-[240px] truncate px-4 py-3 text-slate-700">
                   {order.customerName}
@@ -94,25 +100,27 @@ export function OrdersList({ orders, emptyMessage }: OrdersListProps) {
 
       <ul className="flex flex-col gap-2 lg:hidden">
         {orders.map((order) => (
-          <li
-            key={order.id}
-            className="rounded-2xl border border-slate-200/70 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]"
-          >
-            <div className="flex items-center justify-between gap-2">
-              <span className="truncate text-[13px] font-semibold text-slate-900">
-                {order.orderNumber}
-              </span>
-              <StatusBadge status={order.status} />
-            </div>
-            <p className="mt-1 truncate text-[12.5px] text-slate-600">{order.customerName}</p>
-            <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-slate-400">
-              <span className="truncate">
-                {formatShortDate(order.orderDate)} · {formatKg(order.totalQuantityKg)} kg
-              </span>
-              <span className="shrink-0 text-[13px] font-semibold text-slate-900">
-                {formatMoney(order.totalValue, order.currency)}
-              </span>
-            </div>
+          <li key={order.id}>
+            <Link
+              href={`/sales/orders/${order.id}`}
+              className="block rounded-2xl border border-slate-200/70 bg-white p-3 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)] transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="truncate text-[13px] font-semibold text-slate-900">
+                  {order.orderNumber}
+                </span>
+                <StatusBadge status={order.status} />
+              </div>
+              <p className="mt-1 truncate text-[12.5px] text-slate-600">{order.customerName}</p>
+              <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-slate-400">
+                <span className="truncate">
+                  {formatShortDate(order.orderDate)} · {formatKg(order.totalQuantityKg)} kg
+                </span>
+                <span className="shrink-0 text-[13px] font-semibold text-slate-900">
+                  {formatMoney(order.totalValue, order.currency)}
+                </span>
+              </div>
+            </Link>
           </li>
         ))}
       </ul>

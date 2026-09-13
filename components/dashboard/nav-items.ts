@@ -60,31 +60,51 @@ export const navSections: NavSection[] = [
 ];
 
 /**
- * Exact match only. Sidebar items are a flat list of siblings, not a
- * nested tree — "Sales" and "Orders" are two separate top-level entries
- * that happen to share a path prefix, not parent/child, so "/sales/orders"
- * must activate "Orders" alone, never also "Sales".
+ * An item "matches" activePath if activePath equals its href or is a
+ * descendant of it (activePath.startsWith(href + "/")). Among all matching
+ * items across the whole (permission-filtered) list, only the one with
+ * the longest href is active — so a more specific route ("/sales/orders")
+ * wins over a shorter ancestor ("/sales") without any route-name-specific
+ * logic. Generic: it works the same way for any future nested route
+ * (e.g. "/sales/orders/[id]" naturally activates "/sales/orders" alone).
  */
-function isNavItemActive(href: string, activePath: string): boolean {
-  return activePath === href;
+function computeActiveHref(sections: NavSection[], activePath: string): string | null {
+  let best: string | null = null;
+
+  for (const section of sections) {
+    for (const item of section.items) {
+      const matches = activePath === item.href || activePath.startsWith(`${item.href}/`);
+      if (matches && (best === null || item.href.length > best.length)) {
+        best = item.href;
+      }
+    }
+  }
+
+  return best;
 }
 
 /**
  * Keeps only items the given live permission codes actually unlock,
- * computes each surviving item's active state from activePath, and drops
- * any section left with zero items. No role.code is consulted here.
+ * computes the single longest-matching item's active state from
+ * activePath, and drops any section left with zero items. No role.code
+ * is consulted here.
  */
 export function filterNavSections(
   sections: NavSection[],
   permissionCodes: string[],
   activePath: string,
 ): NavSection[] {
-  return sections
+  const permitted = sections.map((section) => ({
+    ...section,
+    items: section.items.filter((item) => permissionCodes.includes(item.requiredPermission)),
+  }));
+
+  const activeHref = computeActiveHref(permitted, activePath);
+
+  return permitted
     .map((section) => ({
       ...section,
-      items: section.items
-        .filter((item) => permissionCodes.includes(item.requiredPermission))
-        .map((item) => ({ ...item, active: isNavItemActive(item.href, activePath) })),
+      items: section.items.map((item) => ({ ...item, active: item.href === activeHref })),
     }))
     .filter((section) => section.items.length > 0);
 }
