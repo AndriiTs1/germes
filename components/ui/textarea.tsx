@@ -14,7 +14,10 @@ function Textarea({ className, error, "aria-invalid": ariaInvalid, ...props }: T
       aria-invalid={ariaInvalid ?? error}
       className={cn(
         FIELD_BASE_CLASSNAME,
-        "w-full min-h-[72px] px-2.5 py-2",
+        // text-base md:text-[13px] — same iOS Safari auto-zoom prevention
+        // as Input; see its comment for why. Textarea is always a real
+        // text-entry control, so this override always applies.
+        "w-full min-h-[72px] px-2.5 py-2 text-base md:text-[13px]",
         error && "border-rose-300",
         className
       )}

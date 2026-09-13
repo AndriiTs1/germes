@@ -29,8 +29,15 @@ const EMPTY_ITEM = { productId: "", quantityKg: "", pricePerKg: "" };
 const cardClassName =
   "rounded-2xl border border-slate-200/70 bg-white p-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_10px_-2px_rgba(15,23,42,0.06)]";
 
+/**
+ * text-base md:text-[13px] (not a fixed text-[13px]): this is the only
+ * plain text <input> left in this form (Customer/Requested date are now
+ * button-based Select/DateInput triggers) — a real text-entry control, so
+ * it needs the same iOS Safari auto-zoom prevention already applied to
+ * Qty/Price in order-form-item-row.tsx.
+ */
 const fieldClassName =
-  "mt-1 h-9 w-full rounded-lg border border-slate-200/70 bg-white px-2.5 text-[13px] text-slate-700 transition-colors focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 focus:outline-none";
+  "mt-1 h-9 w-full rounded-lg border border-slate-200/70 bg-white px-2.5 text-base text-slate-700 transition-colors focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]";
 
 const labelClassName = "text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase";
 
