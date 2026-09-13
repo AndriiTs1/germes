@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { createSalesOrderAction } from "@/app/sales/orders/new/actions";
 import { OrderFormItemRow } from "@/components/sales/order-form/order-form-item-row";
 import { SearchableSelect } from "@/components/sales/order-form/searchable-select";
+import { DateInput } from "@/components/ui/date-input";
 import type {
   NewOrderFormCustomer,
   NewOrderFormProduct,
@@ -111,11 +112,22 @@ export function NewOrderForm({ customers, products, initialCustomerId }: NewOrde
               <label htmlFor="requestedDate" className={labelClassName}>
                 Requested date
               </label>
-              <input
-                id="requestedDate"
-                type="date"
-                className={fieldClassName}
-                {...register("requestedDate")}
+              <Controller
+                control={control}
+                name="requestedDate"
+                render={({ field }) => (
+                  <div className="mt-1">
+                    <DateInput
+                      id="requestedDate"
+                      name={field.name}
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      onBlur={field.onBlur}
+                      placeholder="Select a date"
+                      error={!!errors.requestedDate}
+                    />
+                  </div>
+                )}
               />
               {errors.requestedDate ? (
                 <p className="mt-1 text-[11.5px] text-rose-600">{errors.requestedDate.message}</p>
