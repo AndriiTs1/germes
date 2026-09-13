@@ -1,4 +1,4 @@
-import { ClipboardList, LayoutDashboard, ShoppingCart, type LucideIcon } from "lucide-react";
+import { ClipboardList, LayoutDashboard, ShoppingCart, Users, type LucideIcon } from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -17,11 +17,11 @@ export type NavSection = {
 /**
  * Single source of truth for desktop and mobile navigation.
  *
- * Only routes that exist today are listed here. Customers/Reservations/
- * Receivables/Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents/
- * Settings are intentionally omitted rather than linked with a placeholder
- * href — those pages don't exist yet. Adding one later is a one-line
- * addition: a real href plus its exact Permission.code.
+ * Only routes that exist today are listed here. Reservations/Receivables/
+ * Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents/Settings
+ * are intentionally omitted rather than linked with a placeholder href —
+ * those pages don't exist yet. Adding one later is a one-line addition: a
+ * real href plus its exact Permission.code.
  */
 export const navSections: NavSection[] = [
   {
@@ -54,6 +54,12 @@ export const navSections: NavSection[] = [
         href: "/sales/orders",
         requiredPermission: "sales.orders.read",
         icon: ClipboardList,
+      },
+      {
+        label: "Customers",
+        href: "/sales/customers",
+        requiredPermission: "customers.read",
+        icon: Users,
       },
     ],
   },
