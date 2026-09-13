@@ -27,8 +27,15 @@ function computeDisplayLineTotal(quantityKg: string, pricePerKg: string): number
   return quantity * price;
 }
 
+/**
+ * text-base md:text-[13px] (not a fixed text-[13px]): these are the only
+ * two plain numeric <input>s a user can manually tap into on this page.
+ * Below 16px, iOS Safari auto-zooms the visual viewport on focus — this
+ * keeps the computed font-size at exactly 16px on mobile to prevent that,
+ * while md+ (desktop) keeps the approved 13px appearance unchanged.
+ */
 const fieldClassName =
-  "h-9 w-full rounded-lg border border-slate-200/70 bg-white px-2.5 text-[13px] text-slate-700 transition-colors focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 focus:outline-none";
+  "h-9 w-full rounded-lg border border-slate-200/70 bg-white px-2.5 text-base text-slate-700 transition-colors focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]";
 
 /**
  * >=1024px: a compact grid row (Product / Quantity / Price / Line total /

@@ -152,7 +152,12 @@ export function NewOrderForm({ customers, products, initialCustomerId }: NewOrde
             <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">Items</h2>
             <button
               type="button"
-              onClick={() => append(EMPTY_ITEM)}
+              // shouldFocus: false — RHF's default auto-focuses the new
+              // row's quantityKg input, which on iOS Safari triggers a
+              // visual-viewport auto-zoom (any focused input under 16px
+              // font-size does this); the user should pick a product
+              // first anyway, not land in Quantity.
+              onClick={() => append(EMPTY_ITEM, { shouldFocus: false })}
               className="inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white px-3 py-1.5 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />
