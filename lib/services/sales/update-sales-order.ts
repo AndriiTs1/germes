@@ -22,7 +22,9 @@ export type UpdateSalesOrderError =
   | "PRODUCT_UNAVAILABLE"
   | "UPDATE_FAILED";
 
-export type UpdateSalesOrderResult = { ok: true } | { ok: false; error: UpdateSalesOrderError };
+export type UpdateSalesOrderResult =
+  | { ok: true; previousCustomerId: string }
+  | { ok: false; error: UpdateSalesOrderError };
 
 /** Thrown inside the transaction to trigger an automatic rollback; caught outside and translated to a safe, generic result — same pattern as createSalesOrder. */
 class OrderNotEditableError extends Error {}
@@ -63,6 +65,11 @@ function parseRequestedDate(value: string | undefined): Date | undefined {
  * references an unavailable customer/product, the transaction throws and
  * rolls back before touching a single item row — a rejected update never
  * destroys existing items.
+ *
+ * On success, also returns the order's customerId as it was BEFORE this
+ * update (from the fail-fast read already done above — no extra query),
+ * so the caller can revalidate the old customer's pages when the customer
+ * was changed. Same reasoning as transitionSalesOrderStatus's customerId.
  */
 export async function updateSalesOrder(
   currentUserId: string,
@@ -75,11 +82,11 @@ export async function updateSalesOrder(
   const loadedUpdatedAtDate = new Date(loadedUpdatedAt);
 
   try {
-    await prisma.$transaction(async (tx) => {
+    const previousCustomerId = await prisma.$transaction(async (tx) => {
       // Fail-fast pre-check (not the safety guard itself — see doc comment above).
       const existing = await tx.salesOrder.findFirst({
         where: { id: orderId, responsibleId: currentUserId, status: SalesOrderStatus.DRAFT },
-        select: { updatedAt: true, orderNumber: true },
+        select: { updatedAt: true, orderNumber: true, customerId: true },
       });
 
       if (!existing) {
@@ -175,9 +182,11 @@ export async function updateSalesOrder(
           },
         },
       });
+
+      return existing.customerId;
     });
 
-    return { ok: true };
+    return { ok: true, previousCustomerId };
   } catch (error) {
     if (error instanceof OrderNotEditableError) return { ok: false, error: "ORDER_NOT_EDITABLE" };
     if (error instanceof StaleEditError) return { ok: false, error: "STALE_EDIT" };
