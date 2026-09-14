@@ -54,8 +54,8 @@ function isTransactionConflict(error: unknown): boolean {
  * - ACTIVE reservations for that exact batch+warehouse reduce availability;
  * - legacy ACTIVE reservations for the batch without warehouseId block creation
  *   because their physical location cannot be safely inferred;
- * - expired-but-still-ACTIVE reservations still hold stock until explicitly
- *   released/expired by workflow;
+ * - relevant elapsed ACTIVE reservations are transitioned to EXPIRED inside
+ *   the same SERIALIZABLE transaction before availability is calculated;
  * - reservation expiresAt is server-controlled: now + 24 hours.
  *
  * The transaction runs at SERIALIZABLE isolation and retries P2034 conflicts,
@@ -140,6 +140,86 @@ export async function createStockReservation(
 
           if (!batch || !warehouse) {
             throw new StockUnavailableError();
+          }
+
+          // Expire elapsed reservations inside this same SERIALIZABLE
+          // transaction before any ACTIVE-reservation availability calculation.
+          // This keeps expiration and the stock snapshot concurrency-safe.
+          const expirationNow = new Date();
+
+          const expiredReservations = await tx.stockReservation.findMany({
+            where: {
+              status: ReservationStatus.ACTIVE,
+              expiresAt: {
+                not: null,
+                lte: expirationNow,
+              },
+              OR: [
+                {
+                  salesOrderItemId: item.id,
+                },
+                {
+                  batchId: batch.id,
+                  warehouseId: warehouse.id,
+                },
+                {
+                  batchId: batch.id,
+                  warehouseId: null,
+                },
+              ],
+            },
+            select: {
+              id: true,
+              salesOrderId: true,
+              salesOrderItemId: true,
+              productId: true,
+              batchId: true,
+              warehouseId: true,
+              quantityKg: true,
+              expiresAt: true,
+            },
+          });
+
+          for (const expiredReservation of expiredReservations) {
+            const expireResult = await tx.stockReservation.updateMany({
+              where: {
+                id: expiredReservation.id,
+                status: ReservationStatus.ACTIVE,
+                expiresAt: {
+                  not: null,
+                  lte: expirationNow,
+                },
+              },
+              data: {
+                status: ReservationStatus.EXPIRED,
+              },
+            });
+
+            if (expireResult.count !== 1) {
+              continue;
+            }
+
+            await tx.auditLog.create({
+              data: {
+                actorId: null,
+                entityType: "StockReservation",
+                entityId: expiredReservation.id,
+                action: "EXPIRE",
+                metadata: {
+                  salesOrderId: expiredReservation.salesOrderId,
+                  salesOrderItemId: expiredReservation.salesOrderItemId,
+                  productId: expiredReservation.productId,
+                  batchId: expiredReservation.batchId,
+                  warehouseId: expiredReservation.warehouseId,
+                  quantityKg: expiredReservation.quantityKg.toString(),
+                  expiresAt:
+                    expiredReservation.expiresAt?.toISOString() ?? null,
+                  expiredAt: expirationNow.toISOString(),
+                  fromStatus: ReservationStatus.ACTIVE,
+                  toStatus: ReservationStatus.EXPIRED,
+                },
+              },
+            });
           }
 
           const itemReservations = await tx.stockReservation.aggregate({
@@ -234,7 +314,7 @@ export async function createStockReservation(
           }
 
           const expiresAt = new Date(
-            Date.now() + RESERVATION_TTL_HOURS * 60 * 60 * 1000,
+            expirationNow.getTime() + RESERVATION_TTL_HOURS * 60 * 60 * 1000,
           );
 
           const reservation = await tx.stockReservation.create({
