@@ -1,16 +1,35 @@
-import { SalesOrderStatus } from "@/lib/generated/prisma/client";
+import {
+  Prisma,
+  ReservationStatus,
+  SalesOrderStatus,
+} from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export type SalesOrderTransition = "CONFIRM" | "CANCEL";
 
-export type TransitionSalesOrderError = "INVALID_TRANSITION" | "TRANSITION_FAILED";
+export type TransitionSalesOrderError =
+  | "INVALID_TRANSITION"
+  | "TRANSITION_FAILED";
 
 export type TransitionSalesOrderResult =
-  | { ok: true; fromStatus: SalesOrderStatus; toStatus: SalesOrderStatus; customerId: string }
+  | {
+      ok: true;
+      fromStatus: SalesOrderStatus;
+      toStatus: SalesOrderStatus;
+      customerId: string;
+    }
   | { ok: false; error: TransitionSalesOrderError };
 
-/** Thrown inside the transaction to trigger an automatic rollback; caught outside and translated to a safe, generic result. */
+const MAX_TRANSACTION_ATTEMPTS = 3;
+
 class InvalidTransitionError extends Error {}
+
+function isTransactionConflict(error: unknown): boolean {
+  return (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2034"
+  );
+}
 
 /**
  * Explicit allow-list — the only source of truth for what's allowed.
@@ -41,39 +60,19 @@ const TRANSITION_ACTION: Record<SalesOrderTransition, string> = {
 };
 
 /**
- * Applies exactly one of the two allowed V1 lifecycle transitions
- * (CONFIRM or CANCEL) to a SalesOrder owned by currentUserId, atomically.
+ * Applies exactly one allowed V1 lifecycle transition to a SalesOrder
+ * owned by currentUserId.
  *
- * No auth/permission/role logic here — same convention as every other
- * SALES service; the caller is responsible for
- * requirePermission("sales.orders.update"). No role.code, no OWNER bypass:
- * scope is strictly id + responsibleId.
+ * CANCEL has one additional invariant: every ACTIVE reservation linked to
+ * the order is released atomically with the order cancellation. Physical
+ * StockMovement is never modified by reservation release.
  *
- * The decision of whether a transition is valid always uses the status
- * just read from the database inside this transaction — `transition`
- * only names which action the caller wants (CONFIRM/CANCEL); the actual
- * target and source statuses are never taken from client input.
+ * The transaction uses SERIALIZABLE isolation and retries P2034 conflicts.
+ * This protects the cancellation boundary against a concurrent reservation
+ * creation that may have read the order while it was still CONFIRMED.
  *
- * Race safety: the write is one atomic `updateMany` whose WHERE
- * re-asserts id + responsibleId + status:<the status just read>. If a
- * concurrent request (a double-click, two open tabs, a stale page) already
- * changed the status by the time this write runs, the WHERE no longer
- * matches, `count` is 0, and this throws — a second transition can never
- * land on top of one that already succeeded. The AuditLog entry is
- * written in the same transaction as the status write, so a transition is
- * never recorded unless it actually happened, and never happens without
- * being recorded.
- *
- * No side effects beyond the status change + audit row: no
- * StockReservation, no Receivable, no inventory change, no notification —
- * all explicitly out of scope for this stage.
- *
- * On success, also returns the order's own customerId (already present on
- * the row just read — no extra query) so the caller can revalidate the
- * affected customer's pages: a CANCEL changes Customer.activeOrdersCount
- * (see lib/services/sales/list-sales-customers.ts), and both CONFIRM and
- * CANCEL change the status badge shown in that customer's recent-orders
- * list on /sales/customers/[id].
+ * No auth/permission/role logic lives here. The caller must independently
+ * requirePermission("sales.orders.update").
  */
 export async function transitionSalesOrderStatus(
   currentUserId: string,
@@ -82,61 +81,149 @@ export async function transitionSalesOrderStatus(
 ): Promise<TransitionSalesOrderResult> {
   const toStatus = TRANSITION_TARGET[transition];
 
-  try {
-    const transactionResult = await prisma.$transaction(async (tx) => {
-      const order = await tx.salesOrder.findFirst({
-        where: { id: orderId, responsibleId: currentUserId },
-        select: { id: true, status: true, orderNumber: true, customerId: true },
-      });
+  for (let attempt = 1; attempt <= MAX_TRANSACTION_ATTEMPTS; attempt++) {
+    try {
+      const transactionResult = await prisma.$transaction(
+        async (tx) => {
+          const order = await tx.salesOrder.findFirst({
+            where: {
+              id: orderId,
+              responsibleId: currentUserId,
+            },
+            select: {
+              id: true,
+              status: true,
+              orderNumber: true,
+              customerId: true,
+            },
+          });
 
-      if (!order) {
-        throw new InvalidTransitionError();
-      }
+          if (!order) {
+            throw new InvalidTransitionError();
+          }
 
-      const allowedTargets = ALLOWED_TRANSITIONS[order.status];
-      if (!allowedTargets.includes(toStatus)) {
-        throw new InvalidTransitionError();
-      }
+          const allowedTargets = ALLOWED_TRANSITIONS[order.status];
 
-      const updateResult = await tx.salesOrder.updateMany({
-        where: { id: orderId, responsibleId: currentUserId, status: order.status },
-        data: { status: toStatus },
-      });
+          if (!allowedTargets.includes(toStatus)) {
+            throw new InvalidTransitionError();
+          }
 
-      if (updateResult.count !== 1) {
-        // Status changed between the read above and this write — a
-        // genuine concurrent transition already happened. Never a second
-        // write, never a second audit row.
-        throw new InvalidTransitionError();
-      }
+          const updateResult = await tx.salesOrder.updateMany({
+            where: {
+              id: order.id,
+              responsibleId: currentUserId,
+              status: order.status,
+            },
+            data: {
+              status: toStatus,
+            },
+          });
 
-      await tx.auditLog.create({
-        data: {
-          actorId: currentUserId,
-          entityType: "SalesOrder",
-          entityId: order.id,
-          action: TRANSITION_ACTION[transition],
-          metadata: {
-            orderNumber: order.orderNumber,
+          if (updateResult.count !== 1) {
+            throw new InvalidTransitionError();
+          }
+
+          if (transition === "CANCEL") {
+            const activeReservations = await tx.stockReservation.findMany({
+              where: {
+                salesOrderId: order.id,
+                status: ReservationStatus.ACTIVE,
+              },
+              select: {
+                id: true,
+                salesOrderItemId: true,
+                productId: true,
+                batchId: true,
+                warehouseId: true,
+                quantityKg: true,
+                expiresAt: true,
+              },
+            });
+
+            for (const reservation of activeReservations) {
+              const releaseResult = await tx.stockReservation.updateMany({
+                where: {
+                  id: reservation.id,
+                  salesOrderId: order.id,
+                  status: ReservationStatus.ACTIVE,
+                },
+                data: {
+                  status: ReservationStatus.RELEASED,
+                },
+              });
+
+              if (releaseResult.count !== 1) {
+                continue;
+              }
+
+              await tx.auditLog.create({
+                data: {
+                  actorId: currentUserId,
+                  entityType: "StockReservation",
+                  entityId: reservation.id,
+                  action: "RELEASE",
+                  metadata: {
+                    reason: "ORDER_CANCELLED",
+                    salesOrderId: order.id,
+                    salesOrderItemId: reservation.salesOrderItemId,
+                    productId: reservation.productId,
+                    batchId: reservation.batchId,
+                    warehouseId: reservation.warehouseId,
+                    quantityKg: reservation.quantityKg.toString(),
+                    expiresAt: reservation.expiresAt?.toISOString() ?? null,
+                    fromStatus: ReservationStatus.ACTIVE,
+                    toStatus: ReservationStatus.RELEASED,
+                  },
+                },
+              });
+            }
+          }
+
+          await tx.auditLog.create({
+            data: {
+              actorId: currentUserId,
+              entityType: "SalesOrder",
+              entityId: order.id,
+              action: TRANSITION_ACTION[transition],
+              metadata: {
+                orderNumber: order.orderNumber,
+                fromStatus: order.status,
+                toStatus,
+              },
+            },
+          });
+
+          return {
             fromStatus: order.status,
-            toStatus,
-          },
+            customerId: order.customerId,
+          };
         },
-      });
+        {
+          isolationLevel: Prisma.TransactionIsolationLevel.Serializable,
+        },
+      );
 
-      return { fromStatus: order.status, customerId: order.customerId };
-    });
+      return {
+        ok: true,
+        fromStatus: transactionResult.fromStatus,
+        toStatus,
+        customerId: transactionResult.customerId,
+      };
+    } catch (error) {
+      if (error instanceof InvalidTransitionError) {
+        return { ok: false, error: "INVALID_TRANSITION" };
+      }
 
-    return {
-      ok: true,
-      fromStatus: transactionResult.fromStatus,
-      toStatus,
-      customerId: transactionResult.customerId,
-    };
-  } catch (error) {
-    if (error instanceof InvalidTransitionError) {
-      return { ok: false, error: "INVALID_TRANSITION" };
+      if (
+        isTransactionConflict(error) &&
+        attempt < MAX_TRANSACTION_ATTEMPTS
+      ) {
+        continue;
+      }
+
+      return { ok: false, error: "TRANSITION_FAILED" };
     }
-    return { ok: false, error: "TRANSITION_FAILED" };
   }
+
+  return { ok: false, error: "TRANSITION_FAILED" };
 }
