@@ -26,12 +26,12 @@ export default async function Home() {
   if (!permissionCodes.includes(COMMAND_CENTER_PERMISSION)) {
     // Permission-driven landing resolver, not role-based: the first
     // workspace whose gate permission this user actually holds wins.
-    if (permissionCodes.includes(SALES_WORKSPACE_PERMISSION)) {
-      redirect("/sales");
-    }
-
     if (permissionCodes.includes(WAREHOUSE_WORKSPACE_PERMISSION)) {
       redirect("/warehouse");
+    }
+
+    if (permissionCodes.includes(SALES_WORKSPACE_PERMISSION)) {
+      redirect("/sales");
     }
 
     return (
