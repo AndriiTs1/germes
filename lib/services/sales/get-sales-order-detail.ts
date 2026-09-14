@@ -14,19 +14,17 @@ export type SalesOrderDetailItem = {
 
 export type SalesOrderDetailReservation = {
   id: string;
+  salesOrderItemId: string | null;
   productId: string;
   productName: string;
+  batchId: string | null;
+  batchNumber: string | null;
+  warehouseId: string | null;
+  warehouseCode: string | null;
+  warehouseName: string | null;
   quantityKg: string;
   status: string;
   expiresAt: string | null;
-  /**
-   * True status is always ACTIVE/RELEASED/EXPIRED/CONSUMED as stored — this
-   * is a separate, additional signal for "status is still ACTIVE but
-   * expiresAt has already passed" (no expiration job exists yet — see
-   * Stage 8C history), computed once here so the UI never needs to call
-   * an impure time function during render.
-   */
-  isExpiredWhileActive: boolean;
 };
 
 export type SalesOrderDetailReceivable = {
@@ -150,10 +148,13 @@ export async function getSalesOrderDetail(
       reservations: {
         select: {
           id: true,
+          salesOrderItemId: true,
           quantityKg: true,
           status: true,
           expiresAt: true,
           product: { select: { id: true, name: true } },
+          batch: { select: { id: true, batchNumber: true } },
+          warehouse: { select: { id: true, code: true, name: true } },
         },
       },
       receivables: {
@@ -189,20 +190,22 @@ export async function getSalesOrderDetail(
     };
   });
 
-  const now = new Date();
-
-  const reservations: SalesOrderDetailReservation[] = order.reservations.map((reservation) => ({
-    id: reservation.id,
-    productId: reservation.product.id,
-    productName: reservation.product.name,
-    quantityKg: decimalToString(reservation.quantityKg),
-    status: reservation.status,
-    expiresAt: reservation.expiresAt?.toISOString() ?? null,
-    isExpiredWhileActive:
-      reservation.status === "ACTIVE" &&
-      reservation.expiresAt !== null &&
-      reservation.expiresAt < now,
-  }));
+  const reservations: SalesOrderDetailReservation[] = order.reservations.map(
+    (reservation) => ({
+      id: reservation.id,
+      salesOrderItemId: reservation.salesOrderItemId,
+      productId: reservation.product.id,
+      productName: reservation.product.name,
+      batchId: reservation.batch?.id ?? null,
+      batchNumber: reservation.batch?.batchNumber ?? null,
+      warehouseId: reservation.warehouse?.id ?? null,
+      warehouseCode: reservation.warehouse?.code ?? null,
+      warehouseName: reservation.warehouse?.name ?? null,
+      quantityKg: decimalToString(reservation.quantityKg),
+      status: reservation.status,
+      expiresAt: reservation.expiresAt?.toISOString() ?? null,
+    }),
+  );
 
   return {
     id: order.id,

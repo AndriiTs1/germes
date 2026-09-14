@@ -87,9 +87,9 @@ export function Select({
           align="start"
           sideOffset={4}
           alignItemWithTrigger={false}
-          className="z-50 w-[var(--anchor-width)] outline-none"
+          className="z-50 w-[var(--anchor-width)] min-w-[var(--anchor-width)] max-w-[var(--anchor-width)] outline-none"
         >
-          <SelectPrimitive.Popup className="max-h-64 overflow-y-auto rounded-lg border border-slate-200/70 bg-white py-1 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15),0_2px_6px_-2px_rgba(15,23,42,0.08)]">
+          <SelectPrimitive.Popup className="w-full max-h-64 overflow-y-auto rounded-lg border border-slate-200/70 bg-white py-1 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15),0_2px_6px_-2px_rgba(15,23,42,0.08)]">
             {options.length === 0 ? (
               <p className="px-2.5 py-2 text-[13px] text-slate-400">No options</p>
             ) : (

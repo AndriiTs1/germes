@@ -12,11 +12,16 @@ import { OrderDetailReservations } from "@/components/sales/order-detail-reserva
 import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
+import { getBatchWarehouseAvailability } from "@/lib/services/sales/get-batch-warehouse-availability";
 import { getSalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail";
 import { cn } from "@/lib/utils";
 
 const SALES_ORDERS_PERMISSION = "sales.orders.read";
 const SALES_ORDERS_UPDATE_PERMISSION = "sales.orders.update";
+const RESERVATIONS_READ_PERMISSION = "sales.reservations.read";
+const RESERVATIONS_CREATE_PERMISSION = "sales.reservations.create";
+const RESERVATIONS_RELEASE_PERMISSION = "sales.reservations.release";
 
 export default async function SalesOrderDetailPage(props: PageProps<"/sales/orders/[id]">) {
   let user: Awaited<ReturnType<typeof requirePermission>>;
@@ -32,6 +37,19 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
   const canUpdate = permissionCodes.includes(SALES_ORDERS_UPDATE_PERMISSION);
+  const canReadReservations = permissionCodes.includes(
+    RESERVATIONS_READ_PERMISSION,
+  );
+  const canCreateReservations = permissionCodes.includes(
+    RESERVATIONS_CREATE_PERMISSION,
+  );
+  const canReleaseReservations = permissionCodes.includes(
+    RESERVATIONS_RELEASE_PERMISSION,
+  );
+
+  if (canReadReservations || canCreateReservations) {
+    await expireStockReservations();
+  }
 
   const { id } = await props.params;
   const order = await getSalesOrderDetail(user.id, id);
@@ -43,7 +61,27 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
     notFound();
   }
 
-  const hasSecondaryRow = order.reservations.length > 0 || order.receivable !== null;
+  const canCreateForOrder =
+    canCreateReservations && order.status === "CONFIRMED";
+
+  const reservationAvailability = canCreateForOrder
+    ? await Promise.all(
+        order.items.map(async (item) => ({
+          salesOrderItemId: item.id,
+          productName: item.productName,
+          orderedQuantityKg: item.quantityKg,
+          allocations: await getBatchWarehouseAvailability(item.productId),
+        })),
+      )
+    : [];
+
+  const showReservations =
+    (canReadReservations && order.reservations.length > 0) ||
+    canCreateForOrder;
+
+  const hasSecondaryRow =
+    showReservations || order.receivable !== null;
+
   const hasNotes = order.notes !== null && order.notes.trim() !== "";
 
   return (
@@ -98,8 +136,14 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
 
         {hasSecondaryRow ? (
           <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2">
-            {order.reservations.length > 0 ? (
-              <OrderDetailReservations reservations={order.reservations} />
+            {showReservations ? (
+              <OrderDetailReservations
+                orderId={order.id}
+                reservations={order.reservations}
+                availability={reservationAvailability}
+                canCreate={canCreateForOrder}
+                canRelease={canReleaseReservations}
+              />
             ) : null}
             {order.receivable ? <OrderDetailReceivable receivable={order.receivable} /> : null}
           </div>
