@@ -11,6 +11,7 @@ import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-pe
 
 const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
 const SALES_WORKSPACE_PERMISSION = "sales.orders.read";
+const WAREHOUSE_WORKSPACE_PERMISSION = "inventory.shipments.process";
 
 export default async function Home() {
   let user: Awaited<ReturnType<typeof requireUser>>;
@@ -27,6 +28,10 @@ export default async function Home() {
     // workspace whose gate permission this user actually holds wins.
     if (permissionCodes.includes(SALES_WORKSPACE_PERMISSION)) {
       redirect("/sales");
+    }
+
+    if (permissionCodes.includes(WAREHOUSE_WORKSPACE_PERMISSION)) {
+      redirect("/warehouse");
     }
 
     return (

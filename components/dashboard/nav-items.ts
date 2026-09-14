@@ -1,4 +1,11 @@
-import { ClipboardList, LayoutDashboard, ShoppingCart, Users, type LucideIcon } from "lucide-react";
+import {
+  ClipboardList,
+  LayoutDashboard,
+  ShoppingCart,
+  Users,
+  Warehouse,
+  type LucideIcon,
+} from "lucide-react";
 
 export type NavItem = {
   label: string;
@@ -43,6 +50,12 @@ export const navSections: NavSection[] = [
         href: "/sales",
         requiredPermission: "sales.orders.read",
         icon: ShoppingCart,
+      },
+      {
+        label: "Warehouse",
+        href: "/warehouse",
+        requiredPermission: "inventory.shipments.process",
+        icon: Warehouse,
       },
     ],
   },
