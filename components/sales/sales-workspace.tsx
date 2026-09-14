@@ -3,6 +3,7 @@ import { CircleDollarSign, ClipboardList, PackageSearch, UserRoundCheck } from "
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getAttentionCustomers } from "@/lib/services/sales/get-attention-customers";
 import { getReceivableExposure } from "@/lib/services/sales/get-receivable-exposure";
+import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getReservationsRequiringAttention } from "@/lib/services/sales/get-reservations-requiring-attention";
 import { getStockAvailability } from "@/lib/services/sales/get-stock-availability";
 import { listSalesOrders } from "@/lib/services/sales/list-sales-orders";
@@ -34,6 +35,10 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
   const canReadStock = permissionCodes.includes("inventory.stock.read");
   const canReadReservations = permissionCodes.includes("sales.reservations.read");
   const canReadReceivables = permissionCodes.includes("finance.receivables.read");
+
+  if (canReadStock || canReadReservations) {
+    await expireStockReservations();
+  }
 
   const [attentionCustomers, ordersResult, stock, reservations, receivables] = await Promise.all([
     canReadCustomers ? getAttentionCustomers(userId) : Promise.resolve(null),
