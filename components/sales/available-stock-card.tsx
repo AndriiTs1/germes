@@ -16,11 +16,13 @@ export function AvailableStockCard({
     <OperationsCard title="Available Stock" className={className}>
       {stock.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
-          <Boxes className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
-          <p className="text-[12.5px] font-medium text-slate-500">No products yet</p>
+          <Boxes className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
+          <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
+            No products yet
+          </p>
         </div>
       ) : (
-        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto xl:gap-0 xl:divide-y xl:divide-slate-100">
           {stock.map((product) => {
             const isNegative = product.availableKg.trim().startsWith("-");
             const hasInconsistent = product.inconsistentReservedKg !== "0";

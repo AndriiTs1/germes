@@ -113,17 +113,17 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 xl:gap-3.5">
       <SalesKpiSummary items={kpis} />
 
-      <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-[5fr_7fr]">
+      <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-[5fr_7fr] xl:gap-3.5">
         {canReadCustomers && attentionCustomers ? (
           <NeedsAttentionCard customers={attentionCustomers} />
         ) : null}
         {canReadOrders && ordersResult ? <ActiveOrdersCard orders={ordersResult.orders} /> : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 min-[768px]:max-[1023px]:grid-cols-2 min-[1024px]:grid-cols-3">
+      <div className="grid grid-cols-1 gap-4 min-[768px]:max-[1023px]:grid-cols-2 min-[1024px]:grid-cols-3 xl:gap-3.5">
         {canReadStock && stock ? <AvailableStockCard stock={stock} /> : null}
         {canReadReservations && reservations ? (
           <ReservationsCard reservations={reservations} />

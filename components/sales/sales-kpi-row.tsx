@@ -26,14 +26,20 @@ export type SalesKpiCardProps = {
  * trendValue/trendDirection/trendSentiment/comparisonLabel, and SALES V1
  * KPIs have no trend data — inventing one would be a fake comparison.
  * Same border/radius/shadow/typography language, no trend row.
+ *
+ * Desktop (xl:) polish only — mobile/tablet keep the exact original
+ * classes. xl:min-h- on the label row reserves the same height whether a
+ * label wraps to one or two lines, so all four cards' value rows share one
+ * baseline regardless of label length; the icon chip gets a hairline inset
+ * ring for a touch more definition without changing its accent tint.
  */
 function SalesKpiCard({ label, value, unit, icon: Icon, accent, warning }: SalesKpiCardProps) {
   return (
-    <div className="rounded-2xl border border-slate-200/70 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
-      <div className="flex items-start gap-2.5">
+    <div className="rounded-2xl border border-slate-200/70 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)] xl:py-3.5 xl:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_8px_20px_-10px_rgba(15,23,42,0.10)]">
+      <div className="flex items-start gap-2.5 xl:min-h-[34px]">
         <div
           className={cn(
-            "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px] xl:ring-1 xl:ring-inset xl:ring-black/5",
             accentChipStyles[accent],
           )}
         >
@@ -44,12 +50,12 @@ function SalesKpiCard({ label, value, unit, icon: Icon, accent, warning }: Sales
         </p>
       </div>
 
-      <div className="mt-3 flex items-baseline gap-1.5">
-        <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
+      <div className="mt-3 flex items-baseline gap-1.5 xl:mt-2.5">
+        <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900 xl:text-[23px] xl:font-bold">
           {value}
         </span>
         {unit ? (
-          <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
+          <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400 xl:text-[11px] xl:font-normal">
             {unit}
           </span>
         ) : null}

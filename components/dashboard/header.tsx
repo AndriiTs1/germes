@@ -55,7 +55,7 @@ export function DashboardHeader({
         />
       </div>
 
-      {/* Large desktop: full search field with the original placeholder, unchanged. */}
+      {/* Large desktop: full search field with the original placeholder, unchanged (still md:text-[13px], no height change). */}
       <div className="relative hidden min-w-0 flex-1 xl:block xl:max-w-[420px]">
         <Search
           className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
@@ -65,8 +65,10 @@ export function DashboardHeader({
           type="text"
           placeholder="Search customers, orders, products..."
           // text-base md:text-[13px] — same iOS Safari auto-zoom
-          // prevention as the compact variant above.
-          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
+          // prevention as the compact variant above. xl: overrides below
+          // are desktop-only visual polish (softer neutral background,
+          // tighter focus ring) — height/size/placeholder untouched.
+          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px] xl:border-slate-200/60 xl:bg-slate-50 xl:focus:ring-[3px]"
         />
       </div>
 
@@ -79,7 +81,7 @@ export function DashboardHeader({
         <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
       </button>
 
-      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2">
+      <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:gap-2.5">
         {showPeriodControl ? <PeriodControl className="hidden md:flex" /> : null}
 
         <button

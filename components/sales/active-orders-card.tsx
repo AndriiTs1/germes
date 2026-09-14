@@ -29,11 +29,13 @@ export function ActiveOrdersCard({
     >
       {orders.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
-          <Package className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
-          <p className="text-[12.5px] font-medium text-slate-500">No active orders right now</p>
+          <Package className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
+          <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
+            No active orders right now
+          </p>
         </div>
       ) : (
-        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto xl:gap-0 xl:divide-y xl:divide-slate-100">
           {orders.map((order) => (
             <li key={order.id}>
               <div className="flex items-center justify-between gap-3 rounded-xl px-2 py-1.5">
@@ -42,7 +44,7 @@ export function ActiveOrdersCard({
                     <span className="shrink-0 text-[11.5px] font-medium text-slate-400">
                       {order.orderNumber}
                     </span>
-                    <span className="truncate text-[12.5px] font-medium text-slate-900">
+                    <span className="truncate text-[12.5px] font-medium text-slate-900 xl:font-semibold">
                       {order.customerName}
                     </span>
                   </div>
@@ -50,7 +52,7 @@ export function ActiveOrdersCard({
                     {formatShortDate(order.orderDate)} · {formatKg(order.totalQuantityKg)} kg
                   </p>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
+                <div className="flex shrink-0 flex-col items-end gap-1 xl:min-w-[92px]">
                   <span
                     className={cn(
                       "rounded-full px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap",

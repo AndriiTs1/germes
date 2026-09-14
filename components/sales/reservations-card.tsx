@@ -31,13 +31,13 @@ export function ReservationsCard({
     <OperationsCard title="Reservations" className={className}>
       {reservations.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
-          <Clock3 className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
-          <p className="text-[12.5px] font-medium text-slate-500">
+          <Clock3 className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
+          <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
             No reservations need attention
           </p>
         </div>
       ) : (
-        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto">
+        <ul className="flex flex-1 flex-col gap-1 overflow-y-auto xl:gap-0 xl:divide-y xl:divide-slate-100">
           {reservations.map((reservation) => (
             <li key={reservation.id}>
               <div className="flex items-center justify-between gap-3 rounded-xl px-2 py-1.5">

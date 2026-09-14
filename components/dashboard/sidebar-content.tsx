@@ -31,8 +31,8 @@ export function SidebarContent({
 
   return (
     <>
-      <div className="px-5 pt-6 pb-5">
-        <div className="flex items-center gap-2.5">
+      <div className="px-5 pt-6 pb-5 xl:pt-7 xl:pb-6">
+        <div className="flex items-center gap-2.5 xl:gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-[13px] font-semibold text-white">
             G
           </div>
@@ -47,7 +47,7 @@ export function SidebarContent({
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
         {visibleSections.map((section, index) => (
-          <div key={section.label} className={cn(index > 0 && "mt-6")}>
+          <div key={section.label} className={cn(index > 0 && "mt-6 xl:mt-7")}>
             <p className="mb-2 px-3 text-[10.5px] font-medium tracking-[0.08em] text-slate-400 uppercase">
               {section.label}
             </p>
@@ -61,7 +61,7 @@ export function SidebarContent({
                     className={cn(
                       "flex items-center gap-2.5 rounded-xl px-3 py-[7px] text-[13.5px] font-medium transition-colors duration-150",
                       item.active
-                        ? "bg-blue-50 text-blue-600"
+                        ? "bg-blue-50 text-blue-600 xl:font-semibold xl:ring-1 xl:ring-inset xl:ring-blue-600/10"
                         : "text-slate-600 hover:bg-slate-100/80 hover:text-slate-900",
                     )}
                   >
@@ -84,16 +84,16 @@ export function SidebarContent({
       <div className="shrink-0 space-y-1 border-t border-slate-200/70 px-3 py-3">
         <button
           type="button"
-          className="flex w-full items-center gap-2.5 rounded-2xl border border-slate-200/70 bg-slate-50 px-2.5 py-2 text-left shadow-sm transition-colors hover:bg-slate-100/60"
+          className="flex w-full items-center gap-2.5 rounded-2xl border border-slate-200/70 bg-slate-50 px-2.5 py-2 text-left shadow-sm transition-colors hover:bg-slate-100/60 xl:border-slate-200 xl:bg-white xl:shadow-[0_1px_2px_rgba(15,23,42,0.04),0_4px_10px_-4px_rgba(15,23,42,0.08)] xl:hover:bg-slate-50"
         >
           <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-slate-900 text-[11px] font-medium text-white">
             {userDisplay.initials}
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-[13px] font-medium text-slate-900">
+            <p className="truncate text-[13px] font-medium text-slate-900 xl:leading-[1.3]">
               {userDisplay.name}
             </p>
-            <p className="truncate text-[11px] text-slate-400">
+            <p className="truncate text-[11px] text-slate-400 xl:leading-[1.3]">
               {userDisplay.secondaryLabel}
             </p>
           </div>

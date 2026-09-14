@@ -29,13 +29,13 @@ export default async function SalesPage() {
       activePath="/sales"
       showPeriodControl={false}
     >
-      <div className="pb-4">
+      <div className="pb-4 xl:pb-3.5">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
               Sales Workspace
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">
+            <p className="mt-1 text-[13px] text-slate-500 xl:mt-0.5 xl:text-slate-400">
               Your customers, orders and actions
             </p>
           </div>
