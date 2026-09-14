@@ -3,6 +3,7 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import { OrderDetailActions } from "@/components/sales/order-detail-actions";
 import { OrderDetailItems } from "@/components/sales/order-detail-items";
 import { OrderDetailNotes } from "@/components/sales/order-detail-notes";
 import { OrderDetailOverview } from "@/components/sales/order-detail-overview";
@@ -15,6 +16,7 @@ import { getSalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail
 import { cn } from "@/lib/utils";
 
 const SALES_ORDERS_PERMISSION = "sales.orders.read";
+const SALES_ORDERS_UPDATE_PERMISSION = "sales.orders.update";
 
 export default async function SalesOrderDetailPage(props: PageProps<"/sales/orders/[id]">) {
   let user: Awaited<ReturnType<typeof requirePermission>>;
@@ -29,6 +31,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const canUpdate = permissionCodes.includes(SALES_ORDERS_UPDATE_PERMISSION);
 
   const { id } = await props.params;
   const order = await getSalesOrderDetail(user.id, id);
@@ -59,7 +62,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
           Back to Orders
         </Link>
 
-        <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
             <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
               {order.orderNumber}
@@ -74,14 +77,18 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
             </span>
           </div>
 
-          <form action={logout}>
-            <button
-              type="submit"
-              className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
-            >
-              Sign out
-            </button>
-          </form>
+          <div className="flex shrink-0 flex-wrap items-center gap-4">
+            <OrderDetailActions orderId={order.id} status={order.status} canUpdate={canUpdate} />
+
+            <form action={logout}>
+              <button
+                type="submit"
+                className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
+              >
+                Sign out
+              </button>
+            </form>
+          </div>
         </div>
       </div>
 

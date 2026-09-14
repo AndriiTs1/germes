@@ -6,7 +6,7 @@ export type SalesOrderTransition = "CONFIRM" | "CANCEL";
 export type TransitionSalesOrderError = "INVALID_TRANSITION" | "TRANSITION_FAILED";
 
 export type TransitionSalesOrderResult =
-  | { ok: true; fromStatus: SalesOrderStatus; toStatus: SalesOrderStatus }
+  | { ok: true; fromStatus: SalesOrderStatus; toStatus: SalesOrderStatus; customerId: string }
   | { ok: false; error: TransitionSalesOrderError };
 
 /** Thrown inside the transaction to trigger an automatic rollback; caught outside and translated to a safe, generic result. */
@@ -67,6 +67,13 @@ const TRANSITION_ACTION: Record<SalesOrderTransition, string> = {
  * No side effects beyond the status change + audit row: no
  * StockReservation, no Receivable, no inventory change, no notification —
  * all explicitly out of scope for this stage.
+ *
+ * On success, also returns the order's own customerId (already present on
+ * the row just read — no extra query) so the caller can revalidate the
+ * affected customer's pages: a CANCEL changes Customer.activeOrdersCount
+ * (see lib/services/sales/list-sales-customers.ts), and both CONFIRM and
+ * CANCEL change the status badge shown in that customer's recent-orders
+ * list on /sales/customers/[id].
  */
 export async function transitionSalesOrderStatus(
   currentUserId: string,
@@ -76,10 +83,10 @@ export async function transitionSalesOrderStatus(
   const toStatus = TRANSITION_TARGET[transition];
 
   try {
-    const fromStatus = await prisma.$transaction(async (tx) => {
+    const transactionResult = await prisma.$transaction(async (tx) => {
       const order = await tx.salesOrder.findFirst({
         where: { id: orderId, responsibleId: currentUserId },
-        select: { id: true, status: true, orderNumber: true },
+        select: { id: true, status: true, orderNumber: true, customerId: true },
       });
 
       if (!order) {
@@ -117,10 +124,15 @@ export async function transitionSalesOrderStatus(
         },
       });
 
-      return order.status;
+      return { fromStatus: order.status, customerId: order.customerId };
     });
 
-    return { ok: true, fromStatus, toStatus };
+    return {
+      ok: true,
+      fromStatus: transactionResult.fromStatus,
+      toStatus,
+      customerId: transactionResult.customerId,
+    };
   } catch (error) {
     if (error instanceof InvalidTransitionError) {
       return { ok: false, error: "INVALID_TRANSITION" };
