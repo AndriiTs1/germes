@@ -113,15 +113,16 @@ model Product {
 }
 
 model Warehouse {
-  id                String          @id @default(uuid())
-  code              String          @unique
+  id                String             @id @default(uuid())
+  code              String             @unique
   name              String
   address           String?
-  isActive          Boolean         @default(true)
-  outgoingMovements StockMovement[] @relation("StockMovementFromWarehouse")
-  incomingMovements StockMovement[] @relation("StockMovementToWarehouse")
-  createdAt         DateTime        @default(now())
-  updatedAt         DateTime        @updatedAt
+  isActive          Boolean            @default(true)
+  outgoingMovements StockMovement[]    @relation("StockMovementFromWarehouse")
+  incomingMovements StockMovement[]    @relation("StockMovementToWarehouse")
+  reservations      StockReservation[]
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
 
   @@map("warehouses")
 }
@@ -197,25 +198,31 @@ enum ReservationStatus {
 }
 
 model StockReservation {
-  id           String            @id @default(uuid())
-  productId    String
-  batchId      String?
-  salesOrderId String?
-  quantityKg   Decimal           @db.Decimal(14, 3)
-  status       ReservationStatus @default(ACTIVE)
-  expiresAt    DateTime?
-  reference    String?
-  notes        String?
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
+  id               String            @id @default(uuid())
+  productId        String
+  batchId          String?
+  warehouseId      String?
+  salesOrderId     String?
+  salesOrderItemId String?
+  quantityKg       Decimal           @db.Decimal(14, 3)
+  status           ReservationStatus @default(ACTIVE)
+  expiresAt        DateTime?
+  reference        String?
+  notes            String?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
 
-  product    Product     @relation(fields: [productId], references: [id])
-  batch      Batch?      @relation(fields: [batchId], references: [id])
-  salesOrder SalesOrder? @relation(fields: [salesOrderId], references: [id])
+  product        Product         @relation(fields: [productId], references: [id])
+  batch          Batch?          @relation(fields: [batchId], references: [id])
+  warehouse      Warehouse?      @relation(fields: [warehouseId], references: [id])
+  salesOrder     SalesOrder?     @relation(fields: [salesOrderId], references: [id])
+  salesOrderItem SalesOrderItem? @relation(fields: [salesOrderItemId], references: [id])
 
   @@index([productId])
   @@index([batchId])
+  @@index([warehouseId])
   @@index([salesOrderId])
+  @@index([salesOrderItemId])
   @@index([status])
   @@index([expiresAt])
   @@map("stock_reservations")
@@ -362,8 +369,9 @@ model SalesOrderItem {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  salesOrder SalesOrder @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
-  product    Product    @relation(fields: [productId], references: [id])
+  salesOrder   SalesOrder         @relation(fields: [salesOrderId], references: [id], onDelete: Cascade)
+  product      Product            @relation(fields: [productId], references: [id])
+  reservations StockReservation[]
 
   @@index([salesOrderId])
   @@index([productId])
