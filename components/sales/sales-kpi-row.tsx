@@ -111,9 +111,18 @@ function SalesKpiRow({ label, value, unit, icon: Icon, accent, warning }: SalesK
 export function SalesKpiSummary({ items }: { items: SalesKpiCardProps[] }) {
   if (items.length === 0) return null;
 
+  const desktopGridClass =
+    items.length === 1
+      ? "md:grid-cols-1"
+      : items.length === 2
+        ? "md:grid-cols-2"
+        : items.length === 3
+          ? "md:grid-cols-2 min-[1280px]:grid-cols-3"
+          : "md:grid-cols-2 min-[1280px]:grid-cols-4";
+
   return (
     <>
-      <div className="hidden gap-3 md:grid md:max-[1279px]:grid-cols-2 min-[1280px]:grid-cols-4">
+      <div className={cn("hidden gap-3 md:grid", desktopGridClass)}>
         {items.map((item) => (
           <SalesKpiCard key={item.label} {...item} />
         ))}

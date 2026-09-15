@@ -127,7 +127,7 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
 
       <div
         className={`grid grid-cols-1 gap-4 ${
-          primaryCardCount === 2 ? "min-[1024px]:grid-cols-[5fr_7fr]" : ""
+          primaryCardCount === 2 ? "lg:grid-cols-[5fr_7fr]" : ""
         } xl:gap-3.5`}
       >
         {canReadCustomers && attentionCustomers ? (
@@ -138,8 +138,8 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
 
       <div
         className={`grid grid-cols-1 gap-4 ${
-          secondaryCardCount >= 2 ? "min-[768px]:grid-cols-2" : ""
-        } ${secondaryCardCount === 3 ? "min-[1024px]:grid-cols-3" : ""} xl:gap-3.5`}
+          secondaryCardCount >= 2 ? "md:grid-cols-2" : ""
+        } ${secondaryCardCount === 3 ? "lg:grid-cols-3" : ""} xl:gap-3.5`}
       >
         {canReadStock && stock ? <AvailableStockCard stock={stock} /> : null}
         {canReadReservations && reservations ? (
@@ -150,7 +150,7 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
             receivables={receivables}
             className={
               secondaryCardCount === 3
-                ? "min-[768px]:max-[1023px]:col-span-2"
+                ? "md:col-span-2 lg:col-span-1"
                 : undefined
             }
           />
