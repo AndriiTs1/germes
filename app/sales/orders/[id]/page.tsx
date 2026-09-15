@@ -91,7 +91,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
       activePath={`/sales/orders/${order.id}`}
       showPeriodControl={false}
     >
-      <div className="pb-4">
+      <div className="pb-4 xl:pb-3">
         <Link
           href="/sales/orders"
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-700"
@@ -102,7 +102,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <div className="flex min-w-0 items-center gap-3">
-            <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
+            <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
               {order.orderNumber}
             </h1>
             <span
@@ -130,12 +130,12 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
         </div>
       </div>
 
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col gap-4 xl:gap-3">
         <OrderDetailOverview order={order} />
         <OrderDetailItems items={order.items} currency={order.currency} />
 
         {hasSecondaryRow ? (
-          <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2 xl:items-start xl:gap-3">
             {showReservations ? (
               <OrderDetailReservations
                 orderId={order.id}

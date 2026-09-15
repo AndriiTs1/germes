@@ -60,7 +60,7 @@ function CreateReservationForm({
   return (
     <form
       action={action}
-      className="rounded-xl border border-slate-100 bg-slate-50/50 p-3"
+      className="rounded-xl border border-slate-100 bg-slate-50/50 p-3 xl:p-2.5"
     >
       <input type="hidden" name="orderId" value={orderId} />
       <input
@@ -184,7 +184,7 @@ export function OrderDetailReservations({
   return (
     <DetailSection title="Reservations" className={className}>
       {canCreate ? (
-        <div className="mb-3 flex flex-col gap-2">
+        <div className="mb-3 flex flex-col gap-2 xl:mb-2">
           {availability.map((item) => (
             <CreateReservationForm
               key={item.salesOrderItemId}
@@ -209,7 +209,7 @@ export function OrderDetailReservations({
           {reservations.map((reservation) => (
             <li
               key={reservation.id}
-              className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 p-3"
+              className="flex items-start justify-between gap-3 rounded-xl border border-slate-100 p-3 xl:p-2.5"
             >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[13px] font-medium text-slate-900">
