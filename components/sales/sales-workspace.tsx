@@ -112,18 +112,35 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
     });
   }
 
+  const primaryCardCount =
+    Number(Boolean(canReadCustomers && attentionCustomers)) +
+    Number(Boolean(canReadOrders && ordersResult));
+
+  const secondaryCardCount =
+    Number(Boolean(canReadStock && stock)) +
+    Number(Boolean(canReadReservations && reservations)) +
+    Number(Boolean(canReadReceivables && receivables));
+
   return (
     <div className="flex flex-col gap-4 xl:gap-3.5">
       <SalesKpiSummary items={kpis} />
 
-      <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-[5fr_7fr] xl:gap-3.5">
+      <div
+        className={`grid grid-cols-1 gap-4 ${
+          primaryCardCount === 2 ? "min-[1024px]:grid-cols-[5fr_7fr]" : ""
+        } xl:gap-3.5`}
+      >
         {canReadCustomers && attentionCustomers ? (
           <NeedsAttentionCard customers={attentionCustomers} />
         ) : null}
         {canReadOrders && ordersResult ? <ActiveOrdersCard orders={ordersResult.orders} /> : null}
       </div>
 
-      <div className="grid grid-cols-1 gap-4 min-[768px]:max-[1023px]:grid-cols-2 min-[1024px]:grid-cols-3 xl:gap-3.5">
+      <div
+        className={`grid grid-cols-1 gap-4 ${
+          secondaryCardCount >= 2 ? "min-[768px]:grid-cols-2" : ""
+        } ${secondaryCardCount === 3 ? "min-[1024px]:grid-cols-3" : ""} xl:gap-3.5`}
+      >
         {canReadStock && stock ? <AvailableStockCard stock={stock} /> : null}
         {canReadReservations && reservations ? (
           <ReservationsCard reservations={reservations} />
@@ -131,7 +148,11 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
         {canReadReceivables && receivables ? (
           <ReceivablesCard
             receivables={receivables}
-            className="min-[768px]:max-[1023px]:col-span-2"
+            className={
+              secondaryCardCount === 3
+                ? "min-[768px]:max-[1023px]:col-span-2"
+                : undefined
+            }
           />
         ) : null}
       </div>
