@@ -3,15 +3,23 @@ import { formatKg } from "@/components/sales/format";
 import type { WarehouseOrderDetailItem } from "@/lib/services/warehouse/get-warehouse-order-detail";
 import { cn } from "@/lib/utils";
 
-function ItemFulfillmentBadge({ isFullyReserved }: { isFullyReserved: boolean }) {
+function ItemFulfillmentBadge({
+  isFullyReserved,
+  isShipped,
+}: {
+  isFullyReserved: boolean;
+  isShipped: boolean;
+}) {
   return (
     <span
       className={cn(
         "rounded-full px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap",
-        isFullyReserved ? "bg-emerald-50 text-emerald-600" : "bg-amber-50 text-amber-600",
+        isShipped || isFullyReserved
+          ? "bg-emerald-50 text-emerald-600"
+          : "bg-amber-50 text-amber-600",
       )}
     >
-      {isFullyReserved ? "Fully reserved" : "Not fully reserved"}
+      {isShipped ? "Shipped" : isFullyReserved ? "Fully reserved" : "Not fully reserved"}
     </span>
   );
 }
@@ -27,7 +35,14 @@ function ItemFulfillmentBadge({ isFullyReserved }: { isFullyReserved: boolean })
  * >=1024px: real <table>. <1024px: compact cards — same split convention
  * already established by OrderDetailItems/OrdersList.
  */
-export function WarehouseOrderItems({ items }: { items: WarehouseOrderDetailItem[] }) {
+export function WarehouseOrderItems({
+  items,
+  orderStatus,
+}: {
+  items: WarehouseOrderDetailItem[];
+  orderStatus: string;
+}) {
+  const isShipped = orderStatus === "SHIPPED";
   return (
     <DetailSection title="Items">
       <div className="hidden lg:block">
@@ -62,10 +77,10 @@ export function WarehouseOrderItems({ items }: { items: WarehouseOrderDetailItem
                   {formatKg(item.orderedQuantityKg)} kg
                 </td>
                 <td className="py-3 pr-4 text-right whitespace-nowrap text-slate-700">
-                  {formatKg(item.usableReservedQuantityKg)} kg
+                  {isShipped ? "—" : `${formatKg(item.usableReservedQuantityKg)} kg`}
                 </td>
                 <td className="py-3 pr-4">
-                  <ItemFulfillmentBadge isFullyReserved={item.isFullyReserved} />
+                  <ItemFulfillmentBadge isFullyReserved={item.isFullyReserved} isShipped={isShipped} />
                 </td>
               </tr>
             ))}
@@ -80,12 +95,13 @@ export function WarehouseOrderItems({ items }: { items: WarehouseOrderDetailItem
               <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-900">
                 {item.productName}
               </p>
-              <ItemFulfillmentBadge isFullyReserved={item.isFullyReserved} />
+              <ItemFulfillmentBadge isFullyReserved={item.isFullyReserved} isShipped={isShipped} />
             </div>
             <p className="mt-0.5 text-[11.5px] text-slate-400">{item.sku}</p>
             <p className="mt-1 text-[11.5px] text-slate-500">
-              {formatKg(item.usableReservedQuantityKg)} / {formatKg(item.orderedQuantityKg)} kg
-              reserved
+              {isShipped
+                ? `${formatKg(item.orderedQuantityKg)} kg shipped`
+                : `${formatKg(item.usableReservedQuantityKg)} / ${formatKg(item.orderedQuantityKg)} kg reserved`}
             </p>
           </li>
         ))}

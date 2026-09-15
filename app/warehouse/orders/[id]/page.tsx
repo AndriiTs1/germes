@@ -91,7 +91,7 @@ export default async function WarehouseOrderDetailPage(
 
       <div className="flex flex-col gap-4">
         <WarehouseOrderOverview order={order} />
-        <WarehouseOrderItems items={order.items} />
+        <WarehouseOrderItems items={order.items} orderStatus={order.status} />
         <WarehouseOrderReservations reservations={order.reservations} />
       </div>
     </DashboardShell>
