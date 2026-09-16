@@ -5,7 +5,7 @@ import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 
-const SALES_WORKSPACE_PERMISSION = "sales.orders.read";
+const SALES_WORKSPACE_PERMISSION = "workspace.sales.access";
 
 export default async function SalesPage() {
   let user: Awaited<ReturnType<typeof requirePermission>>;

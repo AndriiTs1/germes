@@ -13,7 +13,7 @@ import { listWarehouseOrders } from "@/lib/services/warehouse/list-warehouse-ord
  * currentUserId is passed and no responsibleId/salesperson ownership
  * scoping is introduced here, since Warehouse operators work across
  * salespeople (see that service's own doc comment). The route itself has
- * already required inventory.shipments.process before rendering this
+ * already required workspace.warehouse.access before rendering this
  * component, so no permission check happens here either.
  *
  * READ-ONLY (W2): no expiration housekeeping is run here —

@@ -10,8 +10,8 @@ import { requireUser } from "@/lib/auth/require-user";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 
 const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
-const SALES_WORKSPACE_PERMISSION = "sales.orders.read";
-const WAREHOUSE_WORKSPACE_PERMISSION = "inventory.shipments.process";
+const SALES_WORKSPACE_PERMISSION = "workspace.sales.access";
+const WAREHOUSE_WORKSPACE_PERMISSION = "workspace.warehouse.access";
 
 export default async function Home() {
   let user: Awaited<ReturnType<typeof requireUser>>;

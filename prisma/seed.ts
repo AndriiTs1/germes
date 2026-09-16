@@ -81,6 +81,16 @@ async function main() {
       roles: ["OWNER", "ADMIN"],
     },
     {
+      code: "workspace.sales.access",
+      description: "See the Sales workspace and its navigation in the sidebar",
+      roles: ["OWNER", "ADMIN", "SALES"],
+    },
+    {
+      code: "workspace.warehouse.access",
+      description: "See the Warehouse workspace and its navigation in the sidebar",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE"],
+    },
+    {
       code: "sales.orders.read",
       description: "View sales orders",
       roles: ["OWNER", "ADMIN", "SALES", "WAREHOUSE", "ACCOUNTING"],

@@ -48,13 +48,13 @@ export const navSections: NavSection[] = [
       {
         label: "Sales",
         href: "/sales",
-        requiredPermission: "sales.orders.read",
+        requiredPermission: "workspace.sales.access",
         icon: ShoppingCart,
       },
       {
         label: "Warehouse",
         href: "/warehouse",
-        requiredPermission: "inventory.shipments.process",
+        requiredPermission: "workspace.warehouse.access",
         icon: Warehouse,
       },
     ],
@@ -65,13 +65,13 @@ export const navSections: NavSection[] = [
       {
         label: "Orders",
         href: "/sales/orders",
-        requiredPermission: "sales.orders.read",
+        requiredPermission: "workspace.sales.access",
         icon: ClipboardList,
       },
       {
         label: "Customers",
         href: "/sales/customers",
-        requiredPermission: "customers.read",
+        requiredPermission: "workspace.sales.access",
         icon: Users,
       },
     ],

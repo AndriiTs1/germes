@@ -5,7 +5,7 @@ import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 
-const WAREHOUSE_WORKSPACE_PERMISSION = "inventory.shipments.process";
+const WAREHOUSE_WORKSPACE_PERMISSION = "workspace.warehouse.access";
 
 export default async function WarehousePage() {
   let user: Awaited<ReturnType<typeof requirePermission>>;
