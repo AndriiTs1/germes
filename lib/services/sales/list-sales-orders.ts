@@ -25,7 +25,7 @@ export type ListSalesOrdersOptions = {
   cursor?: string;
   /** 1-indexed offset pagination — simpler to reflect in a URL than cursor. Takes precedence over `cursor`. */
   page?: number;
-  /** Excludes COMPLETED/CANCELLED when true. Ignored when `status` is set. */
+  /** Excludes SHIPPED/COMPLETED/CANCELLED when true. Ignored when `status` is set. */
   onlyActive?: boolean;
   /** Exact status filter (e.g. COMPLETED, CANCELLED). Takes precedence over `onlyActive`. */
   status?: SalesOrderStatus;
