@@ -65,6 +65,16 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
     ...statusFilterToOptions(status),
   });
 
+  if (requestedPage > result.pageCount) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (status !== "all") params.set("status", status);
+    if (result.pageCount > 1) params.set("page", String(result.pageCount));
+
+    const query = params.toString();
+    redirect(query ? `/sales/orders?${query}` : "/sales/orders");
+  }
+
   const hasActiveFilter = q.length > 0 || status !== "all";
   const emptyMessage = hasActiveFilter ? "No orders match these filters" : "No orders yet";
   const canCreateOrder = permissionCodes.includes(SALES_ORDERS_CREATE_PERMISSION);

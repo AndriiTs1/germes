@@ -51,6 +51,16 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
     status: status === "all" ? undefined : status,
   });
 
+  if (requestedPage > result.pageCount) {
+    const params = new URLSearchParams();
+    if (q) params.set("q", q);
+    if (status !== "all") params.set("status", status);
+    if (result.pageCount > 1) params.set("page", String(result.pageCount));
+
+    const query = params.toString();
+    redirect(query ? `/sales/customers?${query}` : "/sales/customers");
+  }
+
   const hasActiveFilter = q.length > 0 || status !== "all";
   const emptyMessage = hasActiveFilter ? "No customers match these filters" : "No customers yet";
 
