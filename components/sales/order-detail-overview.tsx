@@ -1,8 +1,11 @@
+import Link from "next/link";
+import type { ReactNode } from "react";
+
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatKg, formatMoney, formatShortDate } from "@/components/sales/format";
 import type { SalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail";
 
-type OverviewField = { label: string; value: string };
+type OverviewField = { label: string; value: ReactNode };
 
 /**
  * Responsible salesperson is deliberately omitted: this page is only ever
@@ -12,7 +15,17 @@ type OverviewField = { label: string; value: string };
  */
 export function OrderDetailOverview({ order }: { order: SalesOrderDetail }) {
   const fields: OverviewField[] = [
-    { label: "Customer", value: order.customer.name },
+    {
+      label: "Customer",
+      value: (
+        <Link
+          href={`/sales/customers/${order.customer.id}`}
+          className="rounded-sm underline-offset-2 hover:underline focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+        >
+          {order.customer.name}
+        </Link>
+      ),
+    },
     { label: "Order date", value: formatShortDate(order.orderDate) },
   ];
 
