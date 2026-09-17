@@ -38,7 +38,10 @@ export function ActiveOrdersCard({
         <ul className="flex flex-1 flex-col gap-1 overflow-y-auto xl:gap-0 xl:divide-y xl:divide-slate-100">
           {orders.map((order) => (
             <li key={order.id}>
-              <div className="flex items-center justify-between gap-3 rounded-xl px-2 py-1.5">
+              <Link
+                href={`/sales/orders/${order.id}`}
+                className="flex items-center justify-between gap-3 rounded-xl px-2 py-1.5 transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none"
+              >
                 <div className="min-w-0 flex-1">
                   <div className="flex items-baseline gap-1.5">
                     <span className="shrink-0 text-[11.5px] font-medium text-slate-400">
@@ -65,7 +68,7 @@ export function ActiveOrdersCard({
                     {formatMoney(order.totalValue, order.currency)}
                   </span>
                 </div>
-              </div>
+              </Link>
             </li>
           ))}
         </ul>
