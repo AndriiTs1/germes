@@ -1,6 +1,7 @@
 import {
   ClipboardList,
   LayoutDashboard,
+  Settings,
   ShoppingCart,
   Users,
   Warehouse,
@@ -10,7 +11,13 @@ import {
 export type NavItem = {
   label: string;
   href: string;
-  requiredPermission: string;
+  /**
+   * Omitted means "visible to every authenticated user" — not a fake
+   * always-true permission code, just the absence of a gate. Used for
+   * personal routes (e.g. Settings) that aren't workspace/data access
+   * concerns. Every other item keeps requiring its exact Permission.code.
+   */
+  requiredPermission?: string;
   icon: LucideIcon;
   /** Computed by filterNavSections from the current activePath — never set here. */
   active?: boolean;
@@ -25,10 +32,10 @@ export type NavSection = {
  * Single source of truth for desktop and mobile navigation.
  *
  * Only routes that exist today are listed here. Reservations/Receivables/
- * Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents/Settings
- * are intentionally omitted rather than linked with a placeholder href —
- * those pages don't exist yet. Adding one later is a one-line addition: a
- * real href plus its exact Permission.code.
+ * Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents are
+ * intentionally omitted rather than linked with a placeholder href — those
+ * pages don't exist yet. Adding one later is a one-line addition: a real
+ * href plus its exact Permission.code.
  */
 export const navSections: NavSection[] = [
   {
@@ -76,6 +83,19 @@ export const navSections: NavSection[] = [
       },
     ],
   },
+  {
+    label: "Account",
+    items: [
+      {
+        label: "Settings",
+        href: "/settings",
+        // No requiredPermission: personal settings (incl. sign out) must
+        // stay reachable for every authenticated user, regardless of which
+        // workspace permissions they hold.
+        icon: Settings,
+      },
+    ],
+  },
 ];
 
 /**
@@ -103,10 +123,11 @@ function computeActiveHref(sections: NavSection[], activePath: string): string |
 }
 
 /**
- * Keeps only items the given live permission codes actually unlock,
- * computes the single longest-matching item's active state from
- * activePath, and drops any section left with zero items. No role.code
- * is consulted here.
+ * Keeps only items the given live permission codes actually unlock, plus
+ * any item with no requiredPermission (visible to every authenticated
+ * user — e.g. personal Settings), computes the single longest-matching
+ * item's active state from activePath, and drops any section left with
+ * zero items. No role.code is consulted here.
  */
 export function filterNavSections(
   sections: NavSection[],
@@ -115,7 +136,9 @@ export function filterNavSections(
 ): NavSection[] {
   const permitted = sections.map((section) => ({
     ...section,
-    items: section.items.filter((item) => permissionCodes.includes(item.requiredPermission)),
+    items: section.items.filter(
+      (item) => !item.requiredPermission || permissionCodes.includes(item.requiredPermission),
+    ),
   }));
 
   const activeHref = computeActiveHref(permitted, activePath);

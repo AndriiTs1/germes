@@ -7,7 +7,6 @@ import { CustomerDetailNotes } from "@/components/sales/customer-detail-notes";
 import { CustomerDetailOrders } from "@/components/sales/customer-detail-orders";
 import { CustomerDetailOverview } from "@/components/sales/customer-detail-overview";
 import { CustomerDetailReceivable } from "@/components/sales/customer-detail-receivable";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getSalesCustomerDetail } from "@/lib/services/sales/get-sales-customer-detail";
@@ -79,25 +78,14 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
             </span>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4">
-            {canCreateOrder ? (
-              <Link
-                href={`/sales/orders/new?customerId=${customer.id}`}
-                className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
-              >
-                New Order
-              </Link>
-            ) : null}
-
-            <form action={logout}>
-              <button
-                type="submit"
-                className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
+          {canCreateOrder ? (
+            <Link
+              href={`/sales/orders/new?customerId=${customer.id}`}
+              className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              New Order
+            </Link>
+          ) : null}
         </div>
         <p className="mt-1 text-[13px] text-slate-500">{customer.code}</p>
       </div>

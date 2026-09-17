@@ -1,10 +1,13 @@
-import { logout } from "@/lib/auth/actions";
-
 /**
  * Shown at "/" for an authenticated, active user who has no permission
  * that unlocks a landing workspace yet (e.g. a SALES-only user before
  * Stage 8D adds /sales). Intentionally plain — no fake KPI data, no
  * placeholder workspace content.
+ *
+ * No Sign out control here: this always renders inside DashboardShell,
+ * whose nav includes Settings unconditionally for every authenticated
+ * user (no requiredPermission gate — see nav-items.ts), so Settings ->
+ * Sign out remains reachable even with zero workspace permissions.
  */
 export function NoWorkspaceAvailable() {
   return (
@@ -16,15 +19,6 @@ export function NoWorkspaceAvailable() {
         Your account doesn&apos;t have access to a workspace yet. Contact your
         administrator if you believe this is a mistake.
       </p>
-
-      <form action={logout} className="mt-5">
-        <button
-          type="submit"
-          className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
-        >
-          Sign out
-        </button>
-      </form>
     </div>
   );
 }

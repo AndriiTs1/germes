@@ -7,7 +7,6 @@ import { WarehouseOrderActions } from "@/components/warehouse/warehouse-order-ac
 import { WarehouseOrderItems } from "@/components/warehouse/warehouse-order-items";
 import { WarehouseOrderOverview } from "@/components/warehouse/warehouse-order-overview";
 import { WarehouseOrderReservations } from "@/components/warehouse/warehouse-order-reservations";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getWarehouseOrderDetail } from "@/lib/services/warehouse/get-warehouse-order-detail";
@@ -74,18 +73,7 @@ export default async function WarehouseOrderDetailPage(
             </span>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-4">
-            <WarehouseOrderActions orderId={order.id} status={order.status} />
-
-            <form action={logout}>
-              <button
-                type="submit"
-                className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
+          <WarehouseOrderActions orderId={order.id} status={order.status} />
         </div>
       </div>
 

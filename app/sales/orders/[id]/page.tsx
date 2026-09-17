@@ -9,7 +9,6 @@ import { OrderDetailNotes } from "@/components/sales/order-detail-notes";
 import { OrderDetailOverview } from "@/components/sales/order-detail-overview";
 import { OrderDetailReceivable } from "@/components/sales/order-detail-receivable";
 import { OrderDetailReservations } from "@/components/sales/order-detail-reservations";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
@@ -115,18 +114,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
             </span>
           </div>
 
-          <div className="flex shrink-0 flex-wrap items-center gap-4">
-            <OrderDetailActions orderId={order.id} status={order.status} canUpdate={canUpdate} />
-
-            <form action={logout}>
-              <button
-                type="submit"
-                className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
+          <OrderDetailActions orderId={order.id} status={order.status} canUpdate={canUpdate} />
         </div>
       </div>
 

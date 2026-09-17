@@ -5,7 +5,6 @@ import { OrdersFilters, type OrdersStatusFilter } from "@/components/sales/order
 import { OrdersList } from "@/components/sales/orders-list";
 import { OrdersPagination } from "@/components/sales/orders-pagination";
 import { SalesOrderStatus } from "@/lib/generated/prisma/client";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import {
@@ -95,25 +94,14 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
             <p className="mt-1 text-[13px] text-slate-500">Manage and track your sales orders</p>
           </div>
 
-          <div className="flex shrink-0 items-center gap-4">
-            {canCreateOrder ? (
-              <Link
-                href="/sales/orders/new"
-                className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
-              >
-                + New Order
-              </Link>
-            ) : null}
-
-            <form action={logout}>
-              <button
-                type="submit"
-                className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
-              >
-                Sign out
-              </button>
-            </form>
-          </div>
+          {canCreateOrder ? (
+            <Link
+              href="/sales/orders/new"
+              className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              + New Order
+            </Link>
+          ) : null}
         </div>
       </div>
 

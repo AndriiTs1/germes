@@ -3,7 +3,6 @@ import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { EditOrderForm } from "@/components/sales/order-form/edit-order-form";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getNewOrderFormOptions } from "@/lib/services/sales/get-new-order-form-options";
@@ -56,20 +55,9 @@ export default async function EditSalesOrderPage(props: PageProps<"/sales/orders
           Back to Order
         </Link>
 
-        <div className="mt-3 flex items-center justify-between gap-3">
-          <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-            Edit Order
-          </h1>
-
-          <form action={logout}>
-            <button
-              type="submit"
-              className="shrink-0 text-[13px] font-medium text-slate-500 hover:text-slate-700"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+        <h1 className="mt-3 text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
+          Edit Order
+        </h1>
         <p className="mt-1 text-[13px] text-slate-500">{order.orderNumber}</p>
       </div>
 

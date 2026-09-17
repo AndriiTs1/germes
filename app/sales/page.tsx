@@ -1,7 +1,6 @@
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { SalesWorkspace } from "@/components/sales/sales-workspace";
-import { logout } from "@/lib/auth/actions";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 
@@ -30,26 +29,13 @@ export default async function SalesPage() {
       showPeriodControl={false}
     >
       <div className="pb-4 xl:pb-2.5">
-        <div className="flex items-center justify-between">
-          <div>
-            {/* md:leading-[1.5] is for tablet readability; xl:leading-[1.2] pulls it back to the compact value at true desktop widths, where the row height matters for the 1440x900 fit. */}
-            <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
-              Sales Workspace
-            </h1>
-            <p className="mt-1 text-[13px] text-slate-500 xl:mt-0.5 xl:text-slate-400">
-              Your customers, orders and actions
-            </p>
-          </div>
-
-          <form action={logout}>
-            <button
-              type="submit"
-              className="text-[13px] font-medium text-slate-500 hover:text-slate-700"
-            >
-              Sign out
-            </button>
-          </form>
-        </div>
+        {/* md:leading-[1.5] is for tablet readability; xl:leading-[1.2] pulls it back to the compact value at true desktop widths, where the row height matters for the 1440x900 fit. */}
+        <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
+          Sales Workspace
+        </h1>
+        <p className="mt-1 text-[13px] text-slate-500 xl:mt-0.5 xl:text-slate-400">
+          Your customers, orders and actions
+        </p>
       </div>
 
       <SalesWorkspace userId={user.id} permissionCodes={permissionCodes} />
