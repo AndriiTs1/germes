@@ -2,11 +2,13 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import { getOrderStatusLabel, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
 import { WarehouseOrderActions } from "@/components/warehouse/warehouse-order-actions";
 import { WarehouseOrderItems } from "@/components/warehouse/warehouse-order-items";
 import { WarehouseOrderOverview } from "@/components/warehouse/warehouse-order-overview";
 import { WarehouseOrderReservations } from "@/components/warehouse/warehouse-order-reservations";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getWarehouseOrderDetail } from "@/lib/services/warehouse/get-warehouse-order-detail";
@@ -30,6 +32,9 @@ export default async function WarehouseOrderDetailPage(
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   const { id } = await props.params;
 
   // getWarehouseOrderDetail applies no ownership scoping (Warehouse works
@@ -47,6 +52,7 @@ export default async function WarehouseOrderDetailPage(
       user={user}
       permissionCodes={permissionCodes}
       activePath={`/warehouse/orders/${order.id}`}
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">
@@ -55,7 +61,7 @@ export default async function WarehouseOrderDetailPage(
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-700"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-          Back to Warehouse
+          {dictionary.warehouse.orderDetail.backToWarehouse}
         </Link>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -69,18 +75,22 @@ export default async function WarehouseOrderDetailPage(
                 ORDER_STATUS_STYLES[order.status] ?? "bg-slate-100 text-slate-600",
               )}
             >
-              {ORDER_STATUS_LABELS[order.status] ?? order.status}
+              {getOrderStatusLabel(dictionary.status.order, order.status)}
             </span>
           </div>
 
-          <WarehouseOrderActions orderId={order.id} status={order.status} />
+          <WarehouseOrderActions
+            orderId={order.id}
+            status={order.status}
+            dictionary={dictionary.warehouse.orderDetail.actions}
+          />
         </div>
       </div>
 
       <div className="flex flex-col gap-4">
-        <WarehouseOrderOverview order={order} />
-        <WarehouseOrderItems items={order.items} orderStatus={order.status} />
-        <WarehouseOrderReservations reservations={order.reservations} />
+        <WarehouseOrderOverview order={order} locale={locale} dictionary={dictionary} />
+        <WarehouseOrderItems items={order.items} orderStatus={order.status} locale={locale} dictionary={dictionary} />
+        <WarehouseOrderReservations reservations={order.reservations} locale={locale} dictionary={dictionary} />
       </div>
     </DashboardShell>
   );

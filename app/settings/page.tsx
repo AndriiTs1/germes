@@ -22,8 +22,7 @@ export default async function SettingsPage() {
 
   // Locale is presentation state, resolved independently of auth/permissions
   // (see lib/i18n/locale.ts) — it is never allowed to influence the checks
-  // above. DashboardShell/nav are not localized yet (L3+); only this page's
-  // own content is.
+  // above.
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
 
@@ -32,6 +31,7 @@ export default async function SettingsPage() {
       user={user}
       permissionCodes={permissionCodes}
       activePath="/settings"
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">

@@ -3,6 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { NewOrderForm } from "@/components/sales/order-form/new-order-form";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getNewOrderFormOptions } from "@/lib/services/sales/get-new-order-form-options";
@@ -25,6 +27,9 @@ export default async function NewSalesOrderPage(props: PageProps<"/sales/orders/
   const permissionCodes = await getPermissionCodesForUser(user.id);
   const options = await getNewOrderFormOptions(user.id);
 
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   const searchParams = await props.searchParams;
   const requestedCustomerId =
     typeof searchParams?.customerId === "string" ? searchParams.customerId : undefined;
@@ -41,6 +46,7 @@ export default async function NewSalesOrderPage(props: PageProps<"/sales/orders/
       user={user}
       permissionCodes={permissionCodes}
       activePath="/sales/orders/new"
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">
@@ -49,19 +55,21 @@ export default async function NewSalesOrderPage(props: PageProps<"/sales/orders/
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-700"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-          Back to Orders
+          {dictionary.orderForm.backToOrders}
         </Link>
 
         <h1 className="mt-3 text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-          New Order
+          {dictionary.orderForm.newTitle}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">Create a sales order for a customer</p>
+        <p className="mt-1 text-[13px] text-slate-500">{dictionary.orderForm.newSubtitle}</p>
       </div>
 
       <NewOrderForm
         customers={options.customers}
         products={options.products}
         initialCustomerId={initialCustomerId}
+        locale={locale}
+        dictionary={dictionary.orderForm}
       />
     </DashboardShell>
   );

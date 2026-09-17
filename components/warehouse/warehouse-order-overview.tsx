@@ -1,5 +1,7 @@
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatShortDate } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { WarehouseOrderDetail } from "@/lib/services/warehouse/get-warehouse-order-detail";
 
 type OverviewField = { label: string; value: string };
@@ -12,27 +14,36 @@ type OverviewField = { label: string; value: string };
  * is genuine operational context here. No receivables/accounting data —
  * this route never queries Receivable at all.
  */
-export function WarehouseOrderOverview({ order }: { order: WarehouseOrderDetail }) {
+export function WarehouseOrderOverview({
+  order,
+  locale,
+  dictionary,
+}: {
+  order: WarehouseOrderDetail;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
+  const t = dictionary.warehouse.orderDetail.overview;
   const fields: OverviewField[] = [
-    { label: "Customer", value: order.customer.name },
-    { label: "Customer code", value: order.customer.code },
-    { label: "Order date", value: formatShortDate(order.orderDate) },
+    { label: t.customer, value: order.customer.name },
+    { label: t.customerCode, value: order.customer.code },
+    { label: t.orderDate, value: formatShortDate(order.orderDate, locale) },
   ];
 
   if (order.requestedDate) {
-    fields.push({ label: "Requested delivery", value: formatShortDate(order.requestedDate) });
+    fields.push({ label: t.requestedDelivery, value: formatShortDate(order.requestedDate, locale) });
   }
 
   if (order.responsible?.name) {
-    fields.push({ label: "Responsible", value: order.responsible.name });
+    fields.push({ label: t.responsible, value: order.responsible.name });
   }
 
   if (order.shippedAt) {
-    fields.push({ label: "Shipped", value: formatShortDate(order.shippedAt) });
+    fields.push({ label: t.shipped, value: formatShortDate(order.shippedAt, locale) });
   }
 
   return (
-    <DetailSection title="Overview">
+    <DetailSection title={t.title}>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4">
         {fields.map((field) => (
           <div key={field.label} className="min-w-0">

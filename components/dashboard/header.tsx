@@ -2,12 +2,14 @@ import { Bell, Search } from "lucide-react";
 
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { PeriodControl } from "@/components/dashboard/period-control";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { UserDisplay } from "@/components/dashboard/user-display";
 
 type DashboardHeaderProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
   activePath: string;
+  dictionary: Dictionary;
   /** Defaults to true — preserves the Owner Command Center header exactly. */
   showPeriodControl?: boolean;
 };
@@ -16,11 +18,17 @@ export function DashboardHeader({
   permissionCodes,
   userDisplay,
   activePath,
+  dictionary,
   showPeriodControl = true,
 }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
-      <MobileNav permissionCodes={permissionCodes} userDisplay={userDisplay} activePath={activePath} />
+      <MobileNav
+        permissionCodes={permissionCodes}
+        userDisplay={userDisplay}
+        activePath={activePath}
+        dictionary={dictionary}
+      />
 
       <div className="flex shrink-0 items-center gap-2 xl:hidden">
         <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[10px] bg-slate-900 text-[12px] font-semibold text-white">
@@ -45,7 +53,7 @@ export function DashboardHeader({
         />
         <input
           type="text"
-          placeholder="Search..."
+          placeholder={dictionary.header.searchPlaceholderShort}
           // text-base md:text-[13px] (not a fixed text-[13px]): a real
           // text-entry control, visible from md up on touch-capable
           // devices (tablet/compact desktop) — iOS Safari auto-zooms the
@@ -63,7 +71,7 @@ export function DashboardHeader({
         />
         <input
           type="text"
-          placeholder="Search customers, orders, products..."
+          placeholder={dictionary.header.searchPlaceholderFull}
           // text-base md:text-[13px] — same iOS Safari auto-zoom
           // prevention as the compact variant above. xl: overrides below
           // are desktop-only visual polish (softer neutral background,
@@ -75,7 +83,7 @@ export function DashboardHeader({
       {/* Mobile: icon-only search trigger to avoid cramming a full field into the header */}
       <button
         type="button"
-        aria-label="Search"
+        aria-label={dictionary.header.searchAriaLabel}
         className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 md:hidden"
       >
         <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
@@ -86,7 +94,7 @@ export function DashboardHeader({
 
         <button
           type="button"
-          aria-label="Notifications"
+          aria-label={dictionary.header.notificationsAriaLabel}
           className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100"
         >
           <Bell className="h-[18px] w-[18px]" strokeWidth={1.75} />

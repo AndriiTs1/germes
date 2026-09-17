@@ -6,6 +6,8 @@ import { NoWorkspaceAvailable } from "@/components/dashboard/no-workspace-availa
 import { DashboardOperations } from "@/components/dashboard/operations/dashboard-operations";
 import { PeriodControl } from "@/components/dashboard/period-control";
 import { requireUser } from "@/lib/auth/require-user";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 
 const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
@@ -22,6 +24,15 @@ export default async function Home() {
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
+  // Locale is presentation state, resolved independently of the permission
+  // checks above/below — it never influences which workspace this resolver
+  // redirects to. The Command Center's own content (KPIs, analytics,
+  // operations) is out of scope for this localization stage; only the
+  // shared DashboardShell chrome and the NoWorkspaceAvailable empty state
+  // need a dictionary here.
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   if (!permissionCodes.includes(COMMAND_CENTER_PERMISSION)) {
     // Permission-driven landing resolver, not role-based: the first
     // workspace whose gate permission this user actually holds wins.
@@ -34,14 +45,24 @@ export default async function Home() {
     }
 
     return (
-      <DashboardShell user={user} permissionCodes={permissionCodes} activePath="/">
-        <NoWorkspaceAvailable />
+      <DashboardShell
+        user={user}
+        permissionCodes={permissionCodes}
+        activePath="/"
+        dictionary={dictionary}
+      >
+        <NoWorkspaceAvailable dictionary={dictionary} />
       </DashboardShell>
     );
   }
 
   return (
-    <DashboardShell user={user} permissionCodes={permissionCodes} activePath="/">
+    <DashboardShell
+      user={user}
+      permissionCodes={permissionCodes}
+      activePath="/"
+      dictionary={dictionary}
+    >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           Command Center

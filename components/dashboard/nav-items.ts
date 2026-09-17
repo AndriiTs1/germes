@@ -8,8 +8,14 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+/** Keys into dictionary.nav — the item's display label, resolved per current locale. Never itself an English string. */
+export type NavItemKey = "commandCenter" | "sales" | "warehouse" | "orders" | "customers" | "settings";
+
+/** Keys into dictionary.nav.sections — the group heading, resolved per current locale. */
+export type NavSectionKey = "overview" | "workspace" | "sell" | "account";
+
 export type NavItem = {
-  label: string;
+  labelKey: NavItemKey;
   href: string;
   /**
    * Omitted means "visible to every authenticated user" — not a fake
@@ -24,25 +30,31 @@ export type NavItem = {
 };
 
 export type NavSection = {
-  label: string;
+  labelKey: NavSectionKey;
   items: NavItem[];
 };
 
 /**
- * Single source of truth for desktop and mobile navigation.
+ * Single source of truth for desktop and mobile navigation, and for which
+ * items exist and which permission unlocks each one. Display text is never
+ * hardcoded here — labelKey only selects a key in the current dictionary
+ * (see lib/i18n/dictionaries/en.ts's `nav` namespace), resolved by
+ * SidebarContent. Permission gating (requiredPermission) and route
+ * structure are completely independent of locale — changing language never
+ * changes which items exist or who sees them.
  *
  * Only routes that exist today are listed here. Reservations/Receivables/
  * Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents are
  * intentionally omitted rather than linked with a placeholder href — those
  * pages don't exist yet. Adding one later is a one-line addition: a real
- * href plus its exact Permission.code.
+ * href plus its exact Permission.code plus a new nav dictionary key.
  */
 export const navSections: NavSection[] = [
   {
-    label: "Overview",
+    labelKey: "overview",
     items: [
       {
-        label: "Command Center",
+        labelKey: "commandCenter",
         href: "/",
         requiredPermission: "dashboard.command_center.read",
         icon: LayoutDashboard,
@@ -50,16 +62,16 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Workspace",
+    labelKey: "workspace",
     items: [
       {
-        label: "Sales",
+        labelKey: "sales",
         href: "/sales",
         requiredPermission: "workspace.sales.access",
         icon: ShoppingCart,
       },
       {
-        label: "Warehouse",
+        labelKey: "warehouse",
         href: "/warehouse",
         requiredPermission: "workspace.warehouse.access",
         icon: Warehouse,
@@ -67,16 +79,16 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Sell",
+    labelKey: "sell",
     items: [
       {
-        label: "Orders",
+        labelKey: "orders",
         href: "/sales/orders",
         requiredPermission: "workspace.sales.access",
         icon: ClipboardList,
       },
       {
-        label: "Customers",
+        labelKey: "customers",
         href: "/sales/customers",
         requiredPermission: "workspace.sales.access",
         icon: Users,
@@ -84,10 +96,10 @@ export const navSections: NavSection[] = [
     ],
   },
   {
-    label: "Account",
+    labelKey: "account",
     items: [
       {
-        label: "Settings",
+        labelKey: "settings",
         href: "/settings",
         // No requiredPermission: personal settings (incl. sign out) must
         // stay reachable for every authenticated user, regardless of which
@@ -127,7 +139,9 @@ function computeActiveHref(sections: NavSection[], activePath: string): string |
  * any item with no requiredPermission (visible to every authenticated
  * user — e.g. personal Settings), computes the single longest-matching
  * item's active state from activePath, and drops any section left with
- * zero items. No role.code is consulted here.
+ * zero items. No role.code is consulted here, and nothing here depends on
+ * locale — the same items appear for the same user regardless of which
+ * language they've chosen; only their rendered label text differs.
  */
 export function filterNavSections(
   sections: NavSection[],

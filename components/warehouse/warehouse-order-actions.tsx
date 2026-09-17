@@ -8,10 +8,12 @@ import {
   startProcessingAction,
   type WarehouseOrderActionState,
 } from "@/app/warehouse/orders/[id]/actions";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 type WarehouseOrderActionsProps = {
   orderId: string;
   status: string;
+  dictionary: Dictionary["warehouse"]["orderDetail"]["actions"];
 };
 
 function reportResult(result: WarehouseOrderActionState) {
@@ -38,7 +40,7 @@ function reportResult(result: WarehouseOrderActionState) {
  * confirmation only; shipSalesOrder() remains the sole authority on
  * whether the order is actually still READY and safely shippable.
  */
-export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActionsProps) {
+export function WarehouseOrderActions({ orderId, status, dictionary }: WarehouseOrderActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [shipDialogOpen, setShipDialogOpen] = useState(false);
   const cancelShipButtonRef = useRef<HTMLButtonElement>(null);
@@ -112,7 +114,7 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
             disabled={isPending}
             className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
-            {isPending ? "Starting…" : "Start processing"}
+            {isPending ? dictionary.starting : dictionary.startProcessing}
           </button>
         ) : null}
 
@@ -123,7 +125,7 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
             disabled={isPending}
             className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
-            {isPending ? "Marking ready…" : "Mark ready"}
+            {isPending ? dictionary.markingReady : dictionary.markReady}
           </button>
         ) : null}
 
@@ -134,7 +136,7 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
             disabled={isPending}
             className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
-            {isPending ? "Shipping…" : "Ship order"}
+            {isPending ? dictionary.shipping : dictionary.shipOrder}
           </button>
         ) : null}
       </div>
@@ -160,15 +162,14 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
                 id="confirm-shipment-title"
                 className="text-[18px] font-semibold tracking-tight text-slate-900"
               >
-                Confirm shipment
+                {dictionary.confirmShipmentTitle}
               </h2>
 
               <p
                 id="confirm-shipment-description"
                 className="mt-2 text-[13px] leading-5 text-slate-500"
               >
-                This will record the physical stock shipment and consume the active
-                reservations for this order.
+                {dictionary.confirmShipmentDescription}
               </p>
             </div>
 
@@ -180,7 +181,7 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
                 disabled={isPending}
                 className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50"
               >
-                Cancel
+                {dictionary.cancel}
               </button>
 
               <button
@@ -189,7 +190,7 @@ export function WarehouseOrderActions({ orderId, status }: WarehouseOrderActions
                 disabled={isPending}
                 className="h-10 rounded-xl bg-slate-900 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
               >
-                {isPending ? "Shipping…" : "Confirm shipment"}
+                {isPending ? dictionary.shipping : dictionary.confirmShipmentButton}
               </button>
             </div>
           </div>

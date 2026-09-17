@@ -5,7 +5,14 @@ import {
   WarehouseKpiSummary,
   type WarehouseKpiCardProps,
 } from "@/components/warehouse/warehouse-kpi-row";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { listWarehouseOrders } from "@/lib/services/warehouse/list-warehouse-orders";
+
+type WarehouseWorkspaceProps = {
+  locale: Locale;
+  dictionary: Dictionary;
+};
 
 /**
  * Server Component data orchestration for /warehouse. Calls the existing
@@ -23,7 +30,7 @@ import { listWarehouseOrders } from "@/lib/services/warehouse/list-warehouse-ord
  * queue data the table below renders; nothing here invents financial or
  * stock metrics.
  */
-export async function WarehouseWorkspace() {
+export async function WarehouseWorkspace({ locale, dictionary }: WarehouseWorkspaceProps) {
   const orders = await listWarehouseOrders();
 
   const readyCount = orders.filter((order) => order.status === "READY").length;
@@ -31,12 +38,14 @@ export async function WarehouseWorkspace() {
   const confirmedCount = orders.filter((order) => order.status === "CONFIRMED").length;
   const fullyReservedCount = orders.filter((order) => order.isFullyReserved).length;
 
+  const kpi = dictionary.warehouse.workspace.kpi;
+
   const kpis: WarehouseKpiCardProps[] = [
-    { label: "Ready", value: String(readyCount), icon: PackageCheck, accent: "violet" },
-    { label: "Processing", value: String(processingCount), icon: Loader, accent: "amber" },
-    { label: "Confirmed", value: String(confirmedCount), icon: ClipboardCheck, accent: "blue" },
+    { label: kpi.ready, value: String(readyCount), icon: PackageCheck, accent: "violet" },
+    { label: kpi.processing, value: String(processingCount), icon: Loader, accent: "amber" },
+    { label: kpi.confirmed, value: String(confirmedCount), icon: ClipboardCheck, accent: "blue" },
     {
-      label: "Fully Reserved",
+      label: kpi.fullyReserved,
       value: String(fullyReservedCount),
       icon: CheckCircle2,
       accent: "emerald",
@@ -49,10 +58,10 @@ export async function WarehouseWorkspace() {
 
       <div>
         <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">
-          Fulfillment Queue
+          {dictionary.warehouse.workspace.fulfillmentQueueTitle}
         </h2>
         <div className="mt-3">
-          <FulfillmentQueue orders={orders} />
+          <FulfillmentQueue orders={orders} locale={locale} dictionary={dictionary} />
         </div>
       </div>
     </div>

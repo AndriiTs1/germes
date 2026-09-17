@@ -10,9 +10,11 @@ import { DetailSection } from "@/components/sales/detail-section";
 import { Select } from "@/components/ui/select";
 import { formatKg, formatShortDate } from "@/components/sales/format";
 import {
-  RESERVATION_STATUS_LABELS,
+  getReservationStatusLabel,
   RESERVATION_STATUS_STYLES,
 } from "@/components/sales/reservation-status";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { SalesOrderDetailReservation } from "@/lib/services/sales/get-sales-order-detail";
 import { cn } from "@/lib/utils";
 
@@ -38,9 +40,18 @@ const INITIAL_STATE: ReservationActionState = {
 function CreateReservationForm({
   orderId,
   item,
+  locale,
+  dictionary,
+  common,
+  errorSelectBatchAndWarehouse,
 }: {
   orderId: string;
   item: ReservationAvailabilityItem;
+  locale: Locale;
+  dictionary: Dictionary["orderDetail"]["reservations"];
+  common: Dictionary["common"];
+  /** The exact localized string createStockReservationAction returns for this validation failure — compared, never hardcoded in English. */
+  errorSelectBatchAndWarehouse: string;
 }) {
   const [state, action, pending] = useActionState(
     createStockReservationAction,
@@ -54,7 +65,7 @@ function CreateReservationForm({
 
   const allocationOptions = usableAllocations.map((candidate) => ({
     value: `${candidate.batchId}:${candidate.warehouseId}`,
-    label: `${candidate.batchNumber} · ${candidate.warehouseCode} · ${formatKg(candidate.availableKg)} kg available`,
+    label: `${candidate.batchNumber} · ${candidate.warehouseCode} · ${formatKg(candidate.availableKg, locale)} ${common.kgUnit}`,
   }));
 
   return (
@@ -74,7 +85,7 @@ function CreateReservationForm({
           {item.productName}
         </p>
         <p className="text-[11px] text-slate-400">
-          Ordered {formatKg(item.orderedQuantityKg)} kg
+          {dictionary.ordered} {formatKg(item.orderedQuantityKg, locale)} {common.kgUnit}
         </p>
       </div>
 
@@ -85,9 +96,9 @@ function CreateReservationForm({
               value={allocation}
               onValueChange={setAllocation}
               options={allocationOptions}
-              placeholder="Select batch / warehouse"
-              aria-label={`Batch and warehouse for ${item.productName}`}
-              error={!state.ok && state.message === "Select a batch and warehouse."}
+              placeholder={dictionary.selectBatchWarehouse}
+              aria-label={`${dictionary.batchAndWarehouseFor} ${item.productName}`}
+              error={!state.ok && state.message === errorSelectBatchAndWarehouse}
             />
             <input type="hidden" name="allocation" value={allocation} />
           </div>
@@ -100,7 +111,7 @@ function CreateReservationForm({
             autoCorrect="off"
             autoCapitalize="off"
             spellCheck={false}
-            placeholder="Quantity kg"
+            placeholder={dictionary.quantityPlaceholder}
             className="h-9 w-full min-w-0 rounded-lg border border-slate-200 bg-white px-2.5 text-[13px] text-slate-700 outline-none transition-[border-color,box-shadow] placeholder:text-slate-400 focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10"
           />
 
@@ -109,13 +120,11 @@ function CreateReservationForm({
             disabled={pending}
             className="h-9 rounded-lg bg-slate-900 px-4 text-[12px] font-semibold text-white transition-opacity disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {pending ? "Reserving..." : "Reserve"}
+            {pending ? dictionary.reserving : dictionary.reserve}
           </button>
         </div>
       ) : (
-        <p className="text-[11.5px] text-amber-600">
-          No available batch / warehouse stock for this item.
-        </p>
+        <p className="text-[11.5px] text-amber-600">{dictionary.noAvailableStock}</p>
       )}
 
       {state.message ? (
@@ -135,9 +144,11 @@ function CreateReservationForm({
 function ReleaseReservationButton({
   orderId,
   reservationId,
+  dictionary,
 }: {
   orderId: string;
   reservationId: string;
+  dictionary: Dictionary["orderDetail"]["reservations"];
 }) {
   const [state, action, pending] = useActionState(
     releaseStockReservationAction,
@@ -154,7 +165,7 @@ function ReleaseReservationButton({
         disabled={pending}
         className="text-[11px] font-semibold text-rose-600 transition-opacity hover:text-rose-700 disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {pending ? "Releasing..." : "Release"}
+        {pending ? dictionary.releasing : dictionary.release}
       </button>
 
       {state.message && !state.ok ? (
@@ -172,6 +183,11 @@ export function OrderDetailReservations({
   availability,
   canCreate,
   canRelease,
+  locale,
+  dictionary,
+  common,
+  statusLabels,
+  errorSelectBatchAndWarehouse,
   className,
 }: {
   orderId: string;
@@ -179,10 +195,15 @@ export function OrderDetailReservations({
   availability: ReservationAvailabilityItem[];
   canCreate: boolean;
   canRelease: boolean;
+  locale: Locale;
+  dictionary: Dictionary["orderDetail"]["reservations"];
+  common: Dictionary["common"];
+  statusLabels: Dictionary["status"]["reservation"];
+  errorSelectBatchAndWarehouse: string;
   className?: string;
 }) {
   return (
-    <DetailSection title="Reservations" className={className}>
+    <DetailSection title={dictionary.title} className={className}>
       {canCreate ? (
         <div className="mb-3 flex flex-col gap-2 xl:mb-2">
           {availability.map((item) => (
@@ -190,6 +211,10 @@ export function OrderDetailReservations({
               key={item.salesOrderItemId}
               orderId={orderId}
               item={item}
+              locale={locale}
+              dictionary={dictionary}
+              common={common}
+              errorSelectBatchAndWarehouse={errorSelectBatchAndWarehouse}
             />
           ))}
         </div>
@@ -197,12 +222,8 @@ export function OrderDetailReservations({
 
       {reservations.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center">
-          <p className="text-[13px] font-medium text-slate-700">
-            No reservations yet
-          </p>
-          <p className="mt-1 text-[11.5px] text-slate-400">
-            Reserved stock for this order will appear here.
-          </p>
+          <p className="text-[13px] font-medium text-slate-700">{common.reservationsEmptyTitle}</p>
+          <p className="mt-1 text-[11.5px] text-slate-400">{common.reservationsEmptyDescription}</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -217,25 +238,23 @@ export function OrderDetailReservations({
                 </p>
 
                 <p className="text-[11.5px] text-slate-500">
-                  {formatKg(reservation.quantityKg)} kg
+                  {formatKg(reservation.quantityKg, locale)} {common.kgUnit}
                 </p>
 
                 <p className="mt-0.5 text-[11px] text-slate-400">
-                  Batch: {reservation.batchNumber ?? "Not linked"}
+                  {common.batchLabel} {reservation.batchNumber ?? common.notLinked}
                 </p>
 
                 <p className="text-[11px] text-slate-400">
-                  Warehouse:{" "}
+                  {common.warehouseLabel}{" "}
                   {reservation.warehouseCode && reservation.warehouseName
                     ? `${reservation.warehouseCode} · ${reservation.warehouseName}`
-                    : reservation.warehouseName ??
-                      reservation.warehouseCode ??
-                      "Not linked"}
+                    : (reservation.warehouseName ?? reservation.warehouseCode ?? common.notLinked)}
                 </p>
 
                 {reservation.expiresAt ? (
                   <p className="mt-0.5 text-[11px] text-slate-400">
-                    Expires {formatShortDate(reservation.expiresAt)}
+                    {common.expiresLabel} {formatShortDate(reservation.expiresAt, locale)}
                   </p>
                 ) : null}
 
@@ -243,6 +262,7 @@ export function OrderDetailReservations({
                   <ReleaseReservationButton
                     orderId={orderId}
                     reservationId={reservation.id}
+                    dictionary={dictionary}
                   />
                 ) : null}
               </div>
@@ -250,12 +270,10 @@ export function OrderDetailReservations({
               <span
                 className={cn(
                   "shrink-0 rounded-full px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap",
-                  RESERVATION_STATUS_STYLES[reservation.status] ??
-                    "bg-slate-100 text-slate-600",
+                  RESERVATION_STATUS_STYLES[reservation.status] ?? "bg-slate-100 text-slate-600",
                 )}
               >
-                {RESERVATION_STATUS_LABELS[reservation.status] ??
-                  reservation.status}
+                {getReservationStatusLabel(statusLabels, reservation.status)}
               </span>
             </li>
           ))}

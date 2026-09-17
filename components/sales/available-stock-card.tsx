@@ -2,23 +2,29 @@ import { Boxes, TriangleAlert } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { formatKg } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ProductStockAvailability } from "@/lib/services/sales/get-stock-availability";
 import { cn } from "@/lib/utils";
 
 export function AvailableStockCard({
   stock,
+  locale,
+  dictionary,
   className,
 }: {
   stock: ProductStockAvailability[];
+  locale: Locale;
+  dictionary: Dictionary;
   className?: string;
 }) {
   return (
-    <OperationsCard title="Available Stock" className={className}>
+    <OperationsCard title={dictionary.sales.availableStock.title} className={className}>
       {stock.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
           <Boxes className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
           <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
-            No products yet
+            {dictionary.sales.availableStock.empty}
           </p>
         </div>
       ) : (
@@ -35,7 +41,8 @@ export function AvailableStockCard({
                       {product.name}
                     </p>
                     <p className="truncate text-[11px] text-slate-400">
-                      Reserved {formatKg(product.activeReservedKg)} kg
+                      {dictionary.sales.availableStock.reservedLabel}{" "}
+                      {formatKg(product.activeReservedKg, locale)} {dictionary.common.kgUnit}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-1.5">
@@ -51,7 +58,7 @@ export function AvailableStockCard({
                         isNegative ? "text-rose-600" : "text-slate-900",
                       )}
                     >
-                      {formatKg(product.availableKg)} kg
+                      {formatKg(product.availableKg, locale)} {dictionary.common.kgUnit}
                     </span>
                   </div>
                 </div>

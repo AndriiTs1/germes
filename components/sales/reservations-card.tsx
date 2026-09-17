@@ -2,6 +2,8 @@ import { Clock3 } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { formatKg, formatShortDate } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type {
   ReservationAttentionItem,
   ReservationAttentionState,
@@ -14,26 +16,30 @@ const attentionStyles: Record<ReservationAttentionState, string> = {
   ACTIVE: "bg-slate-100 text-slate-500",
 };
 
-const attentionLabels: Record<ReservationAttentionState, string> = {
-  EXPIRED_ACTIVE: "Expired",
-  EXPIRING_SOON: "Expiring soon",
-  ACTIVE: "Active",
-};
-
 export function ReservationsCard({
   reservations,
+  locale,
+  dictionary,
   className,
 }: {
   reservations: ReservationAttentionItem[];
+  locale: Locale;
+  dictionary: Dictionary;
   className?: string;
 }) {
+  const attentionLabels: Record<ReservationAttentionState, string> = {
+    EXPIRED_ACTIVE: dictionary.sales.reservationsCard.expiredLabel,
+    EXPIRING_SOON: dictionary.sales.reservationsCard.expiringSoonLabel,
+    ACTIVE: dictionary.sales.reservationsCard.activeLabel,
+  };
+
   return (
-    <OperationsCard title="Reservations" className={className}>
+    <OperationsCard title={dictionary.sales.reservationsCard.title} className={className}>
       {reservations.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
           <Clock3 className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
           <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
-            No reservations need attention
+            {dictionary.sales.reservationsCard.empty}
           </p>
         </div>
       ) : (
@@ -47,11 +53,11 @@ export function ReservationsCard({
                   </p>
                   <p className="truncate text-[11px] text-slate-400">
                     {reservation.customerName} · {reservation.orderNumber} ·{" "}
-                    {formatKg(reservation.quantityKg)} kg
+                    {formatKg(reservation.quantityKg, locale)} {dictionary.common.kgUnit}
                   </p>
                   {reservation.expiresAt ? (
                     <p className="truncate text-[10.5px] text-slate-400">
-                      Expires {formatShortDate(reservation.expiresAt)}
+                      {dictionary.common.expiresLabel} {formatShortDate(reservation.expiresAt, locale)}
                     </p>
                   ) : null}
                 </div>

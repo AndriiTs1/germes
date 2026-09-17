@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { createSalesOrder } from "@/lib/services/sales/create-sales-order";
 import {
@@ -10,10 +12,6 @@ import {
 } from "@/lib/validation/sales-order";
 
 const SALES_ORDERS_CREATE_PERMISSION = "sales.orders.create";
-
-const GENERIC_CREATE_ERROR = "Could not create the order. Please try again.";
-const CUSTOMER_UNAVAILABLE_ERROR = "Selected customer is unavailable.";
-const PRODUCT_UNAVAILABLE_ERROR = "One or more selected products are unavailable.";
 
 /**
  * The mutation boundary. Never relies on the page having already gated
@@ -27,28 +25,31 @@ const PRODUCT_UNAVAILABLE_ERROR = "One or more selected products are unavailable
 export async function createSalesOrderAction(
   input: CreateSalesOrderFormValues,
 ): Promise<{ error: string } | void> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale).orderActions;
+
   const user = await requirePermission(SALES_ORDERS_CREATE_PERMISSION).catch(() => null);
 
   if (!user) {
-    return { error: GENERIC_CREATE_ERROR };
+    return { error: t.createGenericError };
   }
 
   const parsed = createSalesOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: GENERIC_CREATE_ERROR };
+    return { error: t.createGenericError };
   }
 
   const result = await createSalesOrder(user.id, parsed.data);
 
   if (!result.ok) {
     if (result.error === "CUSTOMER_UNAVAILABLE") {
-      return { error: CUSTOMER_UNAVAILABLE_ERROR };
+      return { error: t.customerUnavailable };
     }
     if (result.error === "PRODUCT_UNAVAILABLE") {
-      return { error: PRODUCT_UNAVAILABLE_ERROR };
+      return { error: t.productUnavailable };
     }
-    return { error: GENERIC_CREATE_ERROR };
+    return { error: t.createGenericError };
   }
 
   revalidatePath("/sales");

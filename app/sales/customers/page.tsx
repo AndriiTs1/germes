@@ -6,6 +6,8 @@ import {
 } from "@/components/sales/customers-filters";
 import { CustomersList } from "@/components/sales/customers-list";
 import { CustomersPagination } from "@/components/sales/customers-pagination";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { listSalesCustomers } from "@/lib/services/sales/list-sales-customers";
@@ -35,6 +37,9 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   const searchParams = await props.searchParams;
   const q = typeof searchParams?.q === "string" ? searchParams.q.trim() : "";
   const status = parseStatusFilter(
@@ -61,30 +66,32 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
   }
 
   const hasActiveFilter = q.length > 0 || status !== "all";
-  const emptyMessage = hasActiveFilter ? "No customers match these filters" : "No customers yet";
+  const emptyMessage = hasActiveFilter ? dictionary.customers.emptyFiltered : dictionary.customers.emptyDefault;
 
   return (
     <DashboardShell
       user={user}
       permissionCodes={permissionCodes}
       activePath="/sales/customers"
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-          Customers
+          {dictionary.customers.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">Manage your customer relationships</p>
+        <p className="mt-1 text-[13px] text-slate-500">{dictionary.customers.subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-4">
-        <CustomersFilters q={q} status={status} />
-        <CustomersList customers={result.items} emptyMessage={emptyMessage} />
+        <CustomersFilters q={q} status={status} dictionary={dictionary} />
+        <CustomersList customers={result.items} emptyMessage={emptyMessage} locale={locale} dictionary={dictionary} />
         <CustomersPagination
           page={result.page}
           pageCount={result.pageCount}
           q={q}
           status={status}
+          dictionary={dictionary}
         />
       </div>
     </DashboardShell>

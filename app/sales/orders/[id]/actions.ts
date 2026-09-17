@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { createStockReservation } from "@/lib/services/sales/create-stock-reservation";
 import { releaseStockReservation } from "@/lib/services/sales/release-stock-reservation";
@@ -14,14 +16,18 @@ const SALES_ORDERS_UPDATE_PERMISSION = "sales.orders.update";
 const RESERVATIONS_CREATE_PERMISSION = "sales.reservations.create";
 const RESERVATIONS_RELEASE_PERMISSION = "sales.reservations.release";
 
-const GENERIC_TRANSITION_ERROR =
-  "Could not update the order. Please try again.";
-
 export type ReservationActionState = {
   ok: boolean;
   message: string | null;
 };
 
+/**
+ * Zod issue messages stay in English (see the i18n audit) — this schema is
+ * also used purely for structural validation; its exact wording is never
+ * surfaced unless the "Select a batch and warehouse." string below is
+ * matched literally, which is intentionally still the same schema-level
+ * string so that match keeps working.
+ */
 const createReservationSchema = z.object({
   orderId: z.string().uuid(),
   salesOrderItemId: z.string().uuid(),
@@ -54,12 +60,15 @@ async function runOrderTransition(
   orderId: string,
   transition: SalesOrderTransition,
 ): Promise<{ error: string } | void> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale).reservationActions;
+
   const user = await requirePermission(
     SALES_ORDERS_UPDATE_PERMISSION,
   ).catch(() => null);
 
   if (!user) {
-    return { error: GENERIC_TRANSITION_ERROR };
+    return { error: t.updateOrderFailed };
   }
 
   const result = await transitionSalesOrderStatus(
@@ -69,7 +78,7 @@ async function runOrderTransition(
   );
 
   if (!result.ok) {
-    return { error: GENERIC_TRANSITION_ERROR };
+    return { error: t.updateOrderFailed };
   }
 
   revalidatePath("/sales");
@@ -95,6 +104,9 @@ export async function createStockReservationAction(
   _previousState: ReservationActionState,
   formData: FormData,
 ): Promise<ReservationActionState> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale).reservationActions;
+
   const user = await requirePermission(
     RESERVATIONS_CREATE_PERMISSION,
   ).catch(() => null);
@@ -102,7 +114,7 @@ export async function createStockReservationAction(
   if (!user) {
     return {
       ok: false,
-      message: "You do not have permission to create reservations.",
+      message: t.noPermissionCreate,
     };
   }
 
@@ -114,11 +126,17 @@ export async function createStockReservationAction(
   });
 
   if (!parsed.success) {
+    const issueMessage = parsed.error.issues[0]?.message;
+    const localizedMessage =
+      issueMessage === "Select a batch and warehouse."
+        ? t.selectBatchAndWarehouse
+        : issueMessage === "Enter a valid quantity with up to 3 decimals."
+          ? t.invalidQuantity
+          : t.checkDetails;
+
     return {
       ok: false,
-      message:
-        parsed.error.issues[0]?.message ??
-        "Check the reservation details.",
+      message: localizedMessage,
     };
   }
 
@@ -127,7 +145,7 @@ export async function createStockReservationAction(
   if (!batchId || !warehouseId) {
     return {
       ok: false,
-      message: "Select a batch and warehouse.",
+      message: t.selectBatchAndWarehouse,
     };
   }
 
@@ -142,7 +160,7 @@ export async function createStockReservationAction(
   if (!result.ok) {
     return {
       ok: false,
-      message: "Could not create the reservation.",
+      message: t.createFailed,
     };
   }
 
@@ -150,7 +168,7 @@ export async function createStockReservationAction(
 
   return {
     ok: true,
-    message: "Stock reserved successfully.",
+    message: t.createSuccess,
   };
 }
 
@@ -158,6 +176,9 @@ export async function releaseStockReservationAction(
   _previousState: ReservationActionState,
   formData: FormData,
 ): Promise<ReservationActionState> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale).reservationActions;
+
   const user = await requirePermission(
     RESERVATIONS_RELEASE_PERMISSION,
   ).catch(() => null);
@@ -165,7 +186,7 @@ export async function releaseStockReservationAction(
   if (!user) {
     return {
       ok: false,
-      message: "You do not have permission to release reservations.",
+      message: t.noPermissionRelease,
     };
   }
 
@@ -177,7 +198,7 @@ export async function releaseStockReservationAction(
   if (!parsed.success) {
     return {
       ok: false,
-      message: "Could not release the reservation.",
+      message: t.releaseFailed,
     };
   }
 
@@ -189,7 +210,7 @@ export async function releaseStockReservationAction(
   if (!result.ok) {
     return {
       ok: false,
-      message: "Could not release the reservation.",
+      message: t.releaseFailed,
     };
   }
 
@@ -197,6 +218,6 @@ export async function releaseStockReservationAction(
 
   return {
     ok: true,
-    message: "Reservation released.",
+    message: t.releaseSuccess,
   };
 }

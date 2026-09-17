@@ -3,6 +3,9 @@
 import { Trash2 } from "lucide-react";
 import { useController, useFormContext, useWatch } from "react-hook-form";
 import { SearchableSelect } from "@/components/sales/order-form/searchable-select";
+import { formatPreviewNumber } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { NewOrderFormProduct } from "@/lib/services/sales/get-new-order-form-options";
 import type { CreateSalesOrderFormValues } from "@/lib/validation/sales-order";
 import { cn } from "@/lib/utils";
@@ -12,6 +15,8 @@ type OrderFormItemRowProps = {
   products: NewOrderFormProduct[];
   onRemove: () => void;
   canRemove: boolean;
+  locale: Locale;
+  dictionary: Dictionary["orderForm"];
 };
 
 /**
@@ -41,8 +46,17 @@ const fieldClassName =
  * >=1024px: a compact grid row (Product / Quantity / Price / Line total /
  * Remove). <1024px: the same fields stacked as a card — no horizontal
  * overflow at any width, matching the rest of the approved SALES shell.
+ * errors.*.message text comes from lib/validation/sales-order.ts's Zod
+ * schema and stays English in this stage (see the final report).
  */
-export function OrderFormItemRow({ index, products, onRemove, canRemove }: OrderFormItemRowProps) {
+export function OrderFormItemRow({
+  index,
+  products,
+  onRemove,
+  canRemove,
+  locale,
+  dictionary,
+}: OrderFormItemRowProps) {
   const {
     register,
     control,
@@ -64,7 +78,7 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
     <div className="flex flex-col gap-2 rounded-xl border border-slate-100 p-3 lg:grid lg:grid-cols-[1fr_120px_120px_110px_36px] lg:items-start lg:gap-2 lg:p-2.5">
       <div className="min-w-0">
         <SearchableSelect
-          aria-label="Product"
+          aria-label={dictionary.product}
           value={productField.value}
           onValueChange={productField.onChange}
           onBlur={productField.onBlur}
@@ -72,7 +86,7 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
             value: product.id,
             label: `${product.name} (${product.sku})`,
           }))}
-          placeholder="Select a product"
+          placeholder={dictionary.selectProduct}
           error={!!itemErrors?.productId}
         />
         {itemErrors?.productId ? (
@@ -84,8 +98,8 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
         <input
           type="text"
           inputMode="decimal"
-          placeholder="Qty kg"
-          aria-label="Quantity kg"
+          placeholder={dictionary.quantityPlaceholder}
+          aria-label={dictionary.quantityPlaceholder}
           className={cn(fieldClassName, itemErrors?.quantityKg && "border-rose-300")}
           {...register(`items.${index}.quantityKg` as const)}
         />
@@ -98,8 +112,8 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
         <input
           type="text"
           inputMode="decimal"
-          placeholder="Price / kg"
-          aria-label="Price per kg"
+          placeholder={dictionary.pricePlaceholder}
+          aria-label={dictionary.pricePlaceholder}
           className={cn(fieldClassName, itemErrors?.pricePerKg && "border-rose-300")}
           {...register(`items.${index}.pricePerKg` as const)}
         />
@@ -109,9 +123,9 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
       </div>
 
       <div className="flex h-9 items-center justify-between gap-2 lg:justify-end">
-        <span className="text-[11.5px] text-slate-400 lg:hidden">Line total</span>
+        <span className="text-[11.5px] text-slate-400 lg:hidden">{dictionary.lineTotalMobileLabel}</span>
         <span className="truncate text-[13px] font-semibold text-slate-900">
-          {lineTotal.toLocaleString("en-US", { maximumFractionDigits: 2 })}
+          {formatPreviewNumber(lineTotal, locale)}
         </span>
       </div>
 
@@ -119,7 +133,7 @@ export function OrderFormItemRow({ index, products, onRemove, canRemove }: Order
         type="button"
         onClick={onRemove}
         disabled={!canRemove}
-        aria-label="Remove item"
+        aria-label={dictionary.removeItemAriaLabel}
         className="flex h-9 w-9 shrink-0 items-center justify-center self-start rounded-lg text-slate-400 transition-colors hover:bg-rose-50 hover:text-rose-600 disabled:pointer-events-none disabled:opacity-30 lg:self-auto"
       >
         <Trash2 className="h-4 w-4" strokeWidth={1.75} />

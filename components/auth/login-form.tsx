@@ -7,9 +7,21 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/auth/actions";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
 
-export function LoginForm() {
+type LoginFormProps = {
+  dictionary: Dictionary["auth"];
+};
+
+/**
+ * Field-level error text (errors.email.message/errors.password.message)
+ * comes straight from lib/validation/auth.ts's Zod schema, which stays
+ * English-only in this stage — see the final report's "remaining
+ * intentionally-untranslated UI" note. Everything else (labels, button,
+ * the server action's generic failure message) is localized.
+ */
+export function LoginForm({ dictionary }: LoginFormProps) {
   const {
     register,
     handleSubmit,
@@ -33,7 +45,7 @@ export function LoginForm() {
       className="mt-6 flex flex-col gap-3"
     >
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="email">Email</Label>
+        <Label htmlFor="email">{dictionary.email}</Label>
         <Input
           id="email"
           type="email"
@@ -47,7 +59,7 @@ export function LoginForm() {
       </div>
 
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor="password">Password</Label>
+        <Label htmlFor="password">{dictionary.password}</Label>
         <Input
           id="password"
           type="password"
@@ -63,7 +75,7 @@ export function LoginForm() {
       </div>
 
       <Button type="submit" className="mt-2" disabled={isSubmitting}>
-        {isSubmitting ? "Signing in…" : "Sign in"}
+        {isSubmitting ? dictionary.signingIn : dictionary.signIn}
       </Button>
     </form>
   );

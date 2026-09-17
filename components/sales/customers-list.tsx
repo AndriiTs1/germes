@@ -2,7 +2,10 @@ import { Users } from "lucide-react";
 import Link from "next/link";
 
 import { formatMoney, formatShortDate } from "@/components/sales/format";
-import { CUSTOMER_STATUS_LABELS, CUSTOMER_STATUS_STYLES } from "@/components/sales/customer-status";
+import { getCustomerStatusLabel, CUSTOMER_STATUS_STYLES } from "@/components/sales/customer-status";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { pluralize } from "@/lib/i18n/pluralize";
 import type {
   CustomerReceivableSummary,
   SalesCustomerListItem,
@@ -12,9 +15,11 @@ import { cn } from "@/lib/utils";
 type CustomersListProps = {
   customers: SalesCustomerListItem[];
   emptyMessage: string;
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, statusLabels }: { status: string; statusLabels: Dictionary["status"]["customer"] }) {
   return (
     <span
       className={cn(
@@ -22,7 +27,7 @@ function StatusBadge({ status }: { status: string }) {
         CUSTOMER_STATUS_STYLES[status] ?? "bg-slate-100 text-slate-600",
       )}
     >
-      {CUSTOMER_STATUS_LABELS[status] ?? status}
+      {getCustomerStatusLabel(statusLabels, status)}
     </span>
   );
 }
@@ -37,10 +42,12 @@ function ReceivableLines({
   receivables,
   variant,
   align,
+  locale,
 }: {
   receivables: CustomerReceivableSummary[];
   variant: "outstanding" | "overdue";
   align: "start" | "end";
+  locale: Locale;
 }) {
   const lines = receivables
     .map((r) => ({
@@ -63,15 +70,11 @@ function ReceivableLines({
             variant === "overdue" ? "font-semibold text-rose-600" : "text-slate-900",
           )}
         >
-          {formatMoney(line.value, line.currency)}
+          {formatMoney(line.value, line.currency, locale)}
         </span>
       ))}
     </div>
   );
-}
-
-function activeOrdersLabel(count: number): string {
-  return `${count} active order${count === 1 ? "" : "s"}`;
 }
 
 /**
@@ -80,7 +83,7 @@ function activeOrdersLabel(count: number): string {
  * the <tr> itself is never wrapped/clickable). <1024px: the whole card is
  * a single Link, matching OrdersList's mobile convention exactly.
  */
-export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
+export function CustomersList({ customers, emptyMessage, locale, dictionary }: CustomersListProps) {
   if (customers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-12 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
@@ -90,6 +93,8 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
     );
   }
 
+  const t = dictionary.common.table;
+
   return (
     <>
       <div className="hidden overflow-hidden rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)] lg:block">
@@ -97,22 +102,22 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
           <thead>
             <tr className="border-b border-slate-100 text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase">
               <th scope="col" className="px-4 py-3">
-                Customer
+                {t.customer}
               </th>
               <th scope="col" className="px-4 py-3">
-                Status
+                {t.status}
               </th>
               <th scope="col" className="px-4 py-3">
-                Last purchase
+                {dictionary.customers.table.lastPurchase}
               </th>
               <th scope="col" className="px-4 py-3 text-right">
-                Receivable
+                {dictionary.customers.table.receivable}
               </th>
               <th scope="col" className="px-4 py-3 text-right">
-                Overdue
+                {dictionary.customers.table.overdue}
               </th>
               <th scope="col" className="px-4 py-3">
-                Next action
+                {dictionary.customers.table.nextAction}
               </th>
             </tr>
           </thead>
@@ -129,28 +134,34 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
                   <p className="truncate text-[11.5px] text-slate-400">
                     {customer.code}
                     {customer.activeOrdersCount > 0
-                      ? ` · ${activeOrdersLabel(customer.activeOrdersCount)}`
+                      ? ` · ${pluralize(locale, customer.activeOrdersCount, dictionary.customers.activeOrders)}`
                       : ""}
                   </p>
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={customer.status} />
+                  <StatusBadge status={customer.status} statusLabels={dictionary.status.customer} />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">
-                  {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt) : "—"}
+                  {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt, locale) : "—"}
                 </td>
                 <td className="px-4 py-3 text-right">
                   <ReceivableLines
                     receivables={customer.receivables}
                     variant="outstanding"
                     align="end"
+                    locale={locale}
                   />
                 </td>
                 <td className="px-4 py-3 text-right">
-                  <ReceivableLines receivables={customer.receivables} variant="overdue" align="end" />
+                  <ReceivableLines
+                    receivables={customer.receivables}
+                    variant="overdue"
+                    align="end"
+                    locale={locale}
+                  />
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">
-                  {customer.nextActionAt ? formatShortDate(customer.nextActionAt) : "—"}
+                  {customer.nextActionAt ? formatShortDate(customer.nextActionAt, locale) : "—"}
                 </td>
               </tr>
             ))}
@@ -172,7 +183,7 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
                   <span className="truncate text-[13px] font-semibold text-slate-900">
                     {customer.name}
                   </span>
-                  <StatusBadge status={customer.status} />
+                  <StatusBadge status={customer.status} statusLabels={dictionary.status.customer} />
                 </div>
                 <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
                   {customer.code}
@@ -180,40 +191,42 @@ export function CustomersList({ customers, emptyMessage }: CustomersListProps) {
                 </p>
                 {customer.activeOrdersCount > 0 ? (
                   <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
-                    {activeOrdersLabel(customer.activeOrdersCount)}
+                    {pluralize(locale, customer.activeOrdersCount, dictionary.customers.activeOrders)}
                   </p>
                 ) : null}
 
                 <div className="mt-2 grid grid-cols-2 gap-x-3 gap-y-2 text-[11.5px]">
                   <div>
-                    <p className="text-slate-400">Last purchase</p>
+                    <p className="text-slate-400">{dictionary.customers.table.lastPurchase}</p>
                     <p className="mt-0.5 font-medium text-slate-700">
-                      {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt) : "—"}
+                      {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt, locale) : "—"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Next action</p>
+                    <p className="text-slate-400">{dictionary.customers.table.nextAction}</p>
                     <p className="mt-0.5 font-medium text-slate-700">
-                      {customer.nextActionAt ? formatShortDate(customer.nextActionAt) : "—"}
+                      {customer.nextActionAt ? formatShortDate(customer.nextActionAt, locale) : "—"}
                     </p>
                   </div>
                   <div>
-                    <p className="text-slate-400">Receivable</p>
+                    <p className="text-slate-400">{dictionary.customers.table.receivable}</p>
                     <div className="mt-0.5">
                       <ReceivableLines
                         receivables={customer.receivables}
                         variant="outstanding"
                         align="start"
+                        locale={locale}
                       />
                     </div>
                   </div>
                   <div>
-                    <p className="text-slate-400">Overdue</p>
+                    <p className="text-slate-400">{dictionary.customers.table.overdue}</p>
                     <div className="mt-0.5">
                       <ReceivableLines
                         receivables={customer.receivables}
                         variant="overdue"
                         align="start"
+                        locale={locale}
                       />
                     </div>
                   </div>

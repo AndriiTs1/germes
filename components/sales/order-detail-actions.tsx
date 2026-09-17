@@ -12,17 +12,20 @@ import {
   cancelSalesOrderAction,
   confirmSalesOrderAction,
 } from "@/app/sales/orders/[id]/actions";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 type OrderDetailActionsProps = {
   orderId: string;
   status: string;
   canUpdate: boolean;
+  dictionary: Dictionary["orderDetail"]["actions"];
 };
 
 export function OrderDetailActions({
   orderId,
   status,
   canUpdate,
+  dictionary,
 }: OrderDetailActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [cancelDialogOpen, setCancelDialogOpen] = useState(false);
@@ -95,7 +98,7 @@ export function OrderDetailActions({
             href={`/sales/orders/${orderId}/edit`}
             className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
-            Edit
+            {dictionary.edit}
           </Link>
         ) : null}
 
@@ -106,7 +109,7 @@ export function OrderDetailActions({
             disabled={isPending}
             className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
-            {isPending ? "Confirming…" : "Confirm"}
+            {isPending ? dictionary.confirming : dictionary.confirm}
           </button>
         ) : null}
 
@@ -117,7 +120,7 @@ export function OrderDetailActions({
             disabled={isPending}
             className="rounded-full border border-rose-200 bg-white px-4 py-2 text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:pointer-events-none disabled:opacity-50"
           >
-            Cancel
+            {dictionary.cancelOrder}
           </button>
         ) : null}
       </div>
@@ -143,15 +146,14 @@ export function OrderDetailActions({
                 id="cancel-order-title"
                 className="text-[18px] font-semibold tracking-tight text-slate-900"
               >
-                Cancel order?
+                {dictionary.cancelDialog.title}
               </h2>
 
               <p
                 id="cancel-order-description"
                 className="mt-2 text-[13px] leading-5 text-slate-500"
               >
-                This will cancel the order and release all active stock
-                reservations. This action cannot be undone.
+                {dictionary.cancelDialog.description}
               </p>
             </div>
 
@@ -163,7 +165,7 @@ export function OrderDetailActions({
                 disabled={isPending}
                 className="h-10 rounded-xl border border-slate-200 bg-white px-4 text-[13px] font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-50"
               >
-                Keep order
+                {dictionary.cancelDialog.keepOrder}
               </button>
 
               <button
@@ -172,7 +174,7 @@ export function OrderDetailActions({
                 disabled={isPending}
                 className="h-10 rounded-xl bg-rose-600 px-4 text-[13px] font-semibold text-white transition-colors hover:bg-rose-700 disabled:pointer-events-none disabled:opacity-50"
               >
-                {isPending ? "Cancelling…" : "Cancel order"}
+                {isPending ? dictionary.cancelDialog.cancelling : dictionary.cancelDialog.confirmCancel}
               </button>
             </div>
           </div>

@@ -2,15 +2,19 @@ import { Package } from "lucide-react";
 import Link from "next/link";
 
 import { formatKg, formatShortDate } from "@/components/sales/format";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import { getOrderStatusLabel, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { WarehouseOrderQueueItem } from "@/lib/services/warehouse/list-warehouse-orders";
 import { cn } from "@/lib/utils";
 
 type FulfillmentQueueProps = {
   orders: WarehouseOrderQueueItem[];
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, statusLabels }: { status: string; statusLabels: Dictionary["status"]["order"] }) {
   return (
     <span
       className={cn(
@@ -18,7 +22,7 @@ function StatusBadge({ status }: { status: string }) {
         ORDER_STATUS_STYLES[status] ?? "bg-slate-100 text-slate-600",
       )}
     >
-      {ORDER_STATUS_LABELS[status] ?? status}
+      {getOrderStatusLabel(statusLabels, status)}
     </span>
   );
 }
@@ -30,18 +34,18 @@ function StatusBadge({ status }: { status: string }) {
  * otherwise a neutral/warning "X / Y items reserved" reflects the real
  * per-item fulfillment count.
  */
-function FulfillmentBadge({ order }: { order: WarehouseOrderQueueItem }) {
+function FulfillmentBadge({ order, dictionary }: { order: WarehouseOrderQueueItem; dictionary: Dictionary }) {
   if (order.isFullyReserved) {
     return (
       <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap text-emerald-600">
-        Fully reserved
+        {dictionary.warehouse.queue.fullyReserved}
       </span>
     );
   }
 
   return (
     <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10.5px] font-semibold whitespace-nowrap text-amber-600">
-      {order.fullyReservedItemCount} / {order.totalItemCount} items reserved
+      {order.fullyReservedItemCount} / {order.totalItemCount} {dictionary.warehouse.queue.itemsReserved}
     </span>
   );
 }
@@ -53,14 +57,14 @@ function FulfillmentBadge({ order }: { order: WarehouseOrderQueueItem }) {
  * detail route (W3) via next/link — never window.location. No lifecycle
  * action buttons here; those live only on the detail page.
  */
-export function FulfillmentQueue({ orders }: FulfillmentQueueProps) {
+export function FulfillmentQueue({ orders, locale, dictionary }: FulfillmentQueueProps) {
+  const t = dictionary.common.table;
+
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-12 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
         <Package className="h-5 w-5 text-slate-300" strokeWidth={1.75} />
-        <p className="text-[13px] font-medium text-slate-500">
-          No orders awaiting warehouse fulfillment
-        </p>
+        <p className="text-[13px] font-medium text-slate-500">{dictionary.warehouse.queue.empty}</p>
       </div>
     );
   }
@@ -72,22 +76,22 @@ export function FulfillmentQueue({ orders }: FulfillmentQueueProps) {
           <thead>
             <tr className="border-b border-slate-100 text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase">
               <th scope="col" className="px-4 py-3">
-                Order
+                {t.order}
               </th>
               <th scope="col" className="px-4 py-3">
-                Customer
+                {t.customer}
               </th>
               <th scope="col" className="px-4 py-3">
-                Requested
+                {t.requested}
               </th>
               <th scope="col" className="px-4 py-3 text-right">
-                Quantity
+                {t.quantity}
               </th>
               <th scope="col" className="px-4 py-3">
-                Fulfillment
+                {t.fulfillment}
               </th>
               <th scope="col" className="px-4 py-3">
-                Status
+                {t.status}
               </th>
             </tr>
           </thead>
@@ -107,21 +111,22 @@ export function FulfillmentQueue({ orders }: FulfillmentQueueProps) {
                   <span className="ml-1.5 text-slate-400">{order.customer.code}</span>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">
-                  {order.requestedDate ? formatShortDate(order.requestedDate) : "—"}
+                  {order.requestedDate ? formatShortDate(order.requestedDate, locale) : "—"}
                 </td>
                 <td className="px-4 py-3 text-right whitespace-nowrap text-slate-700">
-                  {formatKg(order.totalQuantityKg)} kg
+                  {formatKg(order.totalQuantityKg, locale)} {dictionary.common.kgUnit}
                 </td>
                 <td className="px-4 py-3">
                   <div className="flex flex-col items-start gap-1">
-                    <FulfillmentBadge order={order} />
+                    <FulfillmentBadge order={order} dictionary={dictionary} />
                     <span className="text-[11px] whitespace-nowrap text-slate-400">
-                      {formatKg(order.reservedQuantityKg)} / {formatKg(order.totalQuantityKg)} kg
+                      {formatKg(order.reservedQuantityKg, locale)} / {formatKg(order.totalQuantityKg, locale)}{" "}
+                      {dictionary.common.kgUnit}
                     </span>
                   </div>
                 </td>
                 <td className="px-4 py-3">
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
                 </td>
               </tr>
             ))}
@@ -140,7 +145,7 @@ export function FulfillmentQueue({ orders }: FulfillmentQueueProps) {
                 <span className="truncate text-[13px] font-semibold text-slate-900">
                   {order.orderNumber}
                 </span>
-                <StatusBadge status={order.status} />
+                <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
               </div>
 
               <p className="mt-1 truncate text-[12.5px] text-slate-600">
@@ -149,15 +154,18 @@ export function FulfillmentQueue({ orders }: FulfillmentQueueProps) {
               </p>
 
               <p className="mt-1 truncate text-[11.5px] text-slate-400">
-                {order.requestedDate ? formatShortDate(order.requestedDate) : "No requested date"}
+                {order.requestedDate
+                  ? formatShortDate(order.requestedDate, locale)
+                  : dictionary.warehouse.queue.noRequestedDate}
                 {" · "}
-                {formatKg(order.totalQuantityKg)} kg
+                {formatKg(order.totalQuantityKg, locale)} {dictionary.common.kgUnit}
               </p>
 
               <div className="mt-2 flex items-center justify-between gap-2">
-                <FulfillmentBadge order={order} />
+                <FulfillmentBadge order={order} dictionary={dictionary} />
                 <span className="text-[11px] whitespace-nowrap text-slate-400">
-                  {formatKg(order.reservedQuantityKg)} / {formatKg(order.totalQuantityKg)} kg
+                  {formatKg(order.reservedQuantityKg, locale)} / {formatKg(order.totalQuantityKg, locale)}{" "}
+                  {dictionary.common.kgUnit}
                 </span>
               </div>
             </Link>

@@ -1,27 +1,30 @@
 import { AlertCircle, PackageCheck } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type {
   AttentionCustomer,
   AttentionReasonType,
 } from "@/lib/services/sales/get-attention-customers";
 
-const reasonLabels: Record<AttentionReasonType, string> = {
-  NEXT_ACTION_OVERDUE: "Next action overdue",
-  STALE_CONTACT: "No contact in 21+ days",
-  STALE_PURCHASE: "No purchase in 45+ days",
-};
-
 export function NeedsAttentionCard({
   customers,
+  dictionary,
   className,
 }: {
   customers: AttentionCustomer[];
+  dictionary: Dictionary;
   className?: string;
 }) {
+  const reasonLabels: Record<AttentionReasonType, string> = {
+    NEXT_ACTION_OVERDUE: dictionary.sales.needsAttention.reasons.nextActionOverdue,
+    STALE_CONTACT: dictionary.sales.needsAttention.reasons.staleContact,
+    STALE_PURCHASE: dictionary.sales.needsAttention.reasons.stalePurchase,
+  };
+
   return (
     <OperationsCard
-      title="Needs Attention"
+      title={dictionary.sales.needsAttention.title}
       className={className}
       badge={
         customers.length > 0 ? (
@@ -35,7 +38,7 @@ export function NeedsAttentionCard({
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
           <PackageCheck className="h-5 w-5 text-emerald-500 xl:h-4 xl:w-4" strokeWidth={1.75} />
           <p className="text-[12.5px] font-medium text-slate-500 xl:text-[12px]">
-            All caught up — no customers need attention
+            {dictionary.sales.needsAttention.empty}
           </p>
         </div>
       ) : (

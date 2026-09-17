@@ -5,6 +5,8 @@ import { OrdersFilters, type OrdersStatusFilter } from "@/components/sales/order
 import { OrdersList } from "@/components/sales/orders-list";
 import { OrdersPagination } from "@/components/sales/orders-pagination";
 import { SalesOrderStatus } from "@/lib/generated/prisma/client";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import {
@@ -49,6 +51,9 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   const searchParams = await props.searchParams;
   const q = typeof searchParams?.q === "string" ? searchParams.q.trim() : "";
   const status = parseStatusFilter(
@@ -75,7 +80,7 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
   }
 
   const hasActiveFilter = q.length > 0 || status !== "all";
-  const emptyMessage = hasActiveFilter ? "No orders match these filters" : "No orders yet";
+  const emptyMessage = hasActiveFilter ? dictionary.orders.emptyFiltered : dictionary.orders.emptyDefault;
   const canCreateOrder = permissionCodes.includes(SALES_ORDERS_CREATE_PERMISSION);
 
   return (
@@ -83,15 +88,16 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
       user={user}
       permissionCodes={permissionCodes}
       activePath="/sales/orders"
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">
         <div className="flex items-center justify-between gap-3">
           <div>
             <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-              Orders
+              {dictionary.orders.title}
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">Manage and track your sales orders</p>
+            <p className="mt-1 text-[13px] text-slate-500">{dictionary.orders.subtitle}</p>
           </div>
 
           {canCreateOrder ? (
@@ -99,16 +105,22 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
               href="/sales/orders/new"
               className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
             >
-              + New Order
+              {dictionary.orders.newOrder}
             </Link>
           ) : null}
         </div>
       </div>
 
       <div className="flex flex-col gap-4">
-        <OrdersFilters q={q} status={status} />
-        <OrdersList orders={result.orders} emptyMessage={emptyMessage} />
-        <OrdersPagination page={result.page} pageCount={result.pageCount} q={q} status={status} />
+        <OrdersFilters q={q} status={status} dictionary={dictionary} />
+        <OrdersList orders={result.orders} emptyMessage={emptyMessage} locale={locale} dictionary={dictionary} />
+        <OrdersPagination
+          page={result.page}
+          pageCount={result.pageCount}
+          q={q}
+          status={status}
+          dictionary={dictionary}
+        />
       </div>
     </DashboardShell>
   );

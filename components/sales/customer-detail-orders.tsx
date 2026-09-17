@@ -2,11 +2,13 @@ import Link from "next/link";
 
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatKg, formatMoney, formatShortDate } from "@/components/sales/format";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import { getOrderStatusLabel, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { SalesCustomerDetailOrder } from "@/lib/services/sales/get-sales-customer-detail";
 import { cn } from "@/lib/utils";
 
-function StatusBadge({ status }: { status: string }) {
+function StatusBadge({ status, statusLabels }: { status: string; statusLabels: Dictionary["status"]["order"] }) {
   return (
     <span
       className={cn(
@@ -14,7 +16,7 @@ function StatusBadge({ status }: { status: string }) {
         ORDER_STATUS_STYLES[status] ?? "bg-slate-100 text-slate-600",
       )}
     >
-      {ORDER_STATUS_LABELS[status] ?? status}
+      {getOrderStatusLabel(statusLabels, status)}
     </span>
   );
 }
@@ -25,35 +27,46 @@ function StatusBadge({ status }: { status: string }) {
  * customer-filtered orders route exists yet, and a link to one would be a
  * placeholder route, which this stage explicitly forbids.
  */
-export function CustomerDetailOrders({ orders }: { orders: SalesCustomerDetailOrder[] }) {
+export function CustomerDetailOrders({
+  orders,
+  locale,
+  dictionary,
+}: {
+  orders: SalesCustomerDetailOrder[];
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
+  const t = dictionary.customerDetail.recentOrders;
+  const tableLabels = dictionary.common.table;
+
   if (orders.length === 0) {
     return (
-      <DetailSection title="Recent Orders">
-        <p className="text-[13px] text-slate-400">No orders yet</p>
+      <DetailSection title={t.title}>
+        <p className="text-[13px] text-slate-400">{t.empty}</p>
       </DetailSection>
     );
   }
 
   return (
-    <DetailSection title="Recent Orders">
+    <DetailSection title={t.title}>
       <div className="hidden lg:block">
         <table className="w-full text-left">
           <thead>
             <tr className="border-b border-slate-100 text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase">
               <th scope="col" className="py-2 pr-4">
-                Order
+                {tableLabels.order}
               </th>
               <th scope="col" className="py-2 pr-4">
-                Status
+                {tableLabels.status}
               </th>
               <th scope="col" className="py-2 pr-4">
-                Date
+                {tableLabels.date}
               </th>
               <th scope="col" className="py-2 pr-4 text-right">
-                Quantity
+                {tableLabels.quantity}
               </th>
               <th scope="col" className="py-2 text-right">
-                Total
+                {tableLabels.total}
               </th>
             </tr>
           </thead>
@@ -69,16 +82,16 @@ export function CustomerDetailOrders({ orders }: { orders: SalesCustomerDetailOr
                   </Link>
                 </td>
                 <td className="py-2.5 pr-4">
-                  <StatusBadge status={order.status} />
+                  <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
                 </td>
                 <td className="py-2.5 pr-4 whitespace-nowrap text-slate-500">
-                  {formatShortDate(order.orderDate)}
+                  {formatShortDate(order.orderDate, locale)}
                 </td>
                 <td className="py-2.5 pr-4 text-right whitespace-nowrap text-slate-700">
-                  {formatKg(order.totalQuantityKg)} kg
+                  {formatKg(order.totalQuantityKg, locale)} {dictionary.common.kgUnit}
                 </td>
                 <td className="py-2.5 text-right whitespace-nowrap font-semibold text-slate-900">
-                  {formatMoney(order.totalValue, order.currency)}
+                  {formatMoney(order.totalValue, order.currency, locale)}
                 </td>
               </tr>
             ))}
@@ -97,14 +110,15 @@ export function CustomerDetailOrders({ orders }: { orders: SalesCustomerDetailOr
                 <span className="truncate text-[13px] font-semibold text-slate-900">
                   {order.orderNumber}
                 </span>
-                <StatusBadge status={order.status} />
+                <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
               </div>
               <div className="mt-1 flex items-center justify-between gap-2 text-[11.5px] text-slate-400">
                 <span className="truncate">
-                  {formatShortDate(order.orderDate)} · {formatKg(order.totalQuantityKg)} kg
+                  {formatShortDate(order.orderDate, locale)} ·{" "}
+                  {formatKg(order.totalQuantityKg, locale)} {dictionary.common.kgUnit}
                 </span>
                 <span className="shrink-0 text-[12.5px] font-semibold text-slate-900">
-                  {formatMoney(order.totalValue, order.currency)}
+                  {formatMoney(order.totalValue, order.currency, locale)}
                 </span>
               </div>
             </Link>

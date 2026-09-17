@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
 export type OrdersStatusFilter = "all" | "active" | "completed" | "cancelled";
@@ -8,14 +9,8 @@ export type OrdersStatusFilter = "all" | "active" | "completed" | "cancelled";
 type OrdersFiltersProps = {
   q: string;
   status: OrdersStatusFilter;
+  dictionary: Dictionary;
 };
-
-const STATUS_TABS: { value: OrdersStatusFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "active", label: "Active" },
-  { value: "completed", label: "Completed" },
-  { value: "cancelled", label: "Cancelled" },
-];
 
 function buildFilterHref(status: OrdersStatusFilter, q: string): string {
   const params = new URLSearchParams();
@@ -29,13 +24,22 @@ function buildFilterHref(status: OrdersStatusFilter, q: string): string {
  * Fully server-rendered, URL-driven filters — no client state, no context.
  * Status tabs are plain links; search is a native GET <form> that
  * navigates to ?q=... itself. Prisma does the actual filtering (see
- * listSalesOrders) — this component only reflects/builds URLs.
+ * listSalesOrders) — this component only reflects/builds URLs. Query
+ * parameter VALUES ("active"/"completed"/"cancelled") are never localized
+ * — only the tab's rendered label is.
  */
-export function OrdersFilters({ q, status }: OrdersFiltersProps) {
+export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
+  const statusTabs: { value: OrdersStatusFilter; label: string }[] = [
+    { value: "all", label: dictionary.orders.filters.all },
+    { value: "active", label: dictionary.orders.filters.active },
+    { value: "completed", label: dictionary.orders.filters.completed },
+    { value: "cancelled", label: dictionary.orders.filters.cancelled },
+  ];
+
   return (
     <div className="flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
-      <nav aria-label="Filter orders by status" className="flex flex-wrap gap-1.5">
-        {STATUS_TABS.map((tab) => {
+      <nav aria-label={dictionary.orders.filters.ariaLabel} className="flex flex-wrap gap-1.5">
+        {statusTabs.map((tab) => {
           const isActive = tab.value === status;
           return (
             <Link
@@ -58,7 +62,7 @@ export function OrdersFilters({ q, status }: OrdersFiltersProps) {
       <form method="GET" className="flex items-center gap-2">
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="orders-search" className="sr-only">
-          Search orders by order number or customer
+          {dictionary.orders.search.ariaLabel}
         </label>
         <div className="relative">
           <Search
@@ -70,12 +74,11 @@ export function OrdersFilters({ q, status }: OrdersFiltersProps) {
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Search order # or customer..."
+            placeholder={dictionary.orders.search.placeholder}
             // text-base md:text-[13px] (not a fixed text-[13px]): a real
             // text-entry control — iOS Safari auto-zooms the visual
-            // viewport when a focused input's computed font-size is below
-            // 16px, same fix already applied elsewhere (New Order's
-            // Qty/Price/Notes, the global Input/Textarea).
+            // viewport when a focused input's computed font-size is
+            // below 16px.
             className="h-9 w-full min-w-[200px] rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-9 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
           />
         </div>

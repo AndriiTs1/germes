@@ -1,12 +1,11 @@
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatShortDate } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { pluralize } from "@/lib/i18n/pluralize";
 import type { SalesCustomerDetail } from "@/lib/services/sales/get-sales-customer-detail";
 
 type OverviewField = { label: string; value: string };
-
-function formatPaymentTerms(days: number): string {
-  return `${days} day${days === 1 ? "" : "s"}`;
-}
 
 /**
  * Only fields with a real value are shown — nulls are omitted from the
@@ -17,32 +16,44 @@ function formatPaymentTerms(days: number): string {
  * schema has no currency for it, so no currency suffix is ever attached
  * here (see getSalesCustomerDetail's doc comment).
  */
-export function CustomerDetailOverview({ customer }: { customer: SalesCustomerDetail }) {
+export function CustomerDetailOverview({
+  customer,
+  locale,
+  dictionary,
+}: {
+  customer: SalesCustomerDetail;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
+  const t = dictionary.customerDetail.overview;
   const fields: OverviewField[] = [];
 
-  if (customer.contactPerson) fields.push({ label: "Contact person", value: customer.contactPerson });
-  if (customer.phone) fields.push({ label: "Phone", value: customer.phone });
-  if (customer.email) fields.push({ label: "Email", value: customer.email });
-  if (customer.legalName) fields.push({ label: "Legal name", value: customer.legalName });
-  if (customer.taxId) fields.push({ label: "Tax ID", value: customer.taxId });
-  if (customer.country) fields.push({ label: "Country", value: customer.country });
-  if (customer.address) fields.push({ label: "Address", value: customer.address });
+  if (customer.contactPerson) fields.push({ label: t.contactPerson, value: customer.contactPerson });
+  if (customer.phone) fields.push({ label: t.phone, value: customer.phone });
+  if (customer.email) fields.push({ label: t.email, value: customer.email });
+  if (customer.legalName) fields.push({ label: t.legalName, value: customer.legalName });
+  if (customer.taxId) fields.push({ label: t.taxId, value: customer.taxId });
+  if (customer.country) fields.push({ label: t.country, value: customer.country });
+  if (customer.address) fields.push({ label: t.address, value: customer.address });
 
-  fields.push({ label: "Payment terms", value: formatPaymentTerms(customer.paymentTermDays) });
-  if (customer.creditLimit) fields.push({ label: "Credit limit", value: customer.creditLimit });
+  fields.push({
+    label: t.paymentTerms,
+    value: pluralize(locale, customer.paymentTermDays, t.paymentTermsDays),
+  });
+  if (customer.creditLimit) fields.push({ label: t.creditLimit, value: customer.creditLimit });
 
   if (customer.lastContactAt) {
-    fields.push({ label: "Last contact", value: formatShortDate(customer.lastContactAt) });
+    fields.push({ label: t.lastContact, value: formatShortDate(customer.lastContactAt, locale) });
   }
   if (customer.lastPurchaseAt) {
-    fields.push({ label: "Last purchase", value: formatShortDate(customer.lastPurchaseAt) });
+    fields.push({ label: t.lastPurchase, value: formatShortDate(customer.lastPurchaseAt, locale) });
   }
   if (customer.nextActionAt) {
-    fields.push({ label: "Next action", value: formatShortDate(customer.nextActionAt) });
+    fields.push({ label: t.nextAction, value: formatShortDate(customer.nextActionAt, locale) });
   }
 
   return (
-    <DetailSection title="Overview">
+    <DetailSection title={t.title}>
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4">
         {fields.map((field) => (
           <div key={field.label} className="min-w-0">

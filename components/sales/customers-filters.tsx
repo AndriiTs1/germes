@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Search } from "lucide-react";
 
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
 export type CustomersStatusFilter = "all" | "ACTIVE" | "POTENTIAL" | "INACTIVE" | "BLOCKED";
@@ -8,15 +9,8 @@ export type CustomersStatusFilter = "all" | "ACTIVE" | "POTENTIAL" | "INACTIVE" 
 type CustomersFiltersProps = {
   q: string;
   status: CustomersStatusFilter;
+  dictionary: Dictionary;
 };
-
-const STATUS_TABS: { value: CustomersStatusFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "ACTIVE", label: "Active" },
-  { value: "POTENTIAL", label: "Potential" },
-  { value: "INACTIVE", label: "Inactive" },
-  { value: "BLOCKED", label: "Blocked" },
-];
 
 function buildFilterHref(status: CustomersStatusFilter, q: string): string {
   const params = new URLSearchParams();
@@ -30,13 +24,22 @@ function buildFilterHref(status: CustomersStatusFilter, q: string): string {
  * Same fully server-rendered, URL-driven pattern as OrdersFilters — no
  * client state, no context. Status tabs use the exact CustomerStatus enum
  * values, no invented grouping (unlike Orders' "Active" bucket, every
- * CustomerStatus value is already a standalone meaningful state).
+ * CustomerStatus value is already a standalone meaningful state). Query
+ * parameter VALUES are never localized — only the tab's rendered label is.
  */
-export function CustomersFilters({ q, status }: CustomersFiltersProps) {
+export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProps) {
+  const statusTabs: { value: CustomersStatusFilter; label: string }[] = [
+    { value: "all", label: dictionary.customers.filters.all },
+    { value: "ACTIVE", label: dictionary.customers.filters.active },
+    { value: "POTENTIAL", label: dictionary.customers.filters.potential },
+    { value: "INACTIVE", label: dictionary.customers.filters.inactive },
+    { value: "BLOCKED", label: dictionary.customers.filters.blocked },
+  ];
+
   return (
     <div className="flex flex-col gap-3 min-[640px]:flex-row min-[640px]:items-center min-[640px]:justify-between">
-      <nav aria-label="Filter customers by status" className="flex flex-wrap gap-1.5">
-        {STATUS_TABS.map((tab) => {
+      <nav aria-label={dictionary.customers.filters.ariaLabel} className="flex flex-wrap gap-1.5">
+        {statusTabs.map((tab) => {
           const isActive = tab.value === status;
           return (
             <Link
@@ -59,7 +62,7 @@ export function CustomersFilters({ q, status }: CustomersFiltersProps) {
       <form method="GET" className="flex items-center gap-2">
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="customers-search" className="sr-only">
-          Search customers by name, code, phone, or email
+          {dictionary.customers.search.ariaLabel}
         </label>
         <div className="relative">
           <Search
@@ -71,7 +74,7 @@ export function CustomersFilters({ q, status }: CustomersFiltersProps) {
             type="text"
             name="q"
             defaultValue={q}
-            placeholder="Search customers..."
+            placeholder={dictionary.customers.search.placeholder}
             // text-base md:text-[13px] (not a fixed text-[13px]): a real
             // text-entry control — iOS Safari auto-zooms the visual
             // viewport when a focused input's computed font-size is below

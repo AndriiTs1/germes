@@ -5,6 +5,7 @@ import { Calendar, ChevronLeft, ChevronRight } from "lucide-react"
 import { Popover as PopoverPrimitive } from "@base-ui/react/popover"
 import { cn } from "cn"
 import { FIELD_BASE_CLASSNAME } from "@/components/ui/field-styles"
+import { DEFAULT_LOCALE, INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config"
 
 export type DateInputProps = {
   /** Canonical value: "YYYY-MM-DD", or undefined/empty for no selection. Never a Date object. */
@@ -21,22 +22,34 @@ export type DateInputProps = {
   /** "YYYY-MM-DD" — dates after this are disabled. Invalid/absent = no upper bound. */
   max?: string
   "aria-label"?: string
+  /** Drives the calendar's weekday/month names via Intl.DateTimeFormat — never a hand-translated label array. Defaults to English. */
+  locale?: Locale
+  /** aria-label for the "previous month" nav button. Defaults to English. */
+  previousMonthLabel?: string
+  /** aria-label for the "next month" nav button. Defaults to English. */
+  nextMonthLabel?: string
   /** Applies to the trigger only — the popup's own sizing/positioning stays internal. */
   className?: string
 }
 
 type DateParts = { year: number; month: number; day: number } // month is 0-indexed, matching Date's own convention
 
-const WEEKDAY_LABELS = ["Su", "Mo", "Tu", "We", "Th", "Fr", "Sa"]
-const MONTH_LABELS_SHORT = [
-  "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec",
-]
-const MONTH_LABELS_FULL = [
-  "January", "February", "March", "April", "May", "June",
-  "July", "August", "September", "October", "November", "December",
-]
-
 const ISO_DATE_PATTERN = /^(\d{4})-(\d{2})-(\d{2})$/
+
+/**
+ * 2023-01-01 was a Sunday (UTC) — a stable, arbitrary reference week/year
+ * used only to ask Intl for each weekday's/month's real localized name; the
+ * actual year/day never appears in the output.
+ */
+function buildWeekdayLabels(intlLocale: string): string[] {
+  const formatter = new Intl.DateTimeFormat(intlLocale, { weekday: "short" })
+  return Array.from({ length: 7 }, (_, i) => formatter.format(new Date(Date.UTC(2023, 0, 1 + i))))
+}
+
+function buildMonthLabels(intlLocale: string, month: "short" | "long"): string[] {
+  const formatter = new Intl.DateTimeFormat(intlLocale, { month })
+  return Array.from({ length: 12 }, (_, i) => formatter.format(new Date(Date.UTC(2023, i, 1))))
+}
 
 /**
  * Strict "YYYY-MM-DD" -> parts parse. Rejects malformed strings AND
@@ -126,6 +139,9 @@ export function DateInput({
   min,
   max,
   "aria-label": ariaLabel,
+  locale = DEFAULT_LOCALE,
+  previousMonthLabel = "Previous month",
+  nextMonthLabel = "Next month",
   className,
 }: DateInputProps) {
   const [open, setOpen] = React.useState(false)
@@ -134,6 +150,11 @@ export function DateInput({
   const [activeDay, setActiveDay] = React.useState(() => todayParts().day)
   const dayButtonRefs = React.useRef(new Map<number, HTMLButtonElement>())
   const pendingFocusDay = React.useRef<number | null>(null)
+
+  const intlLocale = INTL_LOCALE_MAP[locale]
+  const weekdayLabels = React.useMemo(() => buildWeekdayLabels(intlLocale), [intlLocale])
+  const monthLabelsShort = React.useMemo(() => buildMonthLabels(intlLocale, "short"), [intlLocale])
+  const monthLabelsFull = React.useMemo(() => buildMonthLabels(intlLocale, "long"), [intlLocale])
 
   const selected = parseISODate(value)
   const minParts = parseISODate(min)
@@ -261,7 +282,7 @@ export function DateInput({
         )}
       >
         <span className={cn("min-w-0 flex-1 truncate", !selected && "text-slate-400")}>
-          {selected ? `${selected.day} ${MONTH_LABELS_SHORT[selected.month]} ${selected.year}` : placeholder}
+          {selected ? `${selected.day} ${monthLabelsShort[selected.month]} ${selected.year}` : placeholder}
         </span>
         <Calendar className="h-3.5 w-3.5 shrink-0 text-slate-400" strokeWidth={1.75} />
       </PopoverPrimitive.Trigger>
@@ -281,19 +302,19 @@ export function DateInput({
                 type="button"
                 onClick={() => goToMonth(-1)}
                 disabled={isPrevMonthDisabled}
-                aria-label="Previous month"
+                aria-label={previousMonthLabel}
                 className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-30"
               >
                 <ChevronLeft className="h-4 w-4" strokeWidth={1.75} />
               </button>
               <span className="text-[13px] font-medium text-slate-900">
-                {MONTH_LABELS_FULL[viewMonth]} {viewYear}
+                {monthLabelsFull[viewMonth]} {viewYear}
               </span>
               <button
                 type="button"
                 onClick={() => goToMonth(1)}
                 disabled={isNextMonthDisabled}
-                aria-label="Next month"
+                aria-label={nextMonthLabel}
                 className="flex h-7 w-7 items-center justify-center rounded-md text-slate-500 transition-colors hover:bg-slate-50 disabled:pointer-events-none disabled:opacity-30"
               >
                 <ChevronRight className="h-4 w-4" strokeWidth={1.75} />
@@ -301,7 +322,7 @@ export function DateInput({
             </div>
 
             <div className="grid grid-cols-7 gap-0.5">
-              {WEEKDAY_LABELS.map((label, index) => (
+              {weekdayLabels.map((label, index) => (
                 <div
                   // Sunday/Wednesday repeat visually ("Su"/"We") but each
                   // column position is unique — index is a legitimate key here.
@@ -330,7 +351,7 @@ export function DateInput({
                     tabIndex={isActive ? 0 : -1}
                     disabled={isDisabledDay}
                     aria-pressed={isSelected}
-                    aria-label={`${parts.day} ${MONTH_LABELS_FULL[parts.month]} ${parts.year}`}
+                    aria-label={`${parts.day} ${monthLabelsFull[parts.month]} ${parts.year}`}
                     onClick={() => selectDate(parts)}
                     onKeyDown={handleDayKeyDown}
                     className={cn(

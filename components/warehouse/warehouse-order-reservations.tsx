@@ -1,40 +1,44 @@
 import { formatKg, formatShortDate } from "@/components/sales/format";
 import { DetailSection } from "@/components/sales/detail-section";
 import {
-  RESERVATION_STATUS_LABELS,
+  getReservationStatusLabel,
   RESERVATION_STATUS_STYLES,
 } from "@/components/sales/reservation-status";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { WarehouseOrderDetailReservation } from "@/lib/services/warehouse/get-warehouse-order-detail";
 import { cn } from "@/lib/utils";
 
 type WarehouseOrderReservationsProps = {
   reservations: WarehouseOrderDetailReservation[];
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 /**
  * READ-ONLY: no Create/Release controls — Warehouse must never receive
  * Sales reservation mutation controls. A reservation's real, literal status
- * is always shown (never relabeled) via the same RESERVATION_STATUS_LABELS/
- * STYLES used on the Sales detail page. For CONFIRMED/PROCESSING/READY
- * orders, an ACTIVE reservation whose expiresAt has already passed is still
- * shown as "Active" (that IS its real status — this route never mutates
- * it) but flagged with a plain-language note that it no longer counts as
- * usable fulfillment, matching the "evaluate, never mutate" truth already
- * enforced by getWarehouseOrderDetail. For SHIPPED orders, CONSUMED rows
- * are expected historical fulfillment, not a failure — they render with
- * their own (positive) status color, no elapsed note.
+ * is always shown (never relabeled) via the same status.reservation
+ * dictionary map used on the Sales detail page. For CONFIRMED/PROCESSING/
+ * READY orders, an ACTIVE reservation whose expiresAt has already passed is
+ * still shown as "Active" (that IS its real status — this route never
+ * mutates it) but flagged with a plain-language note that it no longer
+ * counts as usable fulfillment, matching the "evaluate, never mutate" truth
+ * already enforced by getWarehouseOrderDetail. For SHIPPED orders,
+ * CONSUMED rows are expected historical fulfillment, not a failure — they
+ * render with their own (positive) status color, no elapsed note.
  */
-export function WarehouseOrderReservations({ reservations }: WarehouseOrderReservationsProps) {
+export function WarehouseOrderReservations({ reservations, locale, dictionary }: WarehouseOrderReservationsProps) {
   const now = new Date();
+  const t = dictionary.warehouse.orderDetail.reservations;
+  const common = dictionary.common;
 
   return (
-    <DetailSection title="Reservations">
+    <DetailSection title={t.title}>
       {reservations.length === 0 ? (
         <div className="rounded-xl border border-dashed border-slate-200 px-4 py-6 text-center">
-          <p className="text-[13px] font-medium text-slate-700">No reservations yet</p>
-          <p className="mt-1 text-[11.5px] text-slate-400">
-            Reserved stock for this order will appear here.
-          </p>
+          <p className="text-[13px] font-medium text-slate-700">{common.reservationsEmptyTitle}</p>
+          <p className="mt-1 text-[11.5px] text-slate-400">{common.reservationsEmptyDescription}</p>
         </div>
       ) : (
         <ul className="flex flex-col gap-2">
@@ -55,30 +59,28 @@ export function WarehouseOrderReservations({ reservations }: WarehouseOrderReser
                   </p>
 
                   <p className="text-[11.5px] text-slate-500">
-                    {formatKg(reservation.quantityKg)} kg
+                    {formatKg(reservation.quantityKg, locale)} {common.kgUnit}
                   </p>
 
                   <p className="mt-0.5 text-[11px] text-slate-400">
-                    Batch: {reservation.batchNumber ?? "Not linked"}
+                    {common.batchLabel} {reservation.batchNumber ?? common.notLinked}
                   </p>
 
                   <p className="text-[11px] text-slate-400">
-                    Warehouse:{" "}
+                    {common.warehouseLabel}{" "}
                     {reservation.warehouseCode && reservation.warehouseName
                       ? `${reservation.warehouseCode} · ${reservation.warehouseName}`
-                      : (reservation.warehouseName ?? reservation.warehouseCode ?? "Not linked")}
+                      : (reservation.warehouseName ?? reservation.warehouseCode ?? common.notLinked)}
                   </p>
 
                   {reservation.expiresAt ? (
                     <p className="mt-0.5 text-[11px] text-slate-400">
-                      Expires {formatShortDate(reservation.expiresAt)}
+                      {common.expiresLabel} {formatShortDate(reservation.expiresAt, locale)}
                     </p>
                   ) : null}
 
                   {isElapsedActive ? (
-                    <p className="mt-1 text-[11px] font-medium text-rose-600">
-                      Elapsed — no longer counted as usable fulfillment
-                    </p>
+                    <p className="mt-1 text-[11px] font-medium text-rose-600">{t.elapsedNote}</p>
                   ) : null}
                 </div>
 
@@ -88,7 +90,7 @@ export function WarehouseOrderReservations({ reservations }: WarehouseOrderReser
                     RESERVATION_STATUS_STYLES[reservation.status] ?? "bg-slate-100 text-slate-600",
                   )}
                 >
-                  {RESERVATION_STATUS_LABELS[reservation.status] ?? reservation.status}
+                  {getReservationStatusLabel(dictionary.status.reservation, reservation.status)}
                 </span>
               </li>
             );

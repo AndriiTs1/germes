@@ -1,6 +1,8 @@
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { WarehouseWorkspace } from "@/components/warehouse/warehouse-workspace";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 
@@ -20,23 +22,27 @@ export default async function WarehousePage() {
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
 
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
+
   return (
     <DashboardShell
       user={user}
       permissionCodes={permissionCodes}
       activePath="/warehouse"
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-          Warehouse Workspace
+          {dictionary.warehouse.workspace.title}
         </h1>
         <p className="mt-1 text-[13px] text-slate-500">
-          Fulfillment queue and warehouse operations
+          {dictionary.warehouse.workspace.subtitle}
         </p>
       </div>
 
-      <WarehouseWorkspace />
+      <WarehouseWorkspace locale={locale} dictionary={dictionary} />
     </DashboardShell>
   );
 }

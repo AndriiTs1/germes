@@ -3,18 +3,27 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
 
-const GENERIC_LOGIN_ERROR =
-  "Unable to sign in. Please check your credentials and try again.";
-
+/**
+ * Presentation-only: the one generic string returned to the login form is
+ * localized via the same cookie-only locale resolution every other server
+ * boundary uses. Nothing about the Supabase auth flow below — the schema
+ * check, signInWithPassword, the active-user check, or the redirect — is
+ * touched by this.
+ */
 export async function login(
   input: LoginInput,
 ): Promise<{ error: string } | void> {
+  const locale = await getCurrentLocale();
+  const genericError = getDictionary(locale).auth.genericError;
+
   const parsed = loginSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: genericError };
   }
 
   const { email, password } = parsed.data;
@@ -27,14 +36,14 @@ export async function login(
   });
 
   if (error) {
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: genericError };
   }
 
   const user = await getCurrentUser();
 
   if (!user || !user.isActive) {
     await supabase.auth.signOut();
-    return { error: GENERIC_LOGIN_ERROR };
+    return { error: genericError };
   }
 
   redirect("/");

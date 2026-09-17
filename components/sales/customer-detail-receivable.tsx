@@ -1,5 +1,7 @@
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatMoney, formatShortDate } from "@/components/sales/format";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type {
   CustomerReceivableSummary,
   SalesCustomerDetailReceivableRow,
@@ -8,6 +10,8 @@ import type {
 type CustomerDetailReceivableProps = {
   receivables: CustomerReceivableSummary[];
   receivableDetails: SalesCustomerDetailReceivableRow[];
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 /**
@@ -20,17 +24,21 @@ type CustomerDetailReceivableProps = {
 export function CustomerDetailReceivable({
   receivables,
   receivableDetails,
+  locale,
+  dictionary,
 }: CustomerDetailReceivableProps) {
+  const t = dictionary.customerDetail.receivables;
+
   if (receivables.length === 0) {
     return (
-      <DetailSection title="Receivables">
-        <p className="text-[13px] text-slate-400">No outstanding receivables</p>
+      <DetailSection title={t.title}>
+        <p className="text-[13px] text-slate-400">{t.empty}</p>
       </DetailSection>
     );
   }
 
   return (
-    <DetailSection title="Receivables">
+    <DetailSection title={t.title}>
       <div className="flex flex-col gap-2">
         {receivables.map((r) => (
           <div
@@ -42,13 +50,13 @@ export function CustomerDetailReceivable({
             </span>
             <div className="flex items-center gap-4 text-right">
               <div>
-                <p className="text-[10.5px] text-slate-400">Outstanding</p>
+                <p className="text-[10.5px] text-slate-400">{t.outstanding}</p>
                 <p className="text-[13.5px] font-semibold text-slate-900">
-                  {formatMoney(r.totalOutstanding, r.currency)}
+                  {formatMoney(r.totalOutstanding, r.currency, locale)}
                 </p>
               </div>
               <div>
-                <p className="text-[10.5px] text-slate-400">Overdue</p>
+                <p className="text-[10.5px] text-slate-400">{t.overdue}</p>
                 <p
                   className={
                     r.overdueOutstanding !== "0"
@@ -56,7 +64,7 @@ export function CustomerDetailReceivable({
                       : "text-[13.5px] font-semibold text-slate-900"
                   }
                 >
-                  {formatMoney(r.overdueOutstanding, r.currency)}
+                  {formatMoney(r.overdueOutstanding, r.currency, locale)}
                 </p>
               </div>
             </div>
@@ -72,11 +80,13 @@ export function CustomerDetailReceivable({
               className="flex items-center justify-between gap-3 text-[12.5px]"
             >
               <span className="truncate text-slate-500">
-                {row.dueDate ? `Due ${formatShortDate(row.dueDate)}` : "No due date"}
+                {row.dueDate
+                  ? `${dictionary.common.dueLabel} ${formatShortDate(row.dueDate, locale)}`
+                  : dictionary.common.noDueDate}
                 {row.reference ? ` · ${row.reference}` : ""}
               </span>
               <span className="shrink-0 font-medium text-slate-900">
-                {formatMoney(row.outstanding, row.currency)}
+                {formatMoney(row.outstanding, row.currency, locale)}
               </span>
             </li>
           ))}

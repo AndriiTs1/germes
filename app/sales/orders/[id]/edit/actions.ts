@@ -2,6 +2,8 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { updateSalesOrder } from "@/lib/services/sales/update-sales-order";
 import {
@@ -10,12 +12,6 @@ import {
 } from "@/lib/validation/sales-order";
 
 const SALES_ORDERS_UPDATE_PERMISSION = "sales.orders.update";
-
-const GENERIC_SAVE_ERROR = "Could not save changes. Please try again.";
-const ORDER_NOT_EDITABLE_ERROR = "This order can no longer be edited.";
-const STALE_EDIT_ERROR = "This order was changed elsewhere. Reload the page and try again.";
-const CUSTOMER_UNAVAILABLE_ERROR = "Selected customer is unavailable.";
-const PRODUCT_UNAVAILABLE_ERROR = "One or more selected products are unavailable.";
 
 /**
  * The mutation boundary. Never relies on the page having already gated
@@ -36,34 +32,37 @@ export async function updateSalesOrderAction(
   loadedUpdatedAt: string,
   input: CreateSalesOrderFormValues,
 ): Promise<{ error: string } | void> {
+  const locale = await getCurrentLocale();
+  const t = getDictionary(locale).orderActions;
+
   const user = await requirePermission(SALES_ORDERS_UPDATE_PERMISSION).catch(() => null);
 
   if (!user) {
-    return { error: GENERIC_SAVE_ERROR };
+    return { error: t.saveGenericError };
   }
 
   const parsed = createSalesOrderSchema.safeParse(input);
 
   if (!parsed.success) {
-    return { error: GENERIC_SAVE_ERROR };
+    return { error: t.saveGenericError };
   }
 
   const result = await updateSalesOrder(user.id, orderId, loadedUpdatedAt, parsed.data);
 
   if (!result.ok) {
     if (result.error === "ORDER_NOT_EDITABLE") {
-      return { error: ORDER_NOT_EDITABLE_ERROR };
+      return { error: t.orderNotEditable };
     }
     if (result.error === "STALE_EDIT") {
-      return { error: STALE_EDIT_ERROR };
+      return { error: t.staleEdit };
     }
     if (result.error === "CUSTOMER_UNAVAILABLE") {
-      return { error: CUSTOMER_UNAVAILABLE_ERROR };
+      return { error: t.customerUnavailable };
     }
     if (result.error === "PRODUCT_UNAVAILABLE") {
-      return { error: PRODUCT_UNAVAILABLE_ERROR };
+      return { error: t.productUnavailable };
     }
-    return { error: GENERIC_SAVE_ERROR };
+    return { error: t.saveGenericError };
   }
 
   revalidatePath("/sales");

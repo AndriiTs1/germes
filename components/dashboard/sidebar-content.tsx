@@ -3,12 +3,14 @@ import { ChevronsUpDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { filterNavSections, navSections } from "@/components/dashboard/nav-items";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { UserDisplay } from "@/components/dashboard/user-display";
 
 type SidebarContentProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
   activePath: string;
+  dictionary: Dictionary;
   onNavigate?: () => void;
 };
 
@@ -20,11 +22,16 @@ type SidebarContentProps = {
  * so it can keep being imported directly by the Client Component MobileNav,
  * exactly as it can be today. All auth/permission data arrives as plain
  * props, already computed server-side by the page + DashboardShell.
+ *
+ * dictionary resolves each item/section's display label (labelKey ->
+ * dictionary.nav[...]) — filterNavSections itself stays entirely
+ * locale-agnostic (see nav-items.ts); only the rendered text varies here.
  */
 export function SidebarContent({
   permissionCodes,
   userDisplay,
   activePath,
+  dictionary,
   onNavigate,
 }: SidebarContentProps) {
   const visibleSections = filterNavSections(navSections, permissionCodes, activePath);
@@ -47,13 +54,13 @@ export function SidebarContent({
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
         {visibleSections.map((section, index) => (
-          <div key={section.label} className={cn(index > 0 && "mt-6 xl:mt-7")}>
+          <div key={section.labelKey} className={cn(index > 0 && "mt-6 xl:mt-7")}>
             <p className="mb-2 px-3 text-[10.5px] font-medium tracking-[0.08em] text-slate-400 uppercase">
-              {section.label}
+              {dictionary.nav.sections[section.labelKey]}
             </p>
             <ul className="space-y-0.5">
               {section.items.map((item) => (
-                <li key={item.label}>
+                <li key={item.labelKey}>
                   <Link
                     href={item.href}
                     onClick={onNavigate}
@@ -72,7 +79,7 @@ export function SidebarContent({
                       )}
                       strokeWidth={1.6}
                     />
-                    {item.label}
+                    {dictionary.nav[item.labelKey]}
                   </Link>
                 </li>
               ))}

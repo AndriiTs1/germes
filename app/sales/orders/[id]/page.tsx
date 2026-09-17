@@ -2,13 +2,15 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
-import { ORDER_STATUS_LABELS, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
+import { getOrderStatusLabel, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
 import { OrderDetailActions } from "@/components/sales/order-detail-actions";
 import { OrderDetailItems } from "@/components/sales/order-detail-items";
 import { OrderDetailNotes } from "@/components/sales/order-detail-notes";
 import { OrderDetailOverview } from "@/components/sales/order-detail-overview";
 import { OrderDetailReceivable } from "@/components/sales/order-detail-receivable";
 import { OrderDetailReservations } from "@/components/sales/order-detail-reservations";
+import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
@@ -45,6 +47,9 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   const canReleaseReservations = permissionCodes.includes(
     RESERVATIONS_RELEASE_PERMISSION,
   );
+
+  const locale = await getCurrentLocale();
+  const dictionary = getDictionary(locale);
 
   if (canReadReservations || canCreateReservations) {
     await expireStockReservations();
@@ -88,6 +93,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
       user={user}
       permissionCodes={permissionCodes}
       activePath={`/sales/orders/${order.id}`}
+      dictionary={dictionary}
       showPeriodControl={false}
     >
       <div className="pb-4 xl:pb-3">
@@ -96,7 +102,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-700"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />
-          Back to Orders
+          {dictionary.orderDetail.backToOrders}
         </Link>
 
         <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
@@ -110,17 +116,22 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
                 ORDER_STATUS_STYLES[order.status] ?? "bg-slate-100 text-slate-600",
               )}
             >
-              {ORDER_STATUS_LABELS[order.status] ?? order.status}
+              {getOrderStatusLabel(dictionary.status.order, order.status)}
             </span>
           </div>
 
-          <OrderDetailActions orderId={order.id} status={order.status} canUpdate={canUpdate} />
+          <OrderDetailActions
+            orderId={order.id}
+            status={order.status}
+            canUpdate={canUpdate}
+            dictionary={dictionary.orderDetail.actions}
+          />
         </div>
       </div>
 
       <div className="flex flex-col gap-4 xl:gap-3">
-        <OrderDetailOverview order={order} />
-        <OrderDetailItems items={order.items} currency={order.currency} />
+        <OrderDetailOverview order={order} locale={locale} dictionary={dictionary} />
+        <OrderDetailItems items={order.items} currency={order.currency} locale={locale} dictionary={dictionary} />
 
         {hasSecondaryRow ? (
           <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2 xl:items-start xl:gap-3">
@@ -131,13 +142,20 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
                 availability={reservationAvailability}
                 canCreate={canCreateForOrder}
                 canRelease={canReleaseReservations}
+                locale={locale}
+                dictionary={dictionary.orderDetail.reservations}
+                common={dictionary.common}
+                statusLabels={dictionary.status.reservation}
+                errorSelectBatchAndWarehouse={dictionary.reservationActions.selectBatchAndWarehouse}
               />
             ) : null}
-            {order.receivable ? <OrderDetailReceivable receivable={order.receivable} /> : null}
+            {order.receivable ? (
+              <OrderDetailReceivable receivable={order.receivable} locale={locale} dictionary={dictionary} />
+            ) : null}
           </div>
         ) : null}
 
-        {hasNotes ? <OrderDetailNotes notes={order.notes as string} /> : null}
+        {hasNotes ? <OrderDetailNotes notes={order.notes as string} dictionary={dictionary} /> : null}
       </div>
     </DashboardShell>
   );

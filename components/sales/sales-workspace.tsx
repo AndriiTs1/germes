@@ -14,12 +14,16 @@ import { ReceivablesCard } from "@/components/sales/receivables-card";
 import { ReservationsCard } from "@/components/sales/reservations-card";
 import { formatKg } from "@/components/sales/format";
 import { SalesKpiSummary, type SalesKpiCardProps } from "@/components/sales/sales-kpi-row";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 
 const RECENT_ORDERS_LIMIT = 5;
 
 type SalesWorkspaceProps = {
   userId: string;
   permissionCodes: string[];
+  locale: Locale;
+  dictionary: Dictionary;
 };
 
 /**
@@ -29,7 +33,7 @@ type SalesWorkspaceProps = {
  * to see. Each service stays permission-agnostic, as designed in Stage 8C;
  * all authorization decisions live in this Server Component instead.
  */
-export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspaceProps) {
+export async function SalesWorkspace({ userId, permissionCodes, locale, dictionary }: SalesWorkspaceProps) {
   const canReadCustomers = permissionCodes.includes("customers.read");
   const canReadOrders = permissionCodes.includes("sales.orders.read");
   const canReadStock = permissionCodes.includes("inventory.stock.read");
@@ -50,11 +54,12 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
     canReadReceivables ? getReceivableExposure(userId) : Promise.resolve(null),
   ]);
 
+  const kpi = dictionary.sales.workspace.kpi;
   const kpis: SalesKpiCardProps[] = [];
 
   if (attentionCustomers) {
     kpis.push({
-      label: "Needs Attention",
+      label: kpi.needsAttention,
       value: String(attentionCustomers.length),
       icon: UserRoundCheck,
       accent: "rose",
@@ -63,7 +68,7 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
 
   if (ordersResult) {
     kpis.push({
-      label: "Active Orders",
+      label: kpi.activeOrders,
       value: String(ordersResult.totalCount),
       icon: ClipboardList,
       accent: "blue",
@@ -79,17 +84,17 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
     if (withOverdue.length === 0) {
       value = "0";
     } else if (withOverdue.length === 1) {
-      value = formatKg(withOverdue[0].overdueOutstanding);
+      value = formatKg(withOverdue[0].overdueOutstanding, locale);
       unit = withOverdue[0].currency;
     } else {
       // Never combine currencies into one fake total — show a compact,
       // currency-safe count instead. Individual values remain available
       // in the Receivables card itself.
       value = String(withOverdue.length);
-      unit = "currencies";
+      unit = kpi.currenciesUnit;
     }
 
-    kpis.push({ label: "Overdue AR", value, unit, icon: CircleDollarSign, accent: "amber" });
+    kpis.push({ label: kpi.overdueAr, value, unit, icon: CircleDollarSign, accent: "amber" });
   }
 
   if (stock) {
@@ -103,12 +108,12 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
     );
 
     kpis.push({
-      label: "Reserved",
-      value: formatKg(totalReserved.toString()),
-      unit: "kg",
+      label: kpi.reserved,
+      value: formatKg(totalReserved.toString(), locale),
+      unit: dictionary.common.kgUnit,
       icon: PackageSearch,
       accent: "violet",
-      warning: totalInconsistent.greaterThan(0) ? "Some reservations need review" : undefined,
+      warning: totalInconsistent.greaterThan(0) ? kpi.reservationsNeedReview : undefined,
     });
   }
 
@@ -131,9 +136,11 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
         } xl:gap-3.5`}
       >
         {canReadCustomers && attentionCustomers ? (
-          <NeedsAttentionCard customers={attentionCustomers} />
+          <NeedsAttentionCard customers={attentionCustomers} dictionary={dictionary} />
         ) : null}
-        {canReadOrders && ordersResult ? <ActiveOrdersCard orders={ordersResult.orders} /> : null}
+        {canReadOrders && ordersResult ? (
+          <ActiveOrdersCard orders={ordersResult.orders} locale={locale} dictionary={dictionary} />
+        ) : null}
       </div>
 
       <div
@@ -141,13 +148,17 @@ export async function SalesWorkspace({ userId, permissionCodes }: SalesWorkspace
           secondaryCardCount >= 2 ? "md:grid-cols-2" : ""
         } ${secondaryCardCount === 3 ? "lg:grid-cols-3" : ""} xl:gap-3.5`}
       >
-        {canReadStock && stock ? <AvailableStockCard stock={stock} /> : null}
+        {canReadStock && stock ? (
+          <AvailableStockCard stock={stock} locale={locale} dictionary={dictionary} />
+        ) : null}
         {canReadReservations && reservations ? (
-          <ReservationsCard reservations={reservations} />
+          <ReservationsCard reservations={reservations} locale={locale} dictionary={dictionary} />
         ) : null}
         {canReadReceivables && receivables ? (
           <ReceivablesCard
             receivables={receivables}
+            locale={locale}
+            dictionary={dictionary}
             className={
               secondaryCardCount === 3
                 ? "md:col-span-2 lg:col-span-1"

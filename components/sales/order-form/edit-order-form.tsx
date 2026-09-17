@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { updateSalesOrderAction } from "@/app/sales/orders/[id]/edit/actions";
 import { OrderFormItemRow } from "@/components/sales/order-form/order-form-item-row";
 import { SearchableSelect } from "@/components/sales/order-form/searchable-select";
+import { formatPreviewNumber } from "@/components/sales/format";
 import { DateInput } from "@/components/ui/date-input";
+import type { Locale } from "@/lib/i18n/config";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type {
   NewOrderFormCustomer,
   NewOrderFormProduct,
@@ -24,6 +27,8 @@ type EditOrderFormProps = {
   order: SalesOrderForEdit;
   customers: NewOrderFormCustomer[];
   products: NewOrderFormProduct[];
+  locale: Locale;
+  dictionary: Dictionary["orderForm"];
 };
 
 const EMPTY_ITEM = { productId: "", quantityKg: "", pricePerKg: "" };
@@ -53,7 +58,7 @@ function computeDisplayOrderTotal(items: { quantityKg: string; pricePerKg: strin
   }, 0);
 }
 
-export function EditOrderForm({ order, customers, products }: EditOrderFormProps) {
+export function EditOrderForm({ order, customers, products, locale, dictionary }: EditOrderFormProps) {
   const methods = useForm<CreateSalesOrderFormValues>({
     resolver: zodResolver(createSalesOrderSchema),
     defaultValues: {
@@ -94,7 +99,7 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
           <div className="grid grid-cols-1 gap-4 min-[640px]:grid-cols-2 min-[1024px]:grid-cols-4">
             <div>
               <label htmlFor="customerId" className={labelClassName}>
-                Customer
+                {dictionary.customer}
               </label>
               <Controller
                 control={control}
@@ -110,7 +115,7 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
                         value: customer.id,
                         label: `${customer.name} (${customer.code})`,
                       }))}
-                      placeholder="Select a customer"
+                      placeholder={dictionary.selectCustomer}
                       error={!!errors.customerId}
                     />
                   </div>
@@ -123,7 +128,7 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
 
             <div>
               <label htmlFor="requestedDate" className={labelClassName}>
-                Requested date
+                {dictionary.requestedDate}
               </label>
               <Controller
                 control={control}
@@ -136,8 +141,11 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
                       value={field.value}
                       onValueChange={field.onChange}
                       onBlur={field.onBlur}
-                      placeholder="Select a date"
+                      placeholder={dictionary.selectDate}
                       error={!!errors.requestedDate}
+                      locale={locale}
+                      previousMonthLabel={dictionary.previousMonth}
+                      nextMonthLabel={dictionary.nextMonth}
                     />
                   </div>
                 )}
@@ -148,7 +156,7 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
             </div>
 
             <div>
-              <span className={labelClassName}>Currency</span>
+              <span className={labelClassName}>{dictionary.currency}</span>
               <p className="mt-1 flex h-9 items-center text-[13px] font-medium text-slate-700">
                 {order.currency}
               </p>
@@ -156,12 +164,12 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
 
             <div className="min-[640px]:col-span-2 min-[1024px]:col-span-1">
               <label htmlFor="notes" className={labelClassName}>
-                Notes
+                {dictionary.notes}
               </label>
               <input
                 id="notes"
                 type="text"
-                placeholder="Optional"
+                placeholder={dictionary.notesPlaceholder}
                 className={fieldClassName}
                 {...register("notes")}
               />
@@ -174,7 +182,9 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
 
         <div className={cardClassName}>
           <div className="flex items-center justify-between">
-            <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">Items</h2>
+            <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">
+              {dictionary.items}
+            </h2>
             <button
               type="button"
               // shouldFocus: false — RHF's default auto-focuses the new
@@ -186,7 +196,7 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
               className="inline-flex items-center gap-1 rounded-full border border-slate-200/70 bg-white px-3 py-1.5 text-[12.5px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
             >
               <Plus className="h-3.5 w-3.5" strokeWidth={1.75} />
-              Add item
+              {dictionary.addItem}
             </button>
           </div>
 
@@ -198,6 +208,8 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
                 products={products}
                 onRemove={() => remove(index)}
                 canRemove={fields.length > 1}
+                locale={locale}
+                dictionary={dictionary}
               />
             ))}
           </div>
@@ -209,9 +221,9 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
 
         <div className={cn(cardClassName, "flex items-center justify-between")}>
           <div>
-            <p className={labelClassName}>Order total</p>
+            <p className={labelClassName}>{dictionary.orderTotal}</p>
             <p className="mt-0.5 text-[18px] font-semibold text-slate-900">
-              {orderTotal.toLocaleString("en-US", { maximumFractionDigits: 2 })} {order.currency}
+              {formatPreviewNumber(orderTotal, locale)} {order.currency}
             </p>
           </div>
           <div className="flex items-center gap-2">
@@ -219,14 +231,14 @@ export function EditOrderForm({ order, customers, products }: EditOrderFormProps
               href={`/sales/orders/${order.id}`}
               className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
             >
-              Cancel
+              {dictionary.cancel}
             </Link>
             <button
               type="submit"
               disabled={isSubmitting}
               className="rounded-full bg-slate-900 px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
             >
-              {isSubmitting ? "Saving…" : "Save Changes"}
+              {isSubmitting ? dictionary.saving : dictionary.saveChanges}
             </button>
           </div>
         </div>
