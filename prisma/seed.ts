@@ -136,9 +136,22 @@ async function main() {
       roles: ["ADMIN", "SALES"],
     },
     {
+      code: "inventory.shipments.read",
+      description: "View a sales order's Warehouse fulfillment detail",
+      roles: ["OWNER", "ADMIN", "WAREHOUSE"],
+    },
+    {
       code: "inventory.shipments.process",
       description: "Mark a sales order as shipped (physical fulfillment)",
-      roles: ["OWNER", "ADMIN", "WAREHOUSE"],
+      // OWNER intentionally excluded (RBAC Phase 2A): starting/marking
+      // ready/shipping are routine warehouse-operator execution, not
+      // owner-level controls — same reasoning as sales.orders.update in
+      // Phase 2B. OWNER retains read access via inventory.shipments.read
+      // above. See scripts/sync-workspace-permissions.ts, which must be
+      // run against a real database to actually revoke this from an
+      // existing OWNER grant — this seed file alone never reaches
+      // production.
+      roles: ["ADMIN", "WAREHOUSE"],
     },
     {
       code: "customers.read",

@@ -13,6 +13,8 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
 type WarehouseOrderActionsProps = {
   orderId: string;
   status: string;
+  /** Derived from inventory.shipments.process (RBAC Phase 2A) — distinct from the page's own inventory.shipments.read gate, so a viewer with read-only access (e.g. OWNER) can reach this page without seeing operational controls. */
+  canProcess: boolean;
   dictionary: Dictionary["warehouse"]["orderDetail"]["actions"];
 };
 
@@ -40,7 +42,12 @@ function reportResult(result: WarehouseOrderActionState) {
  * confirmation only; shipSalesOrder() remains the sole authority on
  * whether the order is actually still READY and safely shippable.
  */
-export function WarehouseOrderActions({ orderId, status, dictionary }: WarehouseOrderActionsProps) {
+export function WarehouseOrderActions({
+  orderId,
+  status,
+  canProcess,
+  dictionary,
+}: WarehouseOrderActionsProps) {
   const [isPending, startTransition] = useTransition();
   const [shipDialogOpen, setShipDialogOpen] = useState(false);
   const cancelShipButtonRef = useRef<HTMLButtonElement>(null);
@@ -73,6 +80,8 @@ export function WarehouseOrderActions({ orderId, status, dictionary }: Warehouse
       document.body.style.overflow = previousOverflow;
     };
   }, [shipDialogOpen]);
+
+  if (!canProcess) return null;
 
   const showStartProcessing = status === "CONFIRMED";
   const showMarkReady = status === "PROCESSING";

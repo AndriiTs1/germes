@@ -14,7 +14,8 @@ import { requirePermission } from "@/lib/permissions/require-permission";
 import { getWarehouseOrderDetail } from "@/lib/services/warehouse/get-warehouse-order-detail";
 import { cn } from "@/lib/utils";
 
-const WAREHOUSE_WORKSPACE_PERMISSION = "inventory.shipments.process";
+const WAREHOUSE_ORDER_READ_PERMISSION = "inventory.shipments.read";
+const WAREHOUSE_ORDER_PROCESS_PERMISSION = "inventory.shipments.process";
 
 export default async function WarehouseOrderDetailPage(
   props: PageProps<"/warehouse/orders/[id]">,
@@ -24,13 +25,20 @@ export default async function WarehouseOrderDetailPage(
     // Same reasoning as every other workspace route: any failure here
     // (unauthenticated or missing this permission) is safest resolved by
     // "/", which re-derives the correct destination from the user's real
-    // permissions.
-    user = await requirePermission(WAREHOUSE_WORKSPACE_PERMISSION);
+    // permissions. This is the READ gate only (RBAC Phase 2A) — it must
+    // never be inventory.shipments.process, which now authorizes only the
+    // lifecycle mutations below, not page access.
+    user = await requirePermission(WAREHOUSE_ORDER_READ_PERMISSION);
   } catch {
     redirect("/");
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  // Independently derived, existing-pattern permission check (same shape
+  // as canUpdate/canCreateReservations on the Sales order detail page) —
+  // never a role-code check. Threaded through as an explicit prop so
+  // WarehouseOrderActions never has to resolve permissions itself.
+  const canProcess = permissionCodes.includes(WAREHOUSE_ORDER_PROCESS_PERMISSION);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -82,6 +90,7 @@ export default async function WarehouseOrderDetailPage(
           <WarehouseOrderActions
             orderId={order.id}
             status={order.status}
+            canProcess={canProcess}
             dictionary={dictionary.warehouse.orderDetail.actions}
           />
         </div>

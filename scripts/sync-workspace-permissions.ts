@@ -11,10 +11,14 @@
  * (previously also ADMIN, which silently restored every permission Phase 1
  * removed from OWNER, via role union). RBAC Phase 2B added
  * sales.orders.update (edit/confirm/cancel a sales order), also revoked
- * from OWNER for the same routine-operational reasoning. Adding a future
- * permission or demo user to either allow-list is the same one-line
- * pattern: add an entry whose desired state matches prisma/seed.ts
- * exactly.
+ * from OWNER for the same routine-operational reasoning. RBAC Phase 2A
+ * split inventory.shipments.process into a new read permission
+ * (inventory.shipments.read — kept on OWNER) and the narrowed process
+ * permission (start/mark ready/ship — revoked from OWNER), so OWNER can
+ * still view Warehouse fulfillment detail without being able to execute
+ * its lifecycle transitions. Adding a future permission or demo user to
+ * either allow-list is the same one-line pattern: add an entry whose
+ * desired state matches prisma/seed.ts exactly.
  *
  * This is NOT prisma/seed.ts and must never be confused with it: the full
  * seed truncates operational/business tables (SalesOrder, SalesOrderItem,
@@ -104,6 +108,20 @@ const SYNCED_PERMISSIONS: {
     // sales-rep execution, not owner-level controls. Matches
     // prisma/seed.ts exactly.
     roleCodes: ["ADMIN", "SALES"],
+  },
+  {
+    code: "inventory.shipments.read",
+    description: "View a sales order's Warehouse fulfillment detail",
+    roleCodes: ["OWNER", "ADMIN", "WAREHOUSE"],
+  },
+  {
+    code: "inventory.shipments.process",
+    description: "Mark a sales order as shipped (physical fulfillment)",
+    // RBAC Phase 2A: OWNER removed — starting/marking ready/shipping are
+    // routine warehouse-operator execution, not owner-level controls.
+    // OWNER retains read access via inventory.shipments.read above.
+    // Matches prisma/seed.ts exactly.
+    roleCodes: ["ADMIN", "WAREHOUSE"],
   },
 ];
 
