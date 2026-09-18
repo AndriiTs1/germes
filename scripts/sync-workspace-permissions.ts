@@ -1,29 +1,38 @@
 /**
- * Idempotent, operator-invoked sync for an explicit allow-list of
- * Permission.code rows and their RolePermission grants — nothing else.
- * Originally scoped to just the two workspace-visibility permissions
- * (workspace.sales.access, workspace.warehouse.access); RBAC Phase 1
- * extended the same allow-list/reconciliation shape to cover three
- * routine-operational Sales permissions being revoked from OWNER
- * (sales.orders.create, sales.reservations.create,
- * sales.reservations.release) — see SYNCED_PERMISSIONS below. Adding a
- * future permission to this sync is the same one-line pattern: add an
- * entry here whose `roleCodes` matches prisma/seed.ts's permissionCatalog
- * entry for that code exactly.
+ * Idempotent, operator-invoked sync for two explicit allow-lists —
+ * SYNCED_PERMISSIONS (RolePermission grants) and
+ * DEMO_USER_ROLE_RECONCILIATION (specific demo users' UserRole sets) —
+ * and nothing else. Originally scoped to just the two workspace-visibility
+ * permissions (workspace.sales.access, workspace.warehouse.access); RBAC
+ * Phase 1 extended it to cover three routine-operational Sales permissions
+ * being revoked from OWNER (sales.orders.create, sales.reservations.create,
+ * sales.reservations.release). RBAC Phase 1.1 added
+ * DEMO_USER_ROLE_RECONCILIATION to make owner@germes.demo OWNER-only
+ * (previously also ADMIN, which silently restored every permission Phase 1
+ * removed from OWNER, via role union). Adding a future permission or demo
+ * user to either allow-list is the same one-line pattern: add an entry
+ * whose desired state matches prisma/seed.ts exactly.
  *
  * This is NOT prisma/seed.ts and must never be confused with it: the full
  * seed truncates operational/business tables (SalesOrder, SalesOrderItem,
  * StockReservation, StockMovement, Receivable, Payable) before reseeding
- * demo data. This script touches only two tables:
+ * demo data. This script touches only three tables:
  *   - permissions      (upsert exactly the rows in SYNCED_PERMISSIONS, by
  *     unique `code`)
  *   - role_permissions (insert/delete rows scoped to those permission ids
  *     only — every other permission's grants are left untouched, and no
  *     deleteMany here is ever unscoped)
+ *   - user_roles       (insert/delete rows scoped to one exact, resolved
+ *     User.id at a time, for exactly the emails listed in
+ *     DEMO_USER_ROLE_RECONCILIATION — never a blanket "every user gets
+ *     exactly one role" rule, and no other user's rows are ever read or
+ *     written)
  *
- * It never writes to Role, User, UserRole, or any business table, and it
- * fails closed (no writes at all) if any role referenced by
- * SYNCED_PERMISSIONS isn't already present — it never creates roles.
+ * It never writes to Role, User, or any business table, and it never
+ * creates a User or a Role. It fails closed (no writes at all) if any role
+ * referenced by SYNCED_PERMISSIONS or DEMO_USER_ROLE_RECONCILIATION isn't
+ * already present, or if any user referenced by
+ * DEMO_USER_ROLE_RECONCILIATION doesn't already exist.
  *
  * Run with:
  *   npx tsx scripts/sync-workspace-permissions.ts
@@ -87,6 +96,25 @@ const SYNCED_PERMISSIONS: {
   },
 ];
 
+// Explicit, per-email allow-list — reconciles ONE named demo user's entire
+// UserRole set to exactly `roleCodes` (adds anything missing, removes
+// anything not listed). This is never "every user should have exactly one
+// role": it's a targeted list of specific accounts, and every read/write
+// for an entry is additionally filtered by that one resolved User.id, so
+// it structurally cannot touch any user not named here. Keep in sync with
+// prisma/seed.ts's userRole.createMany data for the same email.
+const DEMO_USER_ROLE_RECONCILIATION: {
+  email: string;
+  roleCodes: string[];
+}[] = [
+  {
+    email: "owner@germes.demo",
+    // RBAC Phase 1.1: OWNER-only. Previously also ADMIN, which restored
+    // every permission Phase 1 removed from OWNER (role union).
+    roleCodes: ["OWNER"],
+  },
+];
+
 async function main() {
   requireEnv("DATABASE_URL");
 
@@ -96,11 +124,15 @@ async function main() {
 
   try {
     // --------------------------------------------------
-    // 1. Fail closed: every role referenced above must already exist.
-    //    No Role row is created or modified by this script.
+    // 1. Fail closed: every role referenced by either allow-list below
+    //    must already exist. No Role row is created or modified by this
+    //    script.
     // --------------------------------------------------
     const requiredRoleCodes = Array.from(
-      new Set(SYNCED_PERMISSIONS.flatMap((permission) => permission.roleCodes)),
+      new Set([
+        ...SYNCED_PERMISSIONS.flatMap((permission) => permission.roleCodes),
+        ...DEMO_USER_ROLE_RECONCILIATION.flatMap((demoUser) => demoUser.roleCodes),
+      ]),
     );
 
     const roleRows = await prisma.role.findMany({
@@ -114,6 +146,27 @@ async function main() {
       fail(
         `required role(s) not found in database: ${missingRoleCodes.join(", ")}. ` +
           "This script never creates roles — run the main seed's Role step first.",
+      );
+    }
+
+    // --------------------------------------------------
+    // 1b. Fail closed: every demo user referenced by
+    //     DEMO_USER_ROLE_RECONCILIATION must already exist. No User row is
+    //     created or modified by this script.
+    // --------------------------------------------------
+    const requiredDemoEmails = DEMO_USER_ROLE_RECONCILIATION.map((demoUser) => demoUser.email);
+
+    const demoUserRows = await prisma.user.findMany({
+      where: { email: { in: requiredDemoEmails } },
+    });
+
+    const userByEmail = Object.fromEntries(demoUserRows.map((user) => [user.email, user]));
+    const missingDemoEmails = requiredDemoEmails.filter((email) => !userByEmail[email]);
+
+    if (missingDemoEmails.length > 0) {
+      fail(
+        `required demo user(s) not found in database: ${missingDemoEmails.join(", ")}. ` +
+          "This script never creates users — run the main seed's Demo users step first.",
       );
     }
 
@@ -174,9 +227,52 @@ async function main() {
             `(now granted to: ${permission.roleCodes.join(", ")})`,
         );
       }
+
+      // --------------------------------------------------
+      // 4. Reconcile UserRole rows for the explicit demo-user allow-list —
+      //    scoped STRICTLY to one resolved User.id at a time. Every write
+      //    below is filtered by that exact userId (removals are
+      //    additionally filtered by an explicit roleId list), so no other
+      //    user's UserRole rows can ever be read or touched, and this is
+      //    never a blanket "collapse every user to one role" operation.
+      // --------------------------------------------------
+      for (const demoUser of DEMO_USER_ROLE_RECONCILIATION) {
+        const user = userByEmail[demoUser.email];
+        const desiredRoleIds = demoUser.roleCodes.map((code) => roleByCode[code].id);
+
+        const existingUserRoles = await tx.userRole.findMany({
+          where: { userId: user.id }, // scoped — never a bare findMany({})
+          select: { roleId: true },
+        });
+        const existingRoleIds = existingUserRoles.map((userRole) => userRole.roleId);
+
+        const toAdd = desiredRoleIds.filter((id) => !existingRoleIds.includes(id));
+        const toRemove = existingRoleIds.filter((id) => !desiredRoleIds.includes(id));
+
+        if (toAdd.length > 0) {
+          await tx.userRole.createMany({
+            data: toAdd.map((roleId) => ({ userId: user.id, roleId })),
+            skipDuplicates: true,
+          });
+        }
+
+        if (toRemove.length > 0) {
+          await tx.userRole.deleteMany({
+            where: {
+              userId: user.id, // scoped — this is never a bare deleteMany({})
+              roleId: { in: toRemove },
+            },
+          });
+        }
+
+        console.log(
+          `[sync-workspace-permissions] ${demoUser.email}: +${toAdd.length} -${toRemove.length} roles ` +
+            `(now assigned: ${demoUser.roleCodes.join(", ")})`,
+        );
+      }
     });
 
-    console.log("[sync-workspace-permissions] Success: permissions synced.");
+    console.log("[sync-workspace-permissions] Success: permissions and demo user roles synced.");
   } finally {
     await prisma.$disconnect();
   }

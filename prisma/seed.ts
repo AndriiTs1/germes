@@ -366,8 +366,13 @@ async function main() {
 
   await prisma.userRole.createMany({
     data: [
+      // owner@germes.demo is OWNER-only (RBAC Phase 1.1) — previously
+      // also carried ADMIN, which silently restored every operational
+      // permission Phase 1 removed from OWNER via role union. See
+      // scripts/sync-workspace-permissions.ts, which must be run against
+      // a real database to actually apply this to an existing account —
+      // this seed file alone never reaches production.
       { userId: owner.id, roleId: roleByCode.OWNER.id },
-      { userId: owner.id, roleId: roleByCode.ADMIN.id },
       { userId: salesManager.id, roleId: roleByCode.SALES.id },
       { userId: procurementManager.id, roleId: roleByCode.PROCUREMENT.id },
       { userId: accountant.id, roleId: roleByCode.ACCOUNTING.id },
