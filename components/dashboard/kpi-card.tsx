@@ -82,7 +82,7 @@ export function KpiCard({
         ) : null}
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-0.5 text-[11.5px]">
+      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11.5px]">
         <span
           className={cn(
             "inline-flex items-center gap-0.5 font-medium whitespace-nowrap",
@@ -92,7 +92,15 @@ export function KpiCard({
           <TrendIcon className="h-3 w-3" strokeWidth={2} />
           {trendValue}
         </span>
-        <span className="whitespace-nowrap text-slate-400">{comparisonLabel}</span>
+        {/*
+          basis-full: forces the comparison text onto its own flex-wrap
+          line, every time, so it always gets the card's full content width
+          to wrap within — never squeezed onto the trend badge's line and
+          never allowed to overflow past the card edge the way an
+          un-wrapped "по сравнению с прошлым месяцем" did before.
+          line-clamp-2 caps it at the "2 lines is acceptable" limit.
+        */}
+        <span className="line-clamp-2 min-w-0 basis-full text-slate-400">{comparisonLabel}</span>
       </div>
     </div>
   );
@@ -100,9 +108,17 @@ export function KpiCard({
 
 /**
  * Mobile-only (<768px) compact row variant of the same KPI, used inside a
- * single summary card instead of the tile grid. Full row width means the
- * value + unit never compete for space, so nothing here needs to shrink or
- * wrap — same data, same colors, same icon, just a different layout.
+ * single summary card instead of the tile grid.
+ *
+ * Previously this put the label and a `shrink-0` value/trend/comparison
+ * block on one horizontal line — since that right-hand block never shrinks
+ * and its own comparison text was `whitespace-nowrap`, a long RU/UK
+ * comparison sentence forced that block very wide and left the label only
+ * a sliver of the row (the "Ден / ср..." fragment bug). The label now gets
+ * its own full-width top zone instead of sharing width with the value at
+ * all — value/trend share one row below it, and comparison gets its own
+ * wrapping line — so the label always has the row's full width to wrap
+ * into up to two lines, matching KpiCard's behavior one column above it.
  */
 export function KpiRow({
   label,
@@ -118,7 +134,7 @@ export function KpiRow({
   const TrendIcon = trendDirection === "up" ? ArrowUpRight : ArrowDownRight;
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3">
+    <div className="flex items-start gap-2.5 px-4 py-3">
       <div
         className={cn(
           "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
@@ -128,32 +144,32 @@ export function KpiRow({
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </div>
 
-      {/* line-clamp-2 (not truncate): same reasoning as KpiCard above — prefer showing the complete label on up to two lines over a single-line ellipsis. min-w-0 flex-1 was already correct here. */}
-      <p className="line-clamp-2 min-w-0 flex-1 text-[13px] font-medium text-slate-500">{label}</p>
+      <div className="min-w-0 flex-1">
+        <p className="line-clamp-2 text-[13px] font-medium text-slate-500">{label}</p>
 
-      <div className="shrink-0 text-right">
-        <div className="flex items-baseline justify-end gap-1.5">
-          <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
-            {value}
-          </span>
-          {unit ? (
-            <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
-              {unit}
+        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
+          <div className="flex items-baseline gap-1.5">
+            <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
+              {value}
             </span>
-          ) : null}
-        </div>
-        <div className="mt-1.5 flex items-center justify-end gap-1.5 text-[11.5px]">
+            {unit ? (
+              <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
+                {unit}
+              </span>
+            ) : null}
+          </div>
           <span
             className={cn(
-              "inline-flex items-center gap-0.5 font-medium whitespace-nowrap",
+              "inline-flex shrink-0 items-center gap-0.5 text-[11.5px] font-medium whitespace-nowrap",
               sentimentTextStyles[trendSentiment],
             )}
           >
             <TrendIcon className="h-3 w-3" strokeWidth={2} />
             {trendValue}
           </span>
-          <span className="whitespace-nowrap text-slate-400">{comparisonLabel}</span>
         </div>
+
+        <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{comparisonLabel}</p>
       </div>
     </div>
   );
