@@ -19,6 +19,7 @@ export const uk: Dictionary = {
     reservationsEmptyDescription: "Тут з'явиться зарезервований товар для цього замовлення.",
     noDueDate: "Без терміну оплати",
     dueLabel: "Термін",
+    genericAccountLabel: "Обліковий запис Germes",
     table: {
       order: "Замовлення",
       customer: "Клієнт",

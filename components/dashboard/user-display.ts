@@ -22,8 +22,12 @@ function initialsFromName(name: string): string {
  * Derives display-only fields from real User data. Never surfaces role
  * names — secondary label is the email (or a neutral fallback), not a
  * job title, so this stays a display concern, not an authorization one.
+ *
+ * fallbackLabel is the caller-supplied, already-localized string used only
+ * when user.name is null — this file never reads locale/cookies/
+ * dictionaries itself, matching every other presentation-only component.
  */
-export function buildUserDisplay(user: ShellUser): UserDisplay {
+export function buildUserDisplay(user: ShellUser, fallbackLabel: string): UserDisplay {
   const trimmedName = user.name?.trim();
 
   if (trimmedName) {
@@ -36,7 +40,7 @@ export function buildUserDisplay(user: ShellUser): UserDisplay {
 
   return {
     name: user.email,
-    secondaryLabel: "Germes account",
+    secondaryLabel: fallbackLabel,
     initials: user.email.slice(0, 2).toUpperCase(),
   };
 }

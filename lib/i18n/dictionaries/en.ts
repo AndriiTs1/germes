@@ -25,6 +25,7 @@ export const en = {
     reservationsEmptyDescription: "Reserved stock for this order will appear here.",
     noDueDate: "No due date",
     dueLabel: "Due",
+    genericAccountLabel: "Germes account",
     table: {
       order: "Order",
       customer: "Customer",

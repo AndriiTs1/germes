@@ -19,6 +19,7 @@ export const ru: Dictionary = {
     reservationsEmptyDescription: "Здесь появится зарезервированный товар для этого заказа.",
     noDueDate: "Без срока оплаты",
     dueLabel: "Срок",
+    genericAccountLabel: "Учётная запись Germes",
     table: {
       order: "Заказ",
       customer: "Клиент",

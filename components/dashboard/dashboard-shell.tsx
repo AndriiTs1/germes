@@ -34,7 +34,7 @@ export function DashboardShell({
   showPeriodControl,
   children,
 }: DashboardShellProps) {
-  const userDisplay = buildUserDisplay(user);
+  const userDisplay = buildUserDisplay(user, dictionary.common.genericAccountLabel);
 
   return (
     <div className="flex min-h-screen w-full bg-[#F7F8FA]">
