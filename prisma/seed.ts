@@ -108,7 +108,13 @@ async function main() {
     {
       code: "sales.orders.update",
       description: "Edit or transition a sales order's status",
-      roles: ["OWNER", "ADMIN", "SALES"],
+      // OWNER intentionally excluded (RBAC Phase 2B): edit/confirm/cancel
+      // are routine sales-rep execution, not owner-level controls — same
+      // reasoning as sales.orders.create in Phase 1. See
+      // scripts/sync-workspace-permissions.ts, which must be run against
+      // a real database to actually revoke this from an existing OWNER
+      // grant — this seed file alone never reaches production.
+      roles: ["ADMIN", "SALES"],
     },
     {
       code: "sales.reservations.read",

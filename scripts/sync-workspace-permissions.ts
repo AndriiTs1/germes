@@ -9,9 +9,12 @@
  * sales.reservations.release). RBAC Phase 1.1 added
  * DEMO_USER_ROLE_RECONCILIATION to make owner@germes.demo OWNER-only
  * (previously also ADMIN, which silently restored every permission Phase 1
- * removed from OWNER, via role union). Adding a future permission or demo
- * user to either allow-list is the same one-line pattern: add an entry
- * whose desired state matches prisma/seed.ts exactly.
+ * removed from OWNER, via role union). RBAC Phase 2B added
+ * sales.orders.update (edit/confirm/cancel a sales order), also revoked
+ * from OWNER for the same routine-operational reasoning. Adding a future
+ * permission or demo user to either allow-list is the same one-line
+ * pattern: add an entry whose desired state matches prisma/seed.ts
+ * exactly.
  *
  * This is NOT prisma/seed.ts and must never be confused with it: the full
  * seed truncates operational/business tables (SalesOrder, SalesOrderItem,
@@ -92,6 +95,14 @@ const SYNCED_PERMISSIONS: {
   {
     code: "sales.reservations.release",
     description: "Manually release or cancel a stock reservation",
+    roleCodes: ["ADMIN", "SALES"],
+  },
+  {
+    code: "sales.orders.update",
+    description: "Edit or transition a sales order's status",
+    // RBAC Phase 2B: OWNER removed — edit/confirm/cancel are routine
+    // sales-rep execution, not owner-level controls. Matches
+    // prisma/seed.ts exactly.
     roleCodes: ["ADMIN", "SALES"],
   },
 ];
