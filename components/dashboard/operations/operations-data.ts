@@ -9,9 +9,19 @@ import {
 
 export type AttentionAccent = "rose" | "amber" | "violet" | "blue";
 
+/** Stable key into dictionary.commandCenter.needsAttention — the item's label is never stored here. */
+export type AttentionKind =
+  | "overdueCustomerPayments"
+  | "supplierInvoiceAwaitingApproval"
+  | "lowStock"
+  | "supplierPaymentDueTomorrow"
+  | "ordersAwaitingShipment";
+
 export type AttentionItem = {
   icon: LucideIcon;
-  label: string;
+  kind: AttentionKind;
+  /** Only present for kind: "lowStock" — the untouched demo product name, composed after the localized "Low stock:" prefix at render time. */
+  productName?: string;
   value: string;
   accent: AttentionAccent;
 };
@@ -19,31 +29,32 @@ export type AttentionItem = {
 export const needsAttention: AttentionItem[] = [
   {
     icon: CircleAlert,
-    label: "Overdue customer payments",
+    kind: "overdueCustomerPayments",
     value: "2 340 000 UAH",
     accent: "rose",
   },
   {
     icon: ClipboardCheck,
-    label: "Supplier invoice awaiting approval",
+    kind: "supplierInvoiceAwaitingApproval",
     value: "640 000 UAH",
     accent: "violet",
   },
   {
     icon: Drumstick,
-    label: "Low stock: Chicken Fillet",
+    kind: "lowStock",
+    productName: "Chicken Fillet",
     value: "0 kg",
     accent: "amber",
   },
   {
     icon: CalendarClock,
-    label: "Supplier payment due tomorrow",
+    kind: "supplierPaymentDueTomorrow",
     value: "1 200 000 UAH",
     accent: "violet",
   },
   {
     icon: Truck,
-    label: "Orders awaiting shipment",
+    kind: "ordersAwaitingShipment",
     value: "5 orders",
     accent: "blue",
   },
@@ -53,33 +64,64 @@ export type RecentOrder = {
   id: string;
   customer: string;
   amount: string;
-  timestamp: string;
   isToday: boolean;
+  /** Day-of-month and 0-indexed month — only present when !isToday; the locale-correct short month name is resolved at render time (see components/ui/date-input.tsx's convention). */
+  day?: number;
+  monthIndex?: number;
+  /** "HH:MM" — digits only, never localized text. */
+  time: string;
 };
 
 export const recentOrders: RecentOrder[] = [
-  { id: "#SO-1028", customer: "Meat House", amount: "1 240 000 UAH", timestamp: "Today, 14:32", isToday: true },
-  { id: "#SO-1027", customer: "Fresh Market", amount: "420 000 UAH", timestamp: "Today, 11:18", isToday: true },
-  { id: "#SO-1026", customer: "Restaurant Group", amount: "980 000 UAH", timestamp: "10 Sep, 16:05", isToday: false },
-  { id: "#SO-1025", customer: "Local Retail", amount: "320 000 UAH", timestamp: "10 Sep, 12:41", isToday: false },
-  { id: "#SO-1024", customer: "Food Service", amount: "640 000 UAH", timestamp: "9 Sep, 18:22", isToday: false },
+  { id: "#SO-1028", customer: "Meat House", amount: "1 240 000 UAH", isToday: true, time: "14:32" },
+  { id: "#SO-1027", customer: "Fresh Market", amount: "420 000 UAH", isToday: true, time: "11:18" },
+  {
+    id: "#SO-1026",
+    customer: "Restaurant Group",
+    amount: "980 000 UAH",
+    isToday: false,
+    day: 10,
+    monthIndex: 8,
+    time: "16:05",
+  },
+  {
+    id: "#SO-1025",
+    customer: "Local Retail",
+    amount: "320 000 UAH",
+    isToday: false,
+    day: 10,
+    monthIndex: 8,
+    time: "12:41",
+  },
+  {
+    id: "#SO-1024",
+    customer: "Food Service",
+    amount: "640 000 UAH",
+    isToday: false,
+    day: 9,
+    monthIndex: 8,
+    time: "18:22",
+  },
 ];
 
 export type PaymentStatus = "overdue" | "neutral" | "positive" | "upcoming";
 
+/** Stable key into dictionary.commandCenter.paymentCalendar.events — the event's label is never stored here. */
+export type PaymentEventType = "supplierPayment" | "taxPayment" | "customerReceipt";
+
 export type PaymentEvent = {
   day: string;
-  month: string;
-  event: string;
+  /** 0-indexed month — the locale-correct short month name is resolved at render time. */
+  monthIndex: number;
+  eventType: PaymentEventType;
   amount: string;
   status: PaymentStatus;
-  statusLabel: string;
 };
 
 export const paymentCalendar: PaymentEvent[] = [
-  { day: "8", month: "Sep", event: "Supplier payment", amount: "640 000 UAH", status: "overdue", statusLabel: "Overdue" },
-  { day: "10", month: "Sep", event: "Tax payment", amount: "320 000 UAH", status: "neutral", statusLabel: "Scheduled" },
-  { day: "12", month: "Sep", event: "Customer receipt", amount: "1 200 000 UAH", status: "positive", statusLabel: "Incoming" },
-  { day: "15", month: "Sep", event: "Supplier payment", amount: "780 000 UAH", status: "upcoming", statusLabel: "Upcoming" },
-  { day: "18", month: "Sep", event: "Customer receipt", amount: "2 100 000 UAH", status: "positive", statusLabel: "Incoming" },
+  { day: "8", monthIndex: 8, eventType: "supplierPayment", amount: "640 000 UAH", status: "overdue" },
+  { day: "10", monthIndex: 8, eventType: "taxPayment", amount: "320 000 UAH", status: "neutral" },
+  { day: "12", monthIndex: 8, eventType: "customerReceipt", amount: "1 200 000 UAH", status: "positive" },
+  { day: "15", monthIndex: 8, eventType: "supplierPayment", amount: "780 000 UAH", status: "upcoming" },
+  { day: "18", monthIndex: 8, eventType: "customerReceipt", amount: "2 100 000 UAH", status: "positive" },
 ];

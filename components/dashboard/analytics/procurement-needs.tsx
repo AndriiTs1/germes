@@ -2,25 +2,28 @@ import { Beef, Drumstick, type LucideIcon } from "lucide-react";
 
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
 import { procurementNeeds } from "@/components/dashboard/analytics/analytics-data";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
+/** Keyed by the exact (untranslated) demo product name — never localized, see the Command Center audit. */
 const productIcons: Record<string, LucideIcon> = {
   "Chicken Fillet": Drumstick,
   "Pork Neck": Beef,
   "Beef Trim 80/20": Beef,
 };
 
-export function ProcurementNeeds() {
-  const { value, secondaryLabel, items } = procurementNeeds;
+export function ProcurementNeeds({ dictionary }: { dictionary: Dictionary }) {
+  const { value, items } = procurementNeeds;
+  const t = dictionary.commandCenter.procurementNeeds;
 
   return (
-    <AnalyticsCard title="Procurement Needs">
+    <AnalyticsCard title={t.title}>
       <div className="mt-2 flex items-baseline gap-1.5">
         <span className="text-[22px] leading-none font-semibold tracking-tight text-slate-900">
           {value}
         </span>
       </div>
-      <p className="mt-1 text-[11.5px] text-slate-400">{secondaryLabel}</p>
+      <p className="mt-1 text-[11.5px] text-slate-400">{t.itemsToReorder}</p>
 
       <ul className="mt-auto space-y-0.5">
         {items.map((item) => {
@@ -45,7 +48,9 @@ export function ProcurementNeeds() {
                     <span className="block truncate text-[12.5px] leading-tight font-medium text-slate-900">
                       {item.name}
                     </span>
-                    <span className="block text-[11px] leading-tight text-slate-400">{item.stock}</span>
+                    <span className="block text-[11px] leading-tight text-slate-400">
+                      {t.stockLabel} {item.stockKg} {dictionary.common.kgUnit}
+                    </span>
                   </span>
                 </span>
                 <span
@@ -54,7 +59,7 @@ export function ProcurementNeeds() {
                     isCritical ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600",
                   )}
                 >
-                  {isCritical ? "Critical" : "Warning"}
+                  {isCritical ? t.critical : t.warning}
                 </span>
               </button>
             </li>

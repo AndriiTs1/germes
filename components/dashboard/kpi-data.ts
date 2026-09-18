@@ -12,9 +12,17 @@ export type KpiAccent = "mint" | "blue" | "rose" | "violet" | "amber" | "teal";
 export type KpiTrendDirection = "up" | "down";
 export type KpiTrendSentiment = "positive" | "negative" | "neutral";
 
+/** Stable key into dictionary.commandCenter.kpi — the card's label is never stored here. */
+export type KpiId =
+  | "cashBanks"
+  | "receivables"
+  | "overdueAr"
+  | "payables"
+  | "inventoryValue"
+  | "grossMargin";
+
 export type KpiDatum = {
-  id: string;
-  label: string;
+  id: KpiId;
   value: string;
   unit?: string;
   trendValue: string;
@@ -24,80 +32,74 @@ export type KpiDatum = {
    * business — independent of the raw +/- direction. Drives trend color.
    */
   trendSentiment: KpiTrendSentiment;
-  comparisonLabel: string;
   icon: LucideIcon;
   accent: KpiAccent;
 };
 
+/**
+ * Presentation-only demo figures (value/trendValue) — never derived from a
+ * live query, so they are never reformatted or altered per locale (see the
+ * Command Center localization audit). Only `id` selects a label, resolved
+ * against dictionary.commandCenter.kpi by the caller — this file owns no
+ * English (or any other language) presentation string.
+ */
 export const kpiData: KpiDatum[] = [
   {
-    id: "cash-banks",
-    label: "Cash & Banks",
+    id: "cashBanks",
     value: "12 480 000",
     unit: "UAH",
     trendValue: "+12%",
     trendDirection: "up",
     trendSentiment: "positive",
-    comparisonLabel: "vs last month",
     icon: Landmark,
     accent: "mint",
   },
   {
     id: "receivables",
-    label: "Receivables",
     value: "8 230 000",
     unit: "UAH",
     trendValue: "+18%",
     trendDirection: "up",
     trendSentiment: "neutral",
-    comparisonLabel: "vs last month",
     icon: HandCoins,
     accent: "blue",
   },
   {
-    id: "overdue-ar",
-    label: "Overdue AR",
+    id: "overdueAr",
     value: "2 340 000",
     unit: "UAH",
     trendValue: "+24%",
     trendDirection: "up",
     trendSentiment: "negative",
-    comparisonLabel: "vs last month",
     icon: TriangleAlert,
     accent: "rose",
   },
   {
     id: "payables",
-    label: "Payables",
     value: "3 120 000",
     unit: "UAH",
     trendValue: "-8%",
     trendDirection: "down",
     trendSentiment: "positive",
-    comparisonLabel: "vs last month",
     icon: CreditCard,
     accent: "violet",
   },
   {
-    id: "inventory-value",
-    label: "Inventory Value",
+    id: "inventoryValue",
     value: "15 640 000",
     unit: "UAH",
     trendValue: "+6%",
     trendDirection: "up",
     trendSentiment: "neutral",
-    comparisonLabel: "vs last month",
     icon: Boxes,
     accent: "amber",
   },
   {
-    id: "gross-margin",
-    label: "Gross Margin",
+    id: "grossMargin",
     value: "18.4%",
     trendValue: "+2.6 pp",
     trendDirection: "up",
     trendSentiment: "positive",
-    comparisonLabel: "vs last month",
     icon: Percent,
     accent: "teal",
   },

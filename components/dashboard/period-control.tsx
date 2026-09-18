@@ -2,7 +2,13 @@ import { Calendar, ChevronDown } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 
-export function PeriodControl({ className }: { className?: string }) {
+type PeriodControlProps = {
+  /** Localized label (e.g. dictionary.commandCenter.periodThisMonth) — this component owns no presentation text itself. */
+  label: string;
+  className?: string;
+};
+
+export function PeriodControl({ label, className }: PeriodControlProps) {
   return (
     <button
       type="button"
@@ -12,7 +18,7 @@ export function PeriodControl({ className }: { className?: string }) {
       )}
     >
       <Calendar className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.75} />
-      This month
+      {label}
       <ChevronDown className="h-3.5 w-3.5 text-slate-400" strokeWidth={1.75} />
     </button>
   );

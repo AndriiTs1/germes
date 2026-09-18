@@ -438,4 +438,77 @@ export const ru: Dictionary = {
       },
     },
   },
+
+  commandCenter: {
+    title: "Командный центр",
+    periodThisMonth: "Этот месяц",
+    kpi: {
+      cashBanks: "Денежные средства и банки",
+      receivables: "Дебиторская задолженность",
+      overdueAr: "Просроченная дебиторская задолженность",
+      payables: "Кредиторская задолженность",
+      inventoryValue: "Стоимость запасов",
+      grossMargin: "Валовая маржа",
+      comparisonLabel: "по сравнению с прошлым месяцем",
+    },
+    salesPerformance: {
+      title: "Динамика продаж",
+      viewReportAriaLabel: "Просмотреть отчёт по продажам",
+      summary: {
+        monthlySales: "Продажи за месяц",
+        through: "по",
+        trendingUp: "тенденция к росту",
+        highestAt: "максимум",
+      },
+    },
+    cashFlow: {
+      title: "Денежный поток",
+      netForLabel: "Чистый поток за",
+      trendAriaLabel: "Динамика денежного потока за последние недели, тенденция положительная",
+    },
+    inventoryStatus: {
+      title: "Состояние запасов",
+      unitsInStock: "кг / единиц на складе",
+      breakdownAriaLabel: "Структура запасов:",
+      segments: {
+        inStock: "В наличии",
+        reserved: "Зарезервировано",
+        inTransit: "В пути",
+        lowStock: "Низкий остаток",
+      },
+    },
+    procurementNeeds: {
+      title: "Потребности в закупках",
+      itemsToReorder: "Позиций к заказу",
+      stockLabel: "Остаток:",
+      critical: "Критично",
+      warning: "Внимание",
+    },
+    needsAttention: {
+      title: "Требует внимания",
+      overdueCustomerPayments: "Просроченные платежи клиентов",
+      supplierInvoiceAwaitingApproval: "Счёт поставщика ожидает утверждения",
+      lowStockPrefix: "Низкий остаток:",
+      supplierPaymentDueTomorrow: "Оплата поставщику завтра",
+      ordersAwaitingShipment: "Заказы ожидают отгрузки",
+    },
+    recentOrders: {
+      title: "Последние заказы",
+      todayPrefix: "Сегодня,",
+    },
+    paymentCalendar: {
+      title: "Платёжный календарь",
+      events: {
+        supplierPayment: "Оплата поставщику",
+        taxPayment: "Налоговый платёж",
+        customerReceipt: "Поступление от клиента",
+      },
+      status: {
+        overdue: "Просрочено",
+        neutral: "Запланировано",
+        positive: "Ожидается поступление",
+        upcoming: "Ближайшее время",
+      },
+    },
+  },
 };

@@ -444,6 +444,79 @@ export const en = {
       },
     },
   },
+
+  commandCenter: {
+    title: "Command Center",
+    periodThisMonth: "This month",
+    kpi: {
+      cashBanks: "Cash & Banks",
+      receivables: "Receivables",
+      overdueAr: "Overdue AR",
+      payables: "Payables",
+      inventoryValue: "Inventory Value",
+      grossMargin: "Gross Margin",
+      comparisonLabel: "vs last month",
+    },
+    salesPerformance: {
+      title: "Sales Performance",
+      viewReportAriaLabel: "View sales report",
+      summary: {
+        monthlySales: "Monthly sales",
+        through: "through",
+        trendingUp: "trending up",
+        highestAt: "highest at",
+      },
+    },
+    cashFlow: {
+      title: "Cash Flow",
+      netForLabel: "Net for",
+      trendAriaLabel: "Cash flow trend over recent weeks, trending positive",
+    },
+    inventoryStatus: {
+      title: "Inventory Status",
+      unitsInStock: "kg / units in stock",
+      breakdownAriaLabel: "Inventory breakdown:",
+      segments: {
+        inStock: "In stock",
+        reserved: "Reserved",
+        inTransit: "In transit",
+        lowStock: "Low stock",
+      },
+    },
+    procurementNeeds: {
+      title: "Procurement Needs",
+      itemsToReorder: "Items to reorder",
+      stockLabel: "Stock:",
+      critical: "Critical",
+      warning: "Warning",
+    },
+    needsAttention: {
+      title: "Needs Attention",
+      overdueCustomerPayments: "Overdue customer payments",
+      supplierInvoiceAwaitingApproval: "Supplier invoice awaiting approval",
+      lowStockPrefix: "Low stock:",
+      supplierPaymentDueTomorrow: "Supplier payment due tomorrow",
+      ordersAwaitingShipment: "Orders awaiting shipment",
+    },
+    recentOrders: {
+      title: "Recent Orders",
+      todayPrefix: "Today,",
+    },
+    paymentCalendar: {
+      title: "Payment Calendar",
+      events: {
+        supplierPayment: "Supplier payment",
+        taxPayment: "Tax payment",
+        customerReceipt: "Customer receipt",
+      },
+      status: {
+        overdue: "Overdue",
+        neutral: "Scheduled",
+        positive: "Incoming",
+        upcoming: "Upcoming",
+      },
+    },
+  },
 };
 
 export type Dictionary = typeof en;

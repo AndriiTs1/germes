@@ -90,7 +90,9 @@ export function DashboardHeader({
       </button>
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:gap-2.5">
-        {showPeriodControl ? <PeriodControl className="hidden md:flex" /> : null}
+        {showPeriodControl ? (
+          <PeriodControl label={dictionary.commandCenter.periodThisMonth} className="hidden md:flex" />
+        ) : null}
 
         <button
           type="button"

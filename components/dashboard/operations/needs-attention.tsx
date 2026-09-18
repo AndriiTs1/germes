@@ -2,7 +2,8 @@ import { ChevronRight } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { needsAttention } from "@/components/dashboard/operations/operations-data";
-import type { AttentionAccent } from "@/components/dashboard/operations/operations-data";
+import type { AttentionAccent, AttentionItem } from "@/components/dashboard/operations/operations-data";
+import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
 const accentStyles: Record<AttentionAccent, string> = {
@@ -12,10 +13,20 @@ const accentStyles: Record<AttentionAccent, string> = {
   blue: "bg-blue-50 text-blue-600",
 };
 
-export function NeedsAttention({ className }: { className?: string }) {
+/** "Low stock:" (localized) + the untouched demo product name for kind: "lowStock"; every other kind resolves directly from the dictionary. */
+function itemLabel(item: AttentionItem, t: Dictionary["commandCenter"]["needsAttention"]): string {
+  if (item.kind === "lowStock") {
+    return `${t.lowStockPrefix} ${item.productName}`;
+  }
+  return t[item.kind];
+}
+
+export function NeedsAttention({ className, dictionary }: { className?: string; dictionary: Dictionary }) {
+  const t = dictionary.commandCenter.needsAttention;
+
   return (
     <OperationsCard
-      title="Needs Attention"
+      title={t.title}
       className={className}
       badge={
         <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-50 px-1.5 text-[11px] font-semibold text-rose-600">
@@ -25,7 +36,7 @@ export function NeedsAttention({ className }: { className?: string }) {
     >
       <ul className="flex flex-1 flex-col gap-0.5 min-[768px]:justify-between min-[768px]:gap-0">
         {needsAttention.map((item) => (
-          <li key={item.label}>
+          <li key={item.kind}>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-xl px-2 py-1 text-left transition-colors hover:bg-slate-50"
@@ -39,7 +50,7 @@ export function NeedsAttention({ className }: { className?: string }) {
                 <item.icon className="h-4 w-4" strokeWidth={1.75} />
               </span>
               <span className="line-clamp-2 min-w-0 flex-1 text-[12.5px] font-medium text-slate-700 min-[768px]:line-clamp-1 min-[768px]:truncate">
-                {item.label}
+                {itemLabel(item, t)}
               </span>
               <span className="shrink-0 text-[12.5px] font-semibold text-slate-900">{item.value}</span>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" strokeWidth={1.75} />

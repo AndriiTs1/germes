@@ -26,10 +26,7 @@ export default async function Home() {
 
   // Locale is presentation state, resolved independently of the permission
   // checks above/below — it never influences which workspace this resolver
-  // redirects to. The Command Center's own content (KPIs, analytics,
-  // operations) is out of scope for this localization stage; only the
-  // shared DashboardShell chrome and the NoWorkspaceAvailable empty state
-  // need a dictionary here.
+  // redirects to.
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
 
@@ -65,23 +62,23 @@ export default async function Home() {
     >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-          Command Center
+          {dictionary.commandCenter.title}
         </h1>
 
         {/* Header hides the period control below md; it lives here instead. */}
         <div className="mt-4 md:hidden">
-          <PeriodControl />
+          <PeriodControl label={dictionary.commandCenter.periodThisMonth} />
         </div>
       </div>
 
-      <DashboardKpis />
+      <DashboardKpis dictionary={dictionary} />
 
       <div className="mt-4">
-        <DashboardAnalytics />
+        <DashboardAnalytics locale={locale} dictionary={dictionary} />
       </div>
 
       <div className="mt-4">
-        <DashboardOperations />
+        <DashboardOperations locale={locale} dictionary={dictionary} />
       </div>
 
       {/* Step 5+: Team Performance. */}

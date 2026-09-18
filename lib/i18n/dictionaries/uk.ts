@@ -438,4 +438,77 @@ export const uk: Dictionary = {
       },
     },
   },
+
+  commandCenter: {
+    title: "Командний центр",
+    periodThisMonth: "Цей місяць",
+    kpi: {
+      cashBanks: "Грошові кошти та банки",
+      receivables: "Дебіторська заборгованість",
+      overdueAr: "Прострочена дебіторська заборгованість",
+      payables: "Кредиторська заборгованість",
+      inventoryValue: "Вартість запасів",
+      grossMargin: "Валова маржа",
+      comparisonLabel: "порівняно з минулим місяцем",
+    },
+    salesPerformance: {
+      title: "Динаміка продажів",
+      viewReportAriaLabel: "Переглянути звіт із продажів",
+      summary: {
+        monthlySales: "Продажі за місяць",
+        through: "по",
+        trendingUp: "тенденція до зростання",
+        highestAt: "максимум",
+      },
+    },
+    cashFlow: {
+      title: "Грошовий потік",
+      netForLabel: "Чистий потік за",
+      trendAriaLabel: "Динаміка грошового потоку за останні тижні, тенденція позитивна",
+    },
+    inventoryStatus: {
+      title: "Стан запасів",
+      unitsInStock: "кг / одиниць на складі",
+      breakdownAriaLabel: "Розподіл запасів:",
+      segments: {
+        inStock: "В наявності",
+        reserved: "Зарезервовано",
+        inTransit: "В дорозі",
+        lowStock: "Малий залишок",
+      },
+    },
+    procurementNeeds: {
+      title: "Потреби в закупівлях",
+      itemsToReorder: "Позицій до замовлення",
+      stockLabel: "Залишок:",
+      critical: "Критично",
+      warning: "Увага",
+    },
+    needsAttention: {
+      title: "Потребує уваги",
+      overdueCustomerPayments: "Прострочені платежі клієнтів",
+      supplierInvoiceAwaitingApproval: "Рахунок постачальника очікує затвердження",
+      lowStockPrefix: "Малий залишок:",
+      supplierPaymentDueTomorrow: "Оплата постачальнику завтра",
+      ordersAwaitingShipment: "Замовлення очікують відвантаження",
+    },
+    recentOrders: {
+      title: "Останні замовлення",
+      todayPrefix: "Сьогодні,",
+    },
+    paymentCalendar: {
+      title: "Платіжний календар",
+      events: {
+        supplierPayment: "Оплата постачальнику",
+        taxPayment: "Податковий платіж",
+        customerReceipt: "Надходження від клієнта",
+      },
+      status: {
+        overdue: "Прострочено",
+        neutral: "Заплановано",
+        positive: "Очікується надходження",
+        upcoming: "Найближчим часом",
+      },
+    },
+  },
 };
