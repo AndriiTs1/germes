@@ -6,6 +6,7 @@ import { SearchableSelect } from "@/components/sales/order-form/searchable-selec
 import { formatPreviewNumber } from "@/components/sales/format";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { resolveFieldError } from "@/lib/i18n/resolve-field-error";
 import type { NewOrderFormProduct } from "@/lib/services/sales/get-new-order-form-options";
 import type { CreateSalesOrderFormValues } from "@/lib/validation/sales-order";
 import { cn } from "@/lib/utils";
@@ -46,8 +47,8 @@ const fieldClassName =
  * >=1024px: a compact grid row (Product / Quantity / Price / Line total /
  * Remove). <1024px: the same fields stacked as a card — no horizontal
  * overflow at any width, matching the rest of the approved SALES shell.
- * errors.*.message text comes from lib/validation/sales-order.ts's Zod
- * schema and stays English in this stage (see the final report).
+ * errors.*.message is a stable code from lib/validation/sales-order.ts's
+ * Zod schema, resolved through dictionary.orderForm.errors below.
  */
 export function OrderFormItemRow({
   index,
@@ -87,10 +88,13 @@ export function OrderFormItemRow({
             label: `${product.name} (${product.sku})`,
           }))}
           placeholder={dictionary.selectProduct}
+          emptyMessage={dictionary.noOptions}
           error={!!itemErrors?.productId}
         />
         {itemErrors?.productId ? (
-          <p className="mt-1 text-[11.5px] text-rose-600">{itemErrors.productId.message}</p>
+          <p className="mt-1 text-[11.5px] text-rose-600">
+            {resolveFieldError(dictionary.errors, itemErrors.productId.message)}
+          </p>
         ) : null}
       </div>
 
@@ -104,7 +108,9 @@ export function OrderFormItemRow({
           {...register(`items.${index}.quantityKg` as const)}
         />
         {itemErrors?.quantityKg ? (
-          <p className="mt-1 text-[11.5px] text-rose-600">{itemErrors.quantityKg.message}</p>
+          <p className="mt-1 text-[11.5px] text-rose-600">
+            {resolveFieldError(dictionary.errors, itemErrors.quantityKg.message)}
+          </p>
         ) : null}
       </div>
 
@@ -118,7 +124,9 @@ export function OrderFormItemRow({
           {...register(`items.${index}.pricePerKg` as const)}
         />
         {itemErrors?.pricePerKg ? (
-          <p className="mt-1 text-[11.5px] text-rose-600">{itemErrors.pricePerKg.message}</p>
+          <p className="mt-1 text-[11.5px] text-rose-600">
+            {resolveFieldError(dictionary.errors, itemErrors.pricePerKg.message)}
+          </p>
         ) : null}
       </div>
 

@@ -97,6 +97,7 @@ function CreateReservationForm({
               onValueChange={setAllocation}
               options={allocationOptions}
               placeholder={dictionary.selectBatchWarehouse}
+              emptyMessage={dictionary.noOptions}
               aria-label={`${dictionary.batchAndWarehouseFor} ${item.productName}`}
               error={!state.ok && state.message === errorSelectBatchAndWarehouse}
             />

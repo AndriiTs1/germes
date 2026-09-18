@@ -15,6 +15,8 @@ export type SelectProps = {
   onValueChange: (value: string) => void
   options: SelectOption[]
   placeholder?: string
+  /** Shown in place of the option list when `options` is empty — always pass a localized string; this component never reads locale itself. */
+  emptyMessage: string
   disabled?: boolean
   /**
    * Styles the trigger with the canonical Germes error border. Unlike
@@ -45,6 +47,7 @@ export function Select({
   onValueChange,
   options,
   placeholder = "Select…",
+  emptyMessage,
   disabled,
   error,
   id,
@@ -91,7 +94,7 @@ export function Select({
         >
           <SelectPrimitive.Popup className="w-full max-h-64 overflow-y-auto rounded-lg border border-slate-200/70 bg-white py-1 shadow-[0_4px_16px_-4px_rgba(15,23,42,0.15),0_2px_6px_-2px_rgba(15,23,42,0.08)]">
             {options.length === 0 ? (
-              <p className="px-2.5 py-2 text-[13px] text-slate-400">No options</p>
+              <p className="px-2.5 py-2 text-[13px] text-slate-400">{emptyMessage}</p>
             ) : (
               options.map((option) => (
                 <SelectPrimitive.Item

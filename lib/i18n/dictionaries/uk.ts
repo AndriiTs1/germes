@@ -71,6 +71,10 @@ export const uk: Dictionary = {
     signIn: "Увійти",
     signingIn: "Вхід…",
     genericError: "Не вдалося увійти. Перевірте дані та спробуйте ще раз.",
+    errors: {
+      invalidEmail: "Введіть коректну електронну адресу",
+      passwordRequired: "Пароль обов'язковий",
+    },
   },
 
   settings: {
@@ -188,7 +192,7 @@ export const uk: Dictionary = {
       ariaLabel: "Фільтр замовлень за статусом",
     },
     search: {
-      placeholder: "Пошук за номером замовлення або клієнтом...",
+      placeholder: "Пошук замовлень...",
       ariaLabel: "Пошук замовлень за номером або клієнтом",
     },
     emptyDefault: "Ще немає замовлень",
@@ -226,6 +230,7 @@ export const uk: Dictionary = {
       title: "Резервування",
       ordered: "Замовлено",
       selectBatchWarehouse: "Виберіть партію / склад",
+      noOptions: "Немає доступних варіантів",
       batchAndWarehouseFor: "Партія та склад для",
       quantityPlaceholder: "Кількість, кг",
       reserve: "Зарезервувати",
@@ -267,6 +272,7 @@ export const uk: Dictionary = {
     addItem: "Додати позицію",
     product: "Товар",
     selectProduct: "Виберіть товар",
+    noOptions: "Немає доступних варіантів",
     quantityPlaceholder: "К-сть, кг",
     pricePlaceholder: "Ціна / кг",
     lineTotalMobileLabel: "Сума рядка",
@@ -279,6 +285,18 @@ export const uk: Dictionary = {
     cancel: "Скасувати",
     previousMonth: "Попередній місяць",
     nextMonth: "Наступний місяць",
+    errors: {
+      selectCustomer: "Виберіть клієнта",
+      selectProduct: "Виберіть товар",
+      invalidDate: "Введіть коректну дату",
+      notesTooLong: "Примітка має бути не довшою за 2000 символів",
+      itemsRequired: "Додайте хоча б одну позицію",
+      duplicateProduct: "Кожен товар можна додати лише один раз",
+      invalidQuantity: "Введіть коректну кількість (до 3 знаків після коми)",
+      quantityPositive: "Кількість має бути більшою за 0",
+      invalidPrice: "Введіть коректну ціну (до 4 знаків після коми)",
+      pricePositive: "Ціна має бути більшою за 0",
+    },
   },
 
   reservationActions: {

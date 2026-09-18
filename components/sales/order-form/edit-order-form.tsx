@@ -12,6 +12,7 @@ import { formatPreviewNumber } from "@/components/sales/format";
 import { DateInput } from "@/components/ui/date-input";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { resolveFieldError } from "@/lib/i18n/resolve-field-error";
 import type {
   NewOrderFormCustomer,
   NewOrderFormProduct,
@@ -83,7 +84,10 @@ export function EditOrderForm({ order, customers, products, locale, dictionary }
   const { fields, append, remove } = useFieldArray({ control, name: "items" });
   const watchedItems = useWatch({ control, name: "items" }) ?? [];
   const orderTotal = computeDisplayOrderTotal(watchedItems);
-  const itemsRootError = errors.items?.root?.message ?? errors.items?.message;
+  const itemsRootError = resolveFieldError(
+    dictionary.errors,
+    errors.items?.root?.message ?? errors.items?.message,
+  );
 
   async function onSubmit(data: CreateSalesOrderFormValues) {
     const result = await updateSalesOrderAction(order.id, order.updatedAt, data);
@@ -116,13 +120,16 @@ export function EditOrderForm({ order, customers, products, locale, dictionary }
                         label: `${customer.name} (${customer.code})`,
                       }))}
                       placeholder={dictionary.selectCustomer}
+                      emptyMessage={dictionary.noOptions}
                       error={!!errors.customerId}
                     />
                   </div>
                 )}
               />
               {errors.customerId ? (
-                <p className="mt-1 text-[11.5px] text-rose-600">{errors.customerId.message}</p>
+                <p className="mt-1 text-[11.5px] text-rose-600">
+                  {resolveFieldError(dictionary.errors, errors.customerId.message)}
+                </p>
               ) : null}
             </div>
 
@@ -151,7 +158,9 @@ export function EditOrderForm({ order, customers, products, locale, dictionary }
                 )}
               />
               {errors.requestedDate ? (
-                <p className="mt-1 text-[11.5px] text-rose-600">{errors.requestedDate.message}</p>
+                <p className="mt-1 text-[11.5px] text-rose-600">
+                  {resolveFieldError(dictionary.errors, errors.requestedDate.message)}
+                </p>
               ) : null}
             </div>
 
@@ -174,7 +183,9 @@ export function EditOrderForm({ order, customers, products, locale, dictionary }
                 {...register("notes")}
               />
               {errors.notes ? (
-                <p className="mt-1 text-[11.5px] text-rose-600">{errors.notes.message}</p>
+                <p className="mt-1 text-[11.5px] text-rose-600">
+                  {resolveFieldError(dictionary.errors, errors.notes.message)}
+                </p>
               ) : null}
             </div>
           </div>

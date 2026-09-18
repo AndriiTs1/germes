@@ -59,12 +59,22 @@ export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
         })}
       </nav>
 
-      <form method="GET" className="flex items-center gap-2">
+      {/*
+        w-full min-[640px]:w-auto / flex-1 min-[640px]:flex-none: below
+        640px this form is its own full-width row (the parent switches
+        from flex-row to flex-col), but a flex item's default width is
+        shrink-to-fit — and since the input's own width:100% can't expand
+        a shrink-to-fit parent, the whole search box previously rendered
+        at its min-w-[200px] floor regardless of viewport, clipping long
+        RU/UK placeholders. >=640px restores the exact previous compact,
+        right-docked width.
+      */}
+      <form method="GET" className="flex w-full items-center gap-2 min-[640px]:w-auto">
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="orders-search" className="sr-only">
           {dictionary.orders.search.ariaLabel}
         </label>
-        <div className="relative">
+        <div className="relative flex-1 min-[640px]:flex-none">
           <Search
             className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
             strokeWidth={1.75}
@@ -74,6 +84,15 @@ export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
             type="text"
             name="q"
             defaultValue={q}
+            // autoComplete="off": this field has no real suggestion
+            // feature — no datalist, no combobox, no fetched matches
+            // anywhere in this component. Without this, browsers show
+            // their own native saved-values popup for a plain
+            // type="text" GET field, sized/positioned entirely by the
+            // browser (not this stylesheet) — that's the uncontrollably
+            // narrow, centered popup QA reported. Suppressing it is the
+            // fix; there's no real suggestion UI to replace it with.
+            autoComplete="off"
             placeholder={dictionary.orders.search.placeholder}
             // text-base md:text-[13px] (not a fixed text-[13px]): a real
             // text-entry control — iOS Safari auto-zooms the visual

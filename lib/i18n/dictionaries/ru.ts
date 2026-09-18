@@ -71,6 +71,10 @@ export const ru: Dictionary = {
     signIn: "Войти",
     signingIn: "Вход…",
     genericError: "Не удалось войти. Проверьте данные и попробуйте снова.",
+    errors: {
+      invalidEmail: "Введите корректный адрес электронной почты",
+      passwordRequired: "Пароль обязателен",
+    },
   },
 
   settings: {
@@ -188,7 +192,7 @@ export const ru: Dictionary = {
       ariaLabel: "Фильтр заказов по статусу",
     },
     search: {
-      placeholder: "Поиск по номеру заказа или клиенту...",
+      placeholder: "Поиск заказов...",
       ariaLabel: "Поиск заказов по номеру или клиенту",
     },
     emptyDefault: "Заказов пока нет",
@@ -226,6 +230,7 @@ export const ru: Dictionary = {
       title: "Резервирования",
       ordered: "Заказано",
       selectBatchWarehouse: "Выберите партию / склад",
+      noOptions: "Нет доступных вариантов",
       batchAndWarehouseFor: "Партия и склад для",
       quantityPlaceholder: "Количество, кг",
       reserve: "Зарезервировать",
@@ -267,6 +272,7 @@ export const ru: Dictionary = {
     addItem: "Добавить позицию",
     product: "Товар",
     selectProduct: "Выберите товар",
+    noOptions: "Нет доступных вариантов",
     quantityPlaceholder: "Кол-во, кг",
     pricePlaceholder: "Цена / кг",
     lineTotalMobileLabel: "Сумма строки",
@@ -279,6 +285,18 @@ export const ru: Dictionary = {
     cancel: "Отмена",
     previousMonth: "Предыдущий месяц",
     nextMonth: "Следующий месяц",
+    errors: {
+      selectCustomer: "Выберите клиента",
+      selectProduct: "Выберите товар",
+      invalidDate: "Введите корректную дату",
+      notesTooLong: "Примечание должно быть не длиннее 2000 символов",
+      itemsRequired: "Добавьте хотя бы одну позицию",
+      duplicateProduct: "Каждый товар можно добавить только один раз",
+      invalidQuantity: "Введите корректное количество (до 3 знаков после запятой)",
+      quantityPositive: "Количество должно быть больше 0",
+      invalidPrice: "Введите корректную цену (до 4 знаков после запятой)",
+      pricePositive: "Цена должна быть больше 0",
+    },
   },
 
   reservationActions: {

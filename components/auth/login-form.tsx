@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { login } from "@/lib/auth/actions";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { resolveFieldError } from "@/lib/i18n/resolve-field-error";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
 
 type LoginFormProps = {
@@ -15,11 +16,11 @@ type LoginFormProps = {
 };
 
 /**
- * Field-level error text (errors.email.message/errors.password.message)
- * comes straight from lib/validation/auth.ts's Zod schema, which stays
- * English-only in this stage — see the final report's "remaining
- * intentionally-untranslated UI" note. Everything else (labels, button,
- * the server action's generic failure message) is localized.
+ * Field-level error text: lib/validation/auth.ts's Zod schema sets
+ * errors.email.message/errors.password.message to a stable code
+ * ("invalidEmail"/"passwordRequired"), never English text directly —
+ * resolveFieldError maps it through dictionary.auth.errors here, the one
+ * presentation boundary for this form.
  */
 export function LoginForm({ dictionary }: LoginFormProps) {
   const {
@@ -54,7 +55,9 @@ export function LoginForm({ dictionary }: LoginFormProps) {
           {...register("email")}
         />
         {errors.email && (
-          <p className="text-[12.5px] text-red-600">{errors.email.message}</p>
+          <p className="text-[12.5px] text-red-600">
+            {resolveFieldError(dictionary.errors, errors.email.message)}
+          </p>
         )}
       </div>
 
@@ -69,7 +72,7 @@ export function LoginForm({ dictionary }: LoginFormProps) {
         />
         {errors.password && (
           <p className="text-[12.5px] text-red-600">
-            {errors.password.message}
+            {resolveFieldError(dictionary.errors, errors.password.message)}
           </p>
         )}
       </div>

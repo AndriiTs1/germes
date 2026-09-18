@@ -59,12 +59,21 @@ export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProp
         })}
       </nav>
 
-      <form method="GET" className="flex items-center gap-2">
+      {/*
+        w-full min-[640px]:w-auto / flex-1 min-[640px]:flex-none: same fix
+        as orders-filters.tsx — below 640px a flex item's default width is
+        shrink-to-fit, and the input's own width:100% can't expand a
+        shrink-to-fit parent, so the search box was rendering at its
+        min-w-[200px] floor regardless of viewport and clipping long RU/UK
+        placeholders. >=640px restores the exact previous compact,
+        right-docked width.
+      */}
+      <form method="GET" className="flex w-full items-center gap-2 min-[640px]:w-auto">
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="customers-search" className="sr-only">
           {dictionary.customers.search.ariaLabel}
         </label>
-        <div className="relative">
+        <div className="relative flex-1 min-[640px]:flex-none">
           <Search
             className="pointer-events-none absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2 text-slate-400"
             strokeWidth={1.75}
@@ -74,6 +83,12 @@ export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProp
             type="text"
             name="q"
             defaultValue={q}
+            // autoComplete="off": same reasoning as orders-filters.tsx —
+            // no real suggestion feature exists on this field, so the
+            // browser's own uncontrollable saved-values popup is
+            // suppressed rather than left to render at an inconsistent
+            // native width/position.
+            autoComplete="off"
             placeholder={dictionary.customers.search.placeholder}
             // text-base md:text-[13px] (not a fixed text-[13px]): a real
             // text-entry control — iOS Safari auto-zooms the visual

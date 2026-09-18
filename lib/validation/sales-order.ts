@@ -1,6 +1,25 @@
 import { z } from "zod";
 
 /**
+ * Stable codes, not English text — the order-form components resolve each
+ * one through dictionary.orderForm.errors via resolveFieldError. Keep in
+ * sync with dictionary.orderForm.errors in en/uk/ru.
+ */
+export const ORDER_FORM_ERROR_CODES = [
+  "selectCustomer",
+  "selectProduct",
+  "invalidDate",
+  "notesTooLong",
+  "itemsRequired",
+  "duplicateProduct",
+  "invalidQuantity",
+  "quantityPositive",
+  "invalidPrice",
+  "pricePositive",
+] as const;
+export type OrderFormErrorCode = (typeof ORDER_FORM_ERROR_CODES)[number];
+
+/**
  * Decimal-string patterns bound to the exact DB precision/scale so an
  * out-of-range value is rejected before it ever reaches Prisma.Decimal:
  * quantityKg is Decimal(14,3) (up to 11 integer digits, 3 decimal),
@@ -24,17 +43,17 @@ function hasNonZeroDigit(value: string): boolean {
 const quantityKgSchema = z
   .string()
   .trim()
-  .regex(QUANTITY_KG_PATTERN, "Enter a valid quantity (up to 3 decimal places)")
-  .refine(hasNonZeroDigit, "Quantity must be greater than 0");
+  .regex(QUANTITY_KG_PATTERN, "invalidQuantity" satisfies OrderFormErrorCode)
+  .refine(hasNonZeroDigit, "quantityPositive" satisfies OrderFormErrorCode);
 
 const pricePerKgSchema = z
   .string()
   .trim()
-  .regex(PRICE_PER_KG_PATTERN, "Enter a valid price (up to 4 decimal places)")
-  .refine(hasNonZeroDigit, "Price must be greater than 0");
+  .regex(PRICE_PER_KG_PATTERN, "invalidPrice" satisfies OrderFormErrorCode)
+  .refine(hasNonZeroDigit, "pricePositive" satisfies OrderFormErrorCode);
 
 const orderItemSchema = z.object({
-  productId: z.uuid("Select a product"),
+  productId: z.uuid("selectProduct" satisfies OrderFormErrorCode),
   quantityKg: quantityKgSchema,
   pricePerKg: pricePerKgSchema,
 });
@@ -76,22 +95,22 @@ function emptyToUndefined(value: string | undefined): string | undefined {
  */
 export const createSalesOrderSchema = z
   .object({
-    customerId: z.uuid("Select a customer"),
+    customerId: z.uuid("selectCustomer" satisfies OrderFormErrorCode),
     requestedDate: z
       .string()
       .optional()
       .transform(emptyToUndefined)
       .refine((value) => value === undefined || isValidCalendarDateString(value), {
-        message: "Enter a valid date",
+        message: "invalidDate" satisfies OrderFormErrorCode,
       }),
     notes: z
       .string()
       .optional()
       .transform(emptyToUndefined)
       .refine((value) => value === undefined || value.length <= 2000, {
-        message: "Notes must be 2000 characters or fewer",
+        message: "notesTooLong" satisfies OrderFormErrorCode,
       }),
-    items: z.array(orderItemSchema).min(1, "Add at least one item"),
+    items: z.array(orderItemSchema).min(1, "itemsRequired" satisfies OrderFormErrorCode),
   })
   .superRefine((data, ctx) => {
     const productIds = data.items.map((item) => item.productId);
@@ -99,7 +118,7 @@ export const createSalesOrderSchema = z
       ctx.addIssue({
         code: "custom",
         path: ["items"],
-        message: "Each product can only appear once in an order",
+        message: "duplicateProduct" satisfies OrderFormErrorCode,
       });
     }
   });

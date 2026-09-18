@@ -77,6 +77,10 @@ export const en = {
     signIn: "Sign in",
     signingIn: "Signing in…",
     genericError: "Unable to sign in. Please check your credentials and try again.",
+    errors: {
+      invalidEmail: "Enter a valid email address",
+      passwordRequired: "Password is required",
+    },
   },
 
   settings: {
@@ -194,7 +198,7 @@ export const en = {
       ariaLabel: "Filter orders by status",
     },
     search: {
-      placeholder: "Search order # or customer...",
+      placeholder: "Search orders...",
       ariaLabel: "Search orders by order number or customer",
     },
     emptyDefault: "No orders yet",
@@ -232,6 +236,7 @@ export const en = {
       title: "Reservations",
       ordered: "Ordered",
       selectBatchWarehouse: "Select batch / warehouse",
+      noOptions: "No options available",
       batchAndWarehouseFor: "Batch and warehouse for",
       quantityPlaceholder: "Quantity kg",
       reserve: "Reserve",
@@ -273,6 +278,7 @@ export const en = {
     addItem: "Add item",
     product: "Product",
     selectProduct: "Select a product",
+    noOptions: "No options available",
     quantityPlaceholder: "Qty kg",
     pricePlaceholder: "Price / kg",
     lineTotalMobileLabel: "Line total",
@@ -285,6 +291,18 @@ export const en = {
     cancel: "Cancel",
     previousMonth: "Previous month",
     nextMonth: "Next month",
+    errors: {
+      selectCustomer: "Select a customer",
+      selectProduct: "Select a product",
+      invalidDate: "Enter a valid date",
+      notesTooLong: "Notes must be 2000 characters or fewer",
+      itemsRequired: "Add at least one item",
+      duplicateProduct: "Each product can only appear once in an order",
+      invalidQuantity: "Enter a valid quantity (up to 3 decimal places)",
+      quantityPositive: "Quantity must be greater than 0",
+      invalidPrice: "Enter a valid price (up to 4 decimal places)",
+      pricePositive: "Price must be greater than 0",
+    },
   },
 
   reservationActions: {
