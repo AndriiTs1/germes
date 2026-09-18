@@ -491,6 +491,12 @@ export const uk: Dictionary = {
       lowStockPrefix: "Малий залишок:",
       supplierPaymentDueTomorrow: "Оплата постачальнику завтра",
       ordersAwaitingShipment: "Замовлення очікують відвантаження",
+      ordersCount: {
+        one: "{count} замовлення",
+        few: "{count} замовлення",
+        many: "{count} замовлень",
+        other: "{count} замовлень",
+      },
     },
     recentOrders: {
       title: "Останні замовлення",

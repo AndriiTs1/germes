@@ -61,7 +61,8 @@ export function PaymentCalendar({
                   <span className="text-[13px] leading-tight font-semibold text-slate-700">{item.day}</span>
                 </div>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate text-[12.5px] leading-tight font-medium text-slate-900">
+                  {/* line-clamp-2 (not truncate): the event label was being cut even where the row had room to wrap — this container already had min-w-0 flex-1. */}
+                  <p className="line-clamp-2 text-[12.5px] leading-tight font-medium text-slate-900">
                     {eventLabel}
                   </p>
                   <p className={cn("text-[11px] leading-tight font-medium", statusTextStyles[item.status])}>
@@ -85,7 +86,7 @@ export function PaymentCalendar({
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-[12.5px] leading-tight font-medium text-slate-900">
+                    <p className="line-clamp-2 text-[12.5px] leading-tight font-medium text-slate-900">
                       {eventLabel}
                     </p>
                     <p

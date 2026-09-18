@@ -58,7 +58,15 @@ export function KpiCard({
         >
           <Icon className="h-4 w-4" strokeWidth={1.75} />
         </div>
-        <p className="line-clamp-2 pt-1 text-[13px] leading-[1.25] font-medium text-slate-500">
+        {/*
+          min-w-0 flex-1: without this, a flex item's default min-width:auto
+          floors it at its unwrapped content width, so line-clamp-2 never
+          gets a chance to actually wrap the text into two lines — it just
+          renders (or clips) as if it were a single line. This is the exact
+          cause of the reported KPI-label truncation; KpiRow below already
+          had the equivalent fix (min-w-0 flex-1) on its own label.
+        */}
+        <p className="line-clamp-2 min-w-0 flex-1 pt-1 text-[13px] leading-[1.25] font-medium text-slate-500">
           {label}
         </p>
       </div>
@@ -120,7 +128,8 @@ export function KpiRow({
         <Icon className="h-4 w-4" strokeWidth={1.75} />
       </div>
 
-      <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-500">{label}</p>
+      {/* line-clamp-2 (not truncate): same reasoning as KpiCard above — prefer showing the complete label on up to two lines over a single-line ellipsis. min-w-0 flex-1 was already correct here. */}
+      <p className="line-clamp-2 min-w-0 flex-1 text-[13px] font-medium text-slate-500">{label}</p>
 
       <div className="shrink-0 text-right">
         <div className="flex items-baseline justify-end gap-1.5">

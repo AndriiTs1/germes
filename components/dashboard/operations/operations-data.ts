@@ -22,7 +22,15 @@ export type AttentionItem = {
   kind: AttentionKind;
   /** Only present for kind: "lowStock" — the untouched demo product name, composed after the localized "Low stock:" prefix at render time. */
   productName?: string;
-  value: string;
+  /**
+   * The pre-formatted right-side display value (money/kg) for every kind
+   * except "ordersAwaitingShipment", whose count is rendered via
+   * lib/i18n/pluralize.ts against `count` instead — "orders" is a plural
+   * word, not a fixed unit like "kg"/"UAH", so it can never be a frozen
+   * string. Exactly one of `value`/`count` is set per item.
+   */
+  value?: string;
+  count?: number;
   accent: AttentionAccent;
 };
 
@@ -55,7 +63,7 @@ export const needsAttention: AttentionItem[] = [
   {
     icon: Truck,
     kind: "ordersAwaitingShipment",
-    value: "5 orders",
+    count: 5,
     accent: "blue",
   },
 ];

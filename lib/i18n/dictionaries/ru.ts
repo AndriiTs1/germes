@@ -491,6 +491,12 @@ export const ru: Dictionary = {
       lowStockPrefix: "Низкий остаток:",
       supplierPaymentDueTomorrow: "Оплата поставщику завтра",
       ordersAwaitingShipment: "Заказы ожидают отгрузки",
+      ordersCount: {
+        one: "{count} заказ",
+        few: "{count} заказа",
+        many: "{count} заказов",
+        other: "{count} заказов",
+      },
     },
     recentOrders: {
       title: "Последние заказы",

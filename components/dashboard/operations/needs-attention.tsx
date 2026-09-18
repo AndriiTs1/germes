@@ -3,7 +3,9 @@ import { ChevronRight } from "lucide-react";
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { needsAttention } from "@/components/dashboard/operations/operations-data";
 import type { AttentionAccent, AttentionItem } from "@/components/dashboard/operations/operations-data";
+import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { pluralize } from "@/lib/i18n/pluralize";
 import { cn } from "@/lib/utils";
 
 const accentStyles: Record<AttentionAccent, string> = {
@@ -21,7 +23,23 @@ function itemLabel(item: AttentionItem, t: Dictionary["commandCenter"]["needsAtt
   return t[item.kind];
 }
 
-export function NeedsAttention({ className, dictionary }: { className?: string; dictionary: Dictionary }) {
+/** item.value for money/kg kinds; a genuinely pluralized "{count} orders" (never a frozen string) for kind: "ordersAwaitingShipment". */
+function itemValue(item: AttentionItem, locale: Locale, t: Dictionary["commandCenter"]["needsAttention"]): string {
+  if (item.count !== undefined) {
+    return pluralize(locale, item.count, t.ordersCount);
+  }
+  return item.value ?? "";
+}
+
+export function NeedsAttention({
+  className,
+  locale,
+  dictionary,
+}: {
+  className?: string;
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
   const t = dictionary.commandCenter.needsAttention;
 
   return (
@@ -49,10 +67,21 @@ export function NeedsAttention({ className, dictionary }: { className?: string; 
               >
                 <item.icon className="h-4 w-4" strokeWidth={1.75} />
               </span>
-              <span className="line-clamp-2 min-w-0 flex-1 text-[12.5px] font-medium text-slate-700 min-[768px]:line-clamp-1 min-[768px]:truncate">
+              {/*
+                line-clamp-2 at every breakpoint (no desktop-only
+                line-clamp-1/truncate override) — the previous desktop
+                override was cutting full localized labels ("Счёт
+                поставщика ожидает утвержде…") even though this span
+                already has min-w-0 flex-1 to receive the row's remaining
+                width correctly. Two lines max, matching the mobile
+                behavior that was already correct.
+              */}
+              <span className="line-clamp-2 min-w-0 flex-1 text-[12.5px] font-medium text-slate-700">
                 {itemLabel(item, t)}
               </span>
-              <span className="shrink-0 text-[12.5px] font-semibold text-slate-900">{item.value}</span>
+              <span className="shrink-0 text-[12.5px] font-semibold text-slate-900">
+                {itemValue(item, locale, t)}
+              </span>
               <ChevronRight className="h-3.5 w-3.5 shrink-0 text-slate-300" strokeWidth={1.75} />
             </button>
           </li>

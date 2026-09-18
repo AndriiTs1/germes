@@ -497,6 +497,13 @@ export const en = {
       lowStockPrefix: "Low stock:",
       supplierPaymentDueTomorrow: "Supplier payment due tomorrow",
       ordersAwaitingShipment: "Orders awaiting shipment",
+      /** Passed straight to lib/i18n/pluralize.ts — the "{count} orders" value shown for kind: "ordersAwaitingShipment", genuinely pluralized per locale rather than a frozen "5 orders" string. */
+      ordersCount: {
+        one: "{count} order",
+        few: "{count} orders",
+        many: "{count} orders",
+        other: "{count} orders",
+      },
     },
     recentOrders: {
       title: "Recent Orders",
