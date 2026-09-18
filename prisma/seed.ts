@@ -98,7 +98,12 @@ async function main() {
     {
       code: "sales.orders.create",
       description: "Create a sales order",
-      roles: ["OWNER", "ADMIN", "SALES"],
+      // OWNER intentionally excluded (RBAC Phase 1): routine sales-rep
+      // execution, not an owner-level control. See
+      // scripts/sync-workspace-permissions.ts, which must be run against
+      // a real database to actually revoke this from an existing OWNER
+      // grant — this seed file alone never reaches production.
+      roles: ["ADMIN", "SALES"],
     },
     {
       code: "sales.orders.update",
@@ -113,12 +118,16 @@ async function main() {
     {
       code: "sales.reservations.create",
       description: "Reserve stock for a sales order",
-      roles: ["OWNER", "ADMIN", "SALES"],
+      // OWNER intentionally excluded (RBAC Phase 1) — see the note on
+      // sales.orders.create above.
+      roles: ["ADMIN", "SALES"],
     },
     {
       code: "sales.reservations.release",
       description: "Manually release or cancel a stock reservation",
-      roles: ["OWNER", "ADMIN", "SALES"],
+      // OWNER intentionally excluded (RBAC Phase 1) — see the note on
+      // sales.orders.create above.
+      roles: ["ADMIN", "SALES"],
     },
     {
       code: "inventory.shipments.process",
