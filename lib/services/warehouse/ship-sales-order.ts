@@ -1,5 +1,6 @@
 import {
   BatchStatus,
+  FinanceStatus,
   Prisma,
   ReservationStatus,
   SalesOrderStatus,
@@ -96,9 +97,9 @@ type ValidatedReservation = {
  *     once the first has committed.
  *
  * This function never modifies Batch, Warehouse, SalesOrderItem, or
- * Customer, never creates a finance record, and never marks the order
- * COMPLETED — SHIPPED means the physical goods have left the warehouse; it
- * is the last step this service is responsible for.
+ * Customer and never marks the order COMPLETED. A successful physical
+ * shipment also creates the order's OPEN Receivable in the same transaction,
+ * so stock, order status, and the financial consequence commit atomically.
  *
  * The transaction runs at SERIALIZABLE isolation and retries P2034
  * conflicts (same MAX_TRANSACTION_ATTEMPTS=3 pattern as the other
@@ -121,6 +122,13 @@ export async function shipSalesOrder(
             select: {
               id: true,
               orderNumber: true,
+              customerId: true,
+              currency: true,
+              customer: {
+                select: {
+                  paymentTermDays: true,
+                },
+              },
             },
           });
 
@@ -130,7 +138,12 @@ export async function shipSalesOrder(
 
           const items = await tx.salesOrderItem.findMany({
             where: { salesOrderId: order.id },
-            select: { id: true, productId: true, quantityKg: true },
+            select: {
+              id: true,
+              productId: true,
+              quantityKg: true,
+              pricePerKg: true,
+            },
           });
 
           if (items.length === 0) {
@@ -385,6 +398,45 @@ export async function shipSalesOrder(
           if (updateResult.count !== 1) {
             throw new OrderUnavailableError();
           }
+
+          const receivableAmount = items.reduce(
+            (total, item) => total.plus(item.quantityKg.mul(item.pricePerKg)),
+            new Prisma.Decimal(0),
+          );
+
+          const dueDate = new Date(now);
+          dueDate.setUTCDate(dueDate.getUTCDate() + order.customer.paymentTermDays);
+
+          const receivable = await tx.receivable.create({
+            data: {
+              customerId: order.customerId,
+              salesOrderId: order.id,
+              amount: receivableAmount,
+              paidAmount: new Prisma.Decimal(0),
+              currency: order.currency,
+              dueDate,
+              status: FinanceStatus.OPEN,
+              reference: order.orderNumber,
+            },
+          });
+
+          await tx.auditLog.create({
+            data: {
+              actorId: currentUserId,
+              entityType: "Receivable",
+              entityId: receivable.id,
+              action: "CREATE",
+              metadata: {
+                salesOrderId: order.id,
+                orderNumber: order.orderNumber,
+                amount: receivableAmount.toString(),
+                currency: order.currency,
+                dueDate: dueDate.toISOString(),
+                paymentTermDays: order.customer.paymentTermDays,
+                status: FinanceStatus.OPEN,
+              },
+            },
+          });
 
           await tx.auditLog.create({
             data: {
