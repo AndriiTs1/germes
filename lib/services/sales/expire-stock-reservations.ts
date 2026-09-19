@@ -1,4 +1,4 @@
-import { ReservationStatus } from "@/lib/generated/prisma/client";
+import { ReservationStatus, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export type ExpireStockReservationsResult = {
@@ -11,6 +11,10 @@ export type ExpireStockReservationsResult = {
  * V1 rules:
  * - only ACTIVE reservations are eligible;
  * - expiresAt must be non-null and <= now;
+ * - order-linked reservations expire automatically only while their SalesOrder
+ *   is CONFIRMED; once Warehouse accepts the order into PROCESSING, its
+ *   fulfillment reservation is protected from TTL cleanup;
+ * - reservations not linked to a SalesOrder keep the normal TTL behaviour;
  * - ACTIVE -> EXPIRED is the only transition performed here;
  * - repeated execution is safe: already expired/released/consumed rows are ignored;
  * - expiration changes reservation state only, never physical stock;
@@ -32,6 +36,10 @@ export async function expireStockReservations(
           not: null,
           lte: now,
         },
+        OR: [
+          { salesOrderId: null },
+          { salesOrder: { status: SalesOrderStatus.CONFIRMED } },
+        ],
       },
       select: {
         id: true,
@@ -56,6 +64,10 @@ export async function expireStockReservations(
             not: null,
             lte: now,
           },
+          OR: [
+            { salesOrderId: null },
+            { salesOrder: { status: SalesOrderStatus.CONFIRMED } },
+          ],
         },
         data: {
           status: ReservationStatus.EXPIRED,
