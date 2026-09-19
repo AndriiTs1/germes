@@ -50,11 +50,19 @@ export const en = {
     commandCenter: "Command Center",
     sales: "Sales",
     warehouse: "Warehouse",
+    finance: "Finance",
     orders: "Orders",
     customers: "Customers",
     settings: "Settings",
   },
 
+
+  finance: {
+    workspace: {
+      title: "Finance",
+      subtitle: "Receivables and payment control",
+    },
+  },
   header: {
     searchPlaceholderShort: "Search...",
     searchPlaceholderFull: "Search customers, orders, products...",

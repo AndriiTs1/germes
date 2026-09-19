@@ -44,11 +44,19 @@ export const ru: Dictionary = {
     commandCenter: "Командный центр",
     sales: "Продажи",
     warehouse: "Склад",
+    finance: "Финансы",
     orders: "Заказы",
     customers: "Клиенты",
     settings: "Настройки",
   },
 
+
+  finance: {
+    workspace: {
+      title: "Финансы",
+      subtitle: "Дебиторская задолженность и контроль оплат",
+    },
+  },
   header: {
     searchPlaceholderShort: "Поиск...",
     searchPlaceholderFull: "Поиск клиентов, заказов, товаров...",

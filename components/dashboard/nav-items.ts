@@ -1,5 +1,6 @@
 import {
   ClipboardList,
+  Landmark,
   LayoutDashboard,
   Settings,
   ShoppingCart,
@@ -9,7 +10,7 @@ import {
 } from "lucide-react";
 
 /** Keys into dictionary.nav — the item's display label, resolved per current locale. Never itself an English string. */
-export type NavItemKey = "commandCenter" | "sales" | "warehouse" | "orders" | "customers" | "settings";
+export type NavItemKey = "commandCenter" | "sales" | "warehouse" | "finance" | "orders" | "customers" | "settings";
 
 /** Keys into dictionary.nav.sections — the group heading, resolved per current locale. */
 export type NavSectionKey = "overview" | "workspace" | "sell" | "account";
@@ -75,6 +76,12 @@ export const navSections: NavSection[] = [
         href: "/warehouse",
         requiredPermission: "workspace.warehouse.access",
         icon: Warehouse,
+      },
+      {
+        labelKey: "finance",
+        href: "/finance",
+        requiredPermission: "finance.dashboard.read",
+        icon: Landmark,
       },
     ],
   },
