@@ -131,6 +131,9 @@ export function FinanceReceivablesList({
                           receivableId={receivable.id}
                           outstandingAmount={receivable.outstandingAmount}
                           currency={receivable.currency}
+                          orderLabel={
+                            receivable.orderNumber ?? receivable.reference ?? "—"
+                          }
                           dictionary={t}
                         />
                       </td>
@@ -196,6 +199,9 @@ export function FinanceReceivablesList({
                 receivableId={receivable.id}
                 outstandingAmount={receivable.outstandingAmount}
                 currency={receivable.currency}
+                orderLabel={
+                  receivable.orderNumber ?? receivable.reference ?? "—"
+                }
                 dictionary={t}
               />
             ) : null}

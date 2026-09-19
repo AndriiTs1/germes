@@ -20,11 +20,13 @@ export function FinanceReceivablePaymentForm({
   receivableId,
   outstandingAmount,
   currency,
+  orderLabel,
   dictionary,
 }: {
   receivableId: string;
   outstandingAmount: string;
   currency: string;
+  orderLabel: string;
   dictionary: Dictionary["finance"]["receivables"];
 }) {
   const [state, action, pending] = useActionState(
@@ -35,6 +37,10 @@ export function FinanceReceivablePaymentForm({
   return (
     <form action={action} className="mt-3 max-w-xl border-t border-slate-100 pt-3">
       <input type="hidden" name="receivableId" value={receivableId} />
+
+      <p className="mb-2 text-[11px] font-medium text-slate-500">
+        {dictionary.paymentForOrder} {orderLabel}
+      </p>
 
       <div className="grid gap-2 sm:grid-cols-[1fr_auto]">
         <Input

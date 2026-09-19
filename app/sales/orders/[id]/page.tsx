@@ -23,7 +23,6 @@ const SALES_ORDERS_UPDATE_PERMISSION = "sales.orders.update";
 const RESERVATIONS_READ_PERMISSION = "sales.reservations.read";
 const RESERVATIONS_CREATE_PERMISSION = "sales.reservations.create";
 const RESERVATIONS_RELEASE_PERMISSION = "sales.reservations.release";
-const RECEIVABLES_UPDATE_PERMISSION = "finance.receivables.update";
 
 export default async function SalesOrderDetailPage(props: PageProps<"/sales/orders/[id]">) {
   let user: Awaited<ReturnType<typeof requirePermission>>;
@@ -47,9 +46,6 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   );
   const canReleaseReservations = permissionCodes.includes(
     RESERVATIONS_RELEASE_PERMISSION,
-  );
-  const canUpdateReceivables = permissionCodes.includes(
-    RECEIVABLES_UPDATE_PERMISSION,
   );
 
   const locale = await getCurrentLocale();
@@ -158,8 +154,6 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
                 receivable={order.receivable}
                 locale={locale}
                 dictionary={dictionary}
-                orderId={order.id}
-                canUpdate={canUpdateReceivables}
               />
             ) : null}
           </div>

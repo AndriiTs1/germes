@@ -1,7 +1,6 @@
 "use client";
 
 import { DetailSection } from "@/components/sales/detail-section";
-import { ReceivablePaymentForm } from "@/components/sales/receivable-payment-form";
 import { formatMoney, formatShortDate } from "@/components/sales/format";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -20,15 +19,11 @@ export function OrderDetailReceivable({
   receivable,
   locale,
   dictionary,
-  orderId,
-  canUpdate,
   className,
 }: {
   receivable: SalesOrderDetailReceivable;
   locale: Locale;
   dictionary: Dictionary;
-  orderId: string;
-  canUpdate: boolean;
   className?: string;
 }) {
   const t = dictionary.orderDetail.receivable;
@@ -77,18 +72,6 @@ export function OrderDetailReceivable({
         </p>
       ) : null}
 
-      {canUpdate &&
-      receivable.count === 1 &&
-      receivable.id &&
-      Number(receivable.totalOutstanding) > 0 ? (
-        <ReceivablePaymentForm
-          orderId={orderId}
-          receivableId={receivable.id}
-          outstandingAmount={receivable.totalOutstanding}
-          currency={receivable.currency}
-          dictionary={t}
-        />
-      ) : null}
     </DetailSection>
   );
 }

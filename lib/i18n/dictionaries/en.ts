@@ -73,6 +73,7 @@ export const en = {
       amount: "Amount",
       paid: "Paid",
       outstanding: "Outstanding",
+      paymentForOrder: "Payment for order:",
       paymentAmountPlaceholder: "Payment amount · {currency}",
       registerPayment: "Register payment",
       registeringPayment: "Registering...",

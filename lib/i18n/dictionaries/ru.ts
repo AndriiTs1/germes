@@ -67,6 +67,7 @@ export const ru: Dictionary = {
       amount: "Сумма",
       paid: "Оплачено",
       outstanding: "Остаток",
+      paymentForOrder: "Оплата по заказу:",
       paymentAmountPlaceholder: "Сумма оплаты · {currency}",
       registerPayment: "Зарегистрировать оплату",
       registeringPayment: "Регистрация...",
