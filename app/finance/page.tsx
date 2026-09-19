@@ -1,10 +1,12 @@
 import { redirect } from "next/navigation";
 
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { FinanceReceivablesList } from "@/components/finance/receivables-list";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { listReceivables } from "@/lib/services/finance/list-receivables";
 
 const FINANCE_DASHBOARD_PERMISSION = "finance.dashboard.read";
 
@@ -20,6 +22,12 @@ export default async function FinancePage() {
   const permissionCodes = await getPermissionCodesForUser(user.id);
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
+
+  const canReadReceivables = permissionCodes.includes("finance.receivables.read");
+  const canUpdateReceivables = permissionCodes.includes(
+    "finance.receivables.update",
+  );
+  const receivables = canReadReceivables ? await listReceivables() : [];
 
   return (
     <DashboardShell
@@ -37,6 +45,20 @@ export default async function FinancePage() {
           {dictionary.finance.workspace.subtitle}
         </p>
       </div>
+
+      {canReadReceivables ? (
+        <section>
+          <h2 className="mb-3 text-[14px] font-semibold text-slate-900">
+            {dictionary.finance.receivables.title}
+          </h2>
+          <FinanceReceivablesList
+            receivables={receivables}
+            locale={locale}
+            dictionary={dictionary}
+            canUpdateReceivables={canUpdateReceivables}
+          />
+        </section>
+      ) : null}
     </DashboardShell>
   );
 }

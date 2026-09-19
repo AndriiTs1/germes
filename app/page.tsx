@@ -13,6 +13,7 @@ import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-pe
 const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
 const SALES_WORKSPACE_PERMISSION = "workspace.sales.access";
 const WAREHOUSE_WORKSPACE_PERMISSION = "workspace.warehouse.access";
+const FINANCE_WORKSPACE_PERMISSION = "finance.dashboard.read";
 
 export default async function Home() {
   let user: Awaited<ReturnType<typeof requireUser>>;
@@ -39,6 +40,10 @@ export default async function Home() {
 
     if (permissionCodes.includes(SALES_WORKSPACE_PERMISSION)) {
       redirect("/sales");
+    }
+
+    if (permissionCodes.includes(FINANCE_WORKSPACE_PERMISSION)) {
+      redirect("/finance");
     }
 
     return (
