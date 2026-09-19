@@ -42,7 +42,11 @@ export default async function WarehousePage() {
         </p>
       </div>
 
-      <WarehouseWorkspace locale={locale} dictionary={dictionary} />
+      <WarehouseWorkspace
+        locale={locale}
+        dictionary={dictionary}
+        canReadStock={permissionCodes.includes("inventory.stock.read")}
+      />
     </DashboardShell>
   );
 }

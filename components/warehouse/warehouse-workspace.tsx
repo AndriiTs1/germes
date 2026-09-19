@@ -1,17 +1,20 @@
 import { CheckCircle2, ClipboardCheck, Loader, PackageCheck } from "lucide-react";
 
 import { FulfillmentQueue } from "@/components/warehouse/fulfillment-queue";
+import { WarehouseStockOverview } from "@/components/warehouse/warehouse-stock-overview";
 import {
   WarehouseKpiSummary,
   type WarehouseKpiCardProps,
 } from "@/components/warehouse/warehouse-kpi-row";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import { getStockAvailability } from "@/lib/services/sales/get-stock-availability";
 import { listWarehouseOrders } from "@/lib/services/warehouse/list-warehouse-orders";
 
 type WarehouseWorkspaceProps = {
   locale: Locale;
   dictionary: Dictionary;
+  canReadStock: boolean;
 };
 
 /**
@@ -30,8 +33,17 @@ type WarehouseWorkspaceProps = {
  * queue data the table below renders; nothing here invents financial or
  * stock metrics.
  */
-export async function WarehouseWorkspace({ locale, dictionary }: WarehouseWorkspaceProps) {
-  const orders = await listWarehouseOrders();
+export async function WarehouseWorkspace({
+  locale,
+  dictionary,
+  canReadStock,
+}: WarehouseWorkspaceProps) {
+  const [orders, stock] = await Promise.all([
+    listWarehouseOrders(),
+    canReadStock ? getStockAvailability() : Promise.resolve(null),
+  ]);
+
+
 
   const readyCount = orders.filter((order) => order.status === "READY").length;
   const processingCount = orders.filter((order) => order.status === "PROCESSING").length;
@@ -55,6 +67,14 @@ export async function WarehouseWorkspace({ locale, dictionary }: WarehouseWorksp
   return (
     <div className="flex flex-col gap-4">
       <WarehouseKpiSummary items={kpis} />
+
+      {stock ? (
+        <WarehouseStockOverview
+          stock={stock}
+          locale={locale}
+          kgUnit={dictionary.common.kgUnit}
+        />
+      ) : null}
 
       <div>
         <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">
