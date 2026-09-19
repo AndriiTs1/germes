@@ -28,6 +28,8 @@ export type SalesOrderDetailReservation = {
 };
 
 export type SalesOrderDetailReceivable = {
+  /** Only set when exactly one receivable exists — never picked arbitrarily. */
+  id: string | null;
   totalAmount: string;
   totalPaid: string;
   totalOutstanding: string;
@@ -58,6 +60,7 @@ export type SalesOrderDetail = {
 };
 
 type RawReceivable = {
+  id: string;
   amount: Prisma.Decimal;
   paidAmount: Prisma.Decimal;
   currency: string;
@@ -94,6 +97,7 @@ function buildReceivableAggregate(
   const isSingle = receivables.length === 1;
 
   return {
+    id: isSingle ? receivables[0].id : null,
     totalAmount: decimalToString(totalAmount),
     totalPaid: decimalToString(totalPaid),
     totalOutstanding: decimalToString(totalAmount.minus(totalPaid)),
@@ -159,6 +163,7 @@ export async function getSalesOrderDetail(
       },
       receivables: {
         select: {
+          id: true,
           amount: true,
           paidAmount: true,
           currency: true,
