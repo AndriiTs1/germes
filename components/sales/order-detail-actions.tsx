@@ -92,11 +92,11 @@ export function OrderDetailActions({
 
   return (
     <>
-      <div className="flex shrink-0 flex-wrap items-center gap-2">
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:shrink-0 sm:flex-wrap sm:items-center">
         {showEdit ? (
           <Link
             href={`/sales/orders/${orderId}/edit`}
-            className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
+            className="inline-flex min-w-0 items-center justify-center rounded-full border border-slate-200/70 bg-white px-4 py-2 text-center text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             {dictionary.edit}
           </Link>
@@ -107,7 +107,7 @@ export function OrderDetailActions({
             type="button"
             onClick={handleConfirm}
             disabled={isPending}
-            className="rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
+            className="min-w-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
             {isPending ? dictionary.confirming : dictionary.confirm}
           </button>
@@ -118,7 +118,7 @@ export function OrderDetailActions({
             type="button"
             onClick={() => setCancelDialogOpen(true)}
             disabled={isPending}
-            className="rounded-full border border-rose-200 bg-white px-4 py-2 text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:pointer-events-none disabled:opacity-50"
+            className="col-span-2 min-w-0 rounded-full border border-rose-200 bg-white px-4 py-2 text-[13px] font-medium text-rose-600 transition-colors hover:bg-rose-50 disabled:pointer-events-none disabled:opacity-50 sm:col-span-1"
           >
             {dictionary.cancelOrder}
           </button>

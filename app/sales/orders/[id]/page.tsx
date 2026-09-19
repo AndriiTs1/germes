@@ -105,7 +105,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
           {dictionary.orderDetail.backToOrders}
         </Link>
 
-        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
           <div className="flex min-w-0 items-center gap-3">
             <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
               {order.orderNumber}
