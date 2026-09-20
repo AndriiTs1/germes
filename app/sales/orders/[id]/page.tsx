@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { getOrderStatusLabel, ORDER_STATUS_STYLES } from "@/components/sales/order-status";
 import { OrderDetailActions } from "@/components/sales/order-detail-actions";
+import { OrderDetailHistory } from "@/components/sales/order-detail-history";
 import { OrderDetailItems } from "@/components/sales/order-detail-items";
 import { OrderDetailNotes } from "@/components/sales/order-detail-notes";
 import { OrderDetailOverview } from "@/components/sales/order-detail-overview";
@@ -16,6 +17,7 @@ import { requirePermission } from "@/lib/permissions/require-permission";
 import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getBatchWarehouseAvailability } from "@/lib/services/sales/get-batch-warehouse-availability";
 import { getSalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail";
+import { getSalesOrderHistory } from "@/lib/services/sales/get-sales-order-history";
 import { cn } from "@/lib/utils";
 
 const SALES_ORDERS_PERMISSION = "sales.orders.read";
@@ -64,6 +66,8 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   if (!order) {
     notFound();
   }
+
+  const history = await getSalesOrderHistory(order.id);
 
   const canCreateForOrder =
     canCreateReservations && order.status === "CONFIRMED";
@@ -160,6 +164,12 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
         ) : null}
 
         {hasNotes ? <OrderDetailNotes notes={order.notes as string} dictionary={dictionary} /> : null}
+
+        <OrderDetailHistory
+          items={history}
+          locale={locale}
+          dictionary={dictionary}
+        />
       </div>
     </DashboardShell>
   );

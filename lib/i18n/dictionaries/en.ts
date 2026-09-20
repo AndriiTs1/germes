@@ -264,6 +264,26 @@ export const en = {
     notes: {
       title: "Notes",
     },
+    history: {
+      title: "History",
+      system: "System",
+      outstanding: "Outstanding",
+      events: {
+        orderCreated: "Order created",
+        orderUpdated: "Order updated",
+        orderConfirmed: "Order confirmed",
+        orderProcessing: "Order processing started",
+        orderReady: "Order ready for shipment",
+        orderShipped: "Order shipped",
+        orderCancelled: "Order cancelled",
+        reservationCreated: "Reservation created",
+        reservationReleased: "Reservation released",
+        reservationExpired: "Reservation expired",
+        reservationConsumed: "Reservation consumed",
+        receivableCreated: "Receivable created",
+        paymentRegistered: "Payment registered",
+      },
+    },
     receivable: {
       title: "Receivable",
       total: "Total",

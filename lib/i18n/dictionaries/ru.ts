@@ -258,6 +258,26 @@ export const ru: Dictionary = {
     notes: {
       title: "Примечания",
     },
+    history: {
+      title: "История",
+      system: "Система",
+      outstanding: "Остаток",
+      events: {
+        orderCreated: "Заказ создан",
+        orderUpdated: "Заказ обновлён",
+        orderConfirmed: "Заказ подтверждён",
+        orderProcessing: "Начата обработка заказа",
+        orderReady: "Заказ готов к отгрузке",
+        orderShipped: "Заказ отгружен",
+        orderCancelled: "Заказ отменён",
+        reservationCreated: "Создан резерв",
+        reservationReleased: "Резерв снят",
+        reservationExpired: "Резерв истёк",
+        reservationConsumed: "Резерв списан",
+        receivableCreated: "Создана дебиторская задолженность",
+        paymentRegistered: "Зарегистрирована оплата",
+      },
+    },
     receivable: {
       title: "Дебиторская задолженность",
       total: "Итого",

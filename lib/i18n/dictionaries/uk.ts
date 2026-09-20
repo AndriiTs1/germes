@@ -258,6 +258,26 @@ export const uk: Dictionary = {
     notes: {
       title: "Примітки",
     },
+    history: {
+      title: "Історія",
+      system: "Система",
+      outstanding: "Залишок",
+      events: {
+        orderCreated: "Замовлення створено",
+        orderUpdated: "Замовлення оновлено",
+        orderConfirmed: "Замовлення підтверджено",
+        orderProcessing: "Розпочато обробку замовлення",
+        orderReady: "Замовлення готове до відвантаження",
+        orderShipped: "Замовлення відвантажено",
+        orderCancelled: "Замовлення скасовано",
+        reservationCreated: "Резерв створено",
+        reservationReleased: "Резерв звільнено",
+        reservationExpired: "Термін резерву минув",
+        reservationConsumed: "Резерв списано",
+        receivableCreated: "Створено дебіторську заборгованість",
+        paymentRegistered: "Оплату зареєстровано",
+      },
+    },
     receivable: {
       title: "Дебіторська заборгованість",
       total: "Разом",
