@@ -51,11 +51,49 @@ export const en = {
     sales: "Sales",
     warehouse: "Warehouse",
     finance: "Finance",
+    administration: "Administration",
     orders: "Orders",
     customers: "Customers",
     settings: "Settings",
   },
 
+
+  admin: {
+    workspace: {
+      title: "Administration",
+      subtitle: "Users, roles, access and system control",
+    },
+    search: {
+      placeholder: "Search users, roles, permissions...",
+      compactPlaceholder: "Search users...",
+    },
+    users: {
+      title: "Users",
+      subtitle: "Accounts, roles, status and authentication",
+      stats: {
+        total: "Total users",
+        active: "Active",
+        authLinked: "Auth connected",
+        attention: "Needs attention",
+      },
+      table: {
+        user: "User",
+        email: "Email",
+        role: "Role",
+        status: "Status",
+        auth: "Auth",
+      },
+      status: {
+        active: "Active",
+        inactive: "Inactive",
+      },
+      auth: {
+        linked: "Connected",
+        unlinked: "Not connected",
+      },
+      empty: "No users found",
+    },
+  },
 
   finance: {
     workspace: {

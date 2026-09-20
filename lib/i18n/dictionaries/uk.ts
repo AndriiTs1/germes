@@ -45,11 +45,49 @@ export const uk: Dictionary = {
     sales: "Продажі",
     warehouse: "Склад",
     finance: "Фінанси",
+    administration: "Адміністрування",
     orders: "Замовлення",
     customers: "Клієнти",
     settings: "Налаштування",
   },
 
+
+  admin: {
+    workspace: {
+      title: "Адміністрування",
+      subtitle: "Користувачі, ролі, доступи та контроль системи",
+    },
+    search: {
+      placeholder: "Пошук користувачів, ролей, доступів...",
+      compactPlaceholder: "Пошук користувачів...",
+    },
+    users: {
+      title: "Користувачі",
+      subtitle: "Облікові записи, ролі, статус та авторизація",
+      stats: {
+        total: "Усього користувачів",
+        active: "Активні",
+        authLinked: "Auth підключено",
+        attention: "Потребують уваги",
+      },
+      table: {
+        user: "Користувач",
+        email: "Email",
+        role: "Роль",
+        status: "Статус",
+        auth: "Auth",
+      },
+      status: {
+        active: "Активний",
+        inactive: "Неактивний",
+      },
+      auth: {
+        linked: "Підключено",
+        unlinked: "Не підключено",
+      },
+      empty: "Користувачів не знайдено",
+    },
+  },
 
   finance: {
     workspace: {

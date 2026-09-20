@@ -1,6 +1,11 @@
 export type ShellUser = {
   name: string | null;
   email: string;
+  roles: Array<{
+    role: {
+      code: string;
+    };
+  }>;
 };
 
 export type UserDisplay = {

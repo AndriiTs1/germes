@@ -2,6 +2,7 @@ import {
   ClipboardList,
   Landmark,
   LayoutDashboard,
+  ShieldCheck,
   Settings,
   ShoppingCart,
   Users,
@@ -9,8 +10,18 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
+import type { NavigationProfile } from "@/components/dashboard/navigation-profile";
+
 /** Keys into dictionary.nav — the item's display label, resolved per current locale. Never itself an English string. */
-export type NavItemKey = "commandCenter" | "sales" | "warehouse" | "finance" | "orders" | "customers" | "settings";
+export type NavItemKey =
+  | "commandCenter"
+  | "sales"
+  | "warehouse"
+  | "finance"
+  | "administration"
+  | "orders"
+  | "customers"
+  | "settings";
 
 /** Keys into dictionary.nav.sections — the group heading, resolved per current locale. */
 export type NavSectionKey = "overview" | "workspace" | "sell" | "account";
@@ -83,6 +94,12 @@ export const navSections: NavSection[] = [
         requiredPermission: "finance.dashboard.read",
         icon: Landmark,
       },
+      {
+        labelKey: "administration",
+        href: "/admin",
+        requiredPermission: "workspace.admin.access",
+        icon: ShieldCheck,
+      },
     ],
   },
   {
@@ -154,8 +171,23 @@ export function filterNavSections(
   sections: NavSection[],
   permissionCodes: string[],
   activePath: string,
+  profile: NavigationProfile = "default",
 ): NavSection[] {
-  const permitted = sections.map((section) => ({
+  const profileFiltered =
+    profile === "admin"
+      ? sections
+          .map((section) => ({
+            ...section,
+            items: section.items.filter(
+              (item) =>
+                item.labelKey === "administration" ||
+                item.labelKey === "settings",
+            ),
+          }))
+          .filter((section) => section.items.length > 0)
+      : sections;
+
+  const permitted = profileFiltered.map((section) => ({
     ...section,
     items: section.items.filter(
       (item) => !item.requiredPermission || permissionCodes.includes(item.requiredPermission),

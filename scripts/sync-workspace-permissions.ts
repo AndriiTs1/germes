@@ -85,6 +85,11 @@ const SYNCED_PERMISSIONS: {
     roleCodes: ["OWNER", "ADMIN", "WAREHOUSE"],
   },
   {
+    code: "workspace.admin.access",
+    description: "See the Administration workspace and its navigation in the sidebar",
+    roleCodes: ["OWNER", "ADMIN"],
+  },
+  {
     code: "sales.orders.create",
     description: "Create a sales order",
     // RBAC: OWNER and ADMIN removed — routine sales-rep execution, not an

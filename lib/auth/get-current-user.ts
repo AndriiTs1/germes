@@ -10,6 +10,17 @@ export async function getCurrentUser() {
 
   const user = await prisma.user.findUnique({
     where: { authUserId: identity.userId },
+    include: {
+      roles: {
+        select: {
+          role: {
+            select: {
+              code: true,
+            },
+          },
+        },
+      },
+    },
   });
 
   return user;

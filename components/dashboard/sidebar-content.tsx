@@ -5,12 +5,14 @@ import { cn } from "@/lib/utils";
 import { filterNavSections, navSections } from "@/components/dashboard/nav-items";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { UserDisplay } from "@/components/dashboard/user-display";
+import type { NavigationProfile } from "@/components/dashboard/navigation-profile";
 
 type SidebarContentProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
   activePath: string;
   dictionary: Dictionary;
+  navigationProfile: NavigationProfile;
   onNavigate?: () => void;
 };
 
@@ -32,9 +34,15 @@ export function SidebarContent({
   userDisplay,
   activePath,
   dictionary,
+  navigationProfile,
   onNavigate,
 }: SidebarContentProps) {
-  const visibleSections = filterNavSections(navSections, permissionCodes, activePath);
+  const visibleSections = filterNavSections(
+    navSections,
+    permissionCodes,
+    activePath,
+    navigationProfile,
+  );
 
   return (
     <>

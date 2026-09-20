@@ -1,5 +1,6 @@
 import { SidebarContent } from "@/components/dashboard/sidebar-content";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { NavigationProfile } from "@/components/dashboard/navigation-profile";
 import type { UserDisplay } from "@/components/dashboard/user-display";
 
 type DashboardSidebarProps = {
@@ -7,6 +8,7 @@ type DashboardSidebarProps = {
   userDisplay: UserDisplay;
   activePath: string;
   dictionary: Dictionary;
+  navigationProfile: NavigationProfile;
 };
 
 /**
@@ -18,6 +20,7 @@ export function DashboardSidebar({
   userDisplay,
   activePath,
   dictionary,
+  navigationProfile,
 }: DashboardSidebarProps) {
   return (
     <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-200/70 bg-white xl:flex">
@@ -26,6 +29,7 @@ export function DashboardSidebar({
         userDisplay={userDisplay}
         activePath={activePath}
         dictionary={dictionary}
+        navigationProfile={navigationProfile}
       />
     </aside>
   );

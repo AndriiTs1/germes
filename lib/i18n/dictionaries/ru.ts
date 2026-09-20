@@ -45,11 +45,49 @@ export const ru: Dictionary = {
     sales: "Продажи",
     warehouse: "Склад",
     finance: "Финансы",
+    administration: "Администрирование",
     orders: "Заказы",
     customers: "Клиенты",
     settings: "Настройки",
   },
 
+
+  admin: {
+    workspace: {
+      title: "Администрирование",
+      subtitle: "Пользователи, роли, доступы и контроль системы",
+    },
+    search: {
+      placeholder: "Поиск пользователей, ролей, доступов...",
+      compactPlaceholder: "Поиск пользователей...",
+    },
+    users: {
+      title: "Пользователи",
+      subtitle: "Аккаунты, роли, статус и авторизация",
+      stats: {
+        total: "Всего пользователей",
+        active: "Активные",
+        authLinked: "Auth подключён",
+        attention: "Требуют внимания",
+      },
+      table: {
+        user: "Пользователь",
+        email: "Email",
+        role: "Роль",
+        status: "Статус",
+        auth: "Auth",
+      },
+      status: {
+        active: "Активен",
+        inactive: "Неактивен",
+      },
+      auth: {
+        linked: "Подключён",
+        unlinked: "Не подключён",
+      },
+      empty: "Пользователи не найдены",
+    },
+  },
 
   finance: {
     workspace: {

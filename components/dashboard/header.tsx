@@ -3,6 +3,7 @@ import { Bell, Search } from "lucide-react";
 import { MobileNav } from "@/components/dashboard/mobile-nav";
 import { PeriodControl } from "@/components/dashboard/period-control";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { NavigationProfile } from "@/components/dashboard/navigation-profile";
 import type { UserDisplay } from "@/components/dashboard/user-display";
 
 type DashboardHeaderProps = {
@@ -10,8 +11,11 @@ type DashboardHeaderProps = {
   userDisplay: UserDisplay;
   activePath: string;
   dictionary: Dictionary;
+  navigationProfile: NavigationProfile;
   /** Defaults to true — preserves the Owner Command Center header exactly. */
   showPeriodControl?: boolean;
+  /** Optional placeholder override for the md..xl compact search field. */
+  compactSearchPlaceholder?: string;
 };
 
 export function DashboardHeader({
@@ -19,7 +23,9 @@ export function DashboardHeader({
   userDisplay,
   activePath,
   dictionary,
+  navigationProfile,
   showPeriodControl = true,
+  compactSearchPlaceholder,
 }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
@@ -28,6 +34,7 @@ export function DashboardHeader({
         userDisplay={userDisplay}
         activePath={activePath}
         dictionary={dictionary}
+        navigationProfile={navigationProfile}
       />
 
       <div className="flex shrink-0 items-center gap-2 xl:hidden">
@@ -53,7 +60,9 @@ export function DashboardHeader({
         />
         <input
           type="text"
-          placeholder={dictionary.header.searchPlaceholderShort}
+          placeholder={
+            compactSearchPlaceholder ?? dictionary.header.searchPlaceholderShort
+          }
           // text-base md:text-[13px] (not a fixed text-[13px]): a real
           // text-entry control, visible from md up on touch-capable
           // devices (tablet/compact desktop) — iOS Safari auto-zooms the
@@ -80,14 +89,6 @@ export function DashboardHeader({
         />
       </div>
 
-      {/* Mobile: icon-only search trigger to avoid cramming a full field into the header */}
-      <button
-        type="button"
-        aria-label={dictionary.header.searchAriaLabel}
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl text-slate-500 transition-colors hover:bg-slate-100 md:hidden"
-      >
-        <Search className="h-[18px] w-[18px]" strokeWidth={1.75} />
-      </button>
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:gap-2.5">
         {showPeriodControl ? (

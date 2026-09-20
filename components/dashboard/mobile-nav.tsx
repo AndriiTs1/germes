@@ -7,12 +7,14 @@ import { Menu, X } from "lucide-react";
 import { SidebarContent } from "@/components/dashboard/sidebar-content";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { UserDisplay } from "@/components/dashboard/user-display";
+import type { NavigationProfile } from "@/components/dashboard/navigation-profile";
 
 type MobileNavProps = {
   permissionCodes: string[];
   userDisplay: UserDisplay;
   activePath: string;
   dictionary: Dictionary;
+  navigationProfile: NavigationProfile;
 };
 
 /**
@@ -26,7 +28,13 @@ type MobileNavProps = {
  * fetches or imports any auth/permission/i18n-resolution module itself; it
  * only renders the plain string values dictionary already contains.
  */
-export function MobileNav({ permissionCodes, userDisplay, activePath, dictionary }: MobileNavProps) {
+export function MobileNav({
+  permissionCodes,
+  userDisplay,
+  activePath,
+  dictionary,
+  navigationProfile,
+}: MobileNavProps) {
   const [open, setOpen] = useState(false);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
@@ -99,6 +107,7 @@ export function MobileNav({ permissionCodes, userDisplay, activePath, dictionary
                   userDisplay={userDisplay}
                   activePath={activePath}
                   dictionary={dictionary}
+                  navigationProfile={navigationProfile}
                   onNavigate={() => setOpen(false)}
                 />
               </div>
