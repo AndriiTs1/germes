@@ -767,19 +767,6 @@ async function main() {
   // Sales orders
   // --------------------------------------------------
 
-  const order1 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-001",
-      customerId: customer1.id,
-      responsibleId: salesManager.id,
-      status: "PROCESSING",
-      orderDate: new Date("2026-09-09T09:00:00Z"),
-      requestedDate: new Date("2026-09-12T08:00:00Z"),
-      currency: "UAH",
-      notes: "Priority delivery",
-    },
-  });
-
   const order2 = await prisma.salesOrder.create({
     data: {
       orderNumber: "SO-2026-002",
@@ -807,18 +794,6 @@ async function main() {
   await prisma.salesOrderItem.createMany({
     data: [
       {
-        salesOrderId: order1.id,
-        productId: chicken.id,
-        quantityKg: 1800,
-        pricePerKg: 151,
-      },
-      {
-        salesOrderId: order1.id,
-        productId: beef.id,
-        quantityKg: 600,
-        pricePerKg: 228,
-      },
-      {
         salesOrderId: order2.id,
         productId: pork.id,
         quantityKg: 1500,
@@ -840,24 +815,6 @@ async function main() {
   await prisma.stockReservation.createMany({
     data: [
       {
-        productId: chicken.id,
-        batchId: batchChicken.id,
-        salesOrderId: order1.id,
-        quantityKg: 1800,
-        status: "ACTIVE",
-        expiresAt: new Date("2026-09-12T18:00:00Z"),
-        reference: "RES-SO-001-1",
-      },
-      {
-        productId: beef.id,
-        batchId: batchBeef.id,
-        salesOrderId: order1.id,
-        quantityKg: 600,
-        status: "ACTIVE",
-        expiresAt: new Date("2026-09-12T18:00:00Z"),
-        reference: "RES-SO-001-2",
-      },
-      {
         productId: pork.id,
         batchId: batchPork.id,
         salesOrderId: order2.id,
@@ -875,16 +832,6 @@ async function main() {
 
   await prisma.receivable.createMany({
     data: [
-      {
-        customerId: customer1.id,
-        salesOrderId: order1.id,
-        amount: 408600,
-        paidAmount: 100000,
-        currency: "UAH",
-        dueDate: new Date("2026-09-18"),
-        status: "PARTIALLY_PAID",
-        reference: "INV-260901",
-      },
       {
         customerId: customer2.id,
         salesOrderId: order2.id,
