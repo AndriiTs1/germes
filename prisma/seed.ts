@@ -98,23 +98,23 @@ async function main() {
     {
       code: "sales.orders.create",
       description: "Create a sales order",
-      // OWNER intentionally excluded (RBAC Phase 1): routine sales-rep
+      // OWNER and ADMIN intentionally excluded (RBAC Phase 1): routine sales-rep
       // execution, not an owner-level control. See
       // scripts/sync-workspace-permissions.ts, which must be run against
-      // a real database to actually revoke this from an existing OWNER
-      // grant — this seed file alone never reaches production.
-      roles: ["ADMIN", "SALES"],
+      // a real database to actually revoke this from existing OWNER/ADMIN
+      // grants — this seed file alone never reaches production.
+      roles: ["SALES"],
     },
     {
       code: "sales.orders.update",
       description: "Edit or transition a sales order's status",
-      // OWNER intentionally excluded (RBAC Phase 2B): edit/confirm/cancel
+      // OWNER and ADMIN intentionally excluded (RBAC Phase 2B): edit/confirm/cancel
       // are routine sales-rep execution, not owner-level controls — same
       // reasoning as sales.orders.create in Phase 1. See
       // scripts/sync-workspace-permissions.ts, which must be run against
-      // a real database to actually revoke this from an existing OWNER
-      // grant — this seed file alone never reaches production.
-      roles: ["ADMIN", "SALES"],
+      // a real database to actually revoke this from existing OWNER/ADMIN
+      // grants — this seed file alone never reaches production.
+      roles: ["SALES"],
     },
     {
       code: "sales.reservations.read",
@@ -124,16 +124,16 @@ async function main() {
     {
       code: "sales.reservations.create",
       description: "Reserve stock for a sales order",
-      // OWNER intentionally excluded (RBAC Phase 1) — see the note on
+      // OWNER and ADMIN intentionally excluded (RBAC Phase 1) — see the note on
       // sales.orders.create above.
-      roles: ["ADMIN", "SALES"],
+      roles: ["SALES"],
     },
     {
       code: "sales.reservations.release",
       description: "Manually release or cancel a stock reservation",
-      // OWNER intentionally excluded (RBAC Phase 1) — see the note on
+      // OWNER and ADMIN intentionally excluded (RBAC Phase 1) — see the note on
       // sales.orders.create above.
-      roles: ["ADMIN", "SALES"],
+      roles: ["SALES"],
     },
     {
       code: "inventory.shipments.read",
@@ -143,15 +143,15 @@ async function main() {
     {
       code: "inventory.shipments.process",
       description: "Mark a sales order as shipped (physical fulfillment)",
-      // OWNER intentionally excluded (RBAC Phase 2A): starting/marking
+      // OWNER and ADMIN intentionally excluded (RBAC Phase 2A): starting/marking
       // ready/shipping are routine warehouse-operator execution, not
       // owner-level controls — same reasoning as sales.orders.update in
-      // Phase 2B. OWNER retains read access via inventory.shipments.read
+      // Phase 2B. OWNER and ADMIN retain read access via inventory.shipments.read
       // above. See scripts/sync-workspace-permissions.ts, which must be
-      // run against a real database to actually revoke this from an
-      // existing OWNER grant — this seed file alone never reaches
+      // run against a real database to actually revoke this from existing
+      // OWNER/ADMIN grants — this seed file alone never reaches
       // production.
-      roles: ["ADMIN", "WAREHOUSE"],
+      roles: ["WAREHOUSE"],
     },
     {
       code: "customers.read",

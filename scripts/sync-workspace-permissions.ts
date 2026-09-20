@@ -87,27 +87,27 @@ const SYNCED_PERMISSIONS: {
   {
     code: "sales.orders.create",
     description: "Create a sales order",
-    // RBAC Phase 1: OWNER removed — routine sales-rep execution, not an
+    // RBAC: OWNER and ADMIN removed — routine sales-rep execution, not an
     // owner-level control. Matches prisma/seed.ts exactly.
-    roleCodes: ["ADMIN", "SALES"],
+    roleCodes: ["SALES"],
   },
   {
     code: "sales.reservations.create",
     description: "Reserve stock for a sales order",
-    roleCodes: ["ADMIN", "SALES"],
+    roleCodes: ["SALES"],
   },
   {
     code: "sales.reservations.release",
     description: "Manually release or cancel a stock reservation",
-    roleCodes: ["ADMIN", "SALES"],
+    roleCodes: ["SALES"],
   },
   {
     code: "sales.orders.update",
     description: "Edit or transition a sales order's status",
-    // RBAC Phase 2B: OWNER removed — edit/confirm/cancel are routine
+    // RBAC: OWNER and ADMIN removed — edit/confirm/cancel are routine
     // sales-rep execution, not owner-level controls. Matches
     // prisma/seed.ts exactly.
-    roleCodes: ["ADMIN", "SALES"],
+    roleCodes: ["SALES"],
   },
   {
     code: "inventory.shipments.read",
@@ -117,11 +117,11 @@ const SYNCED_PERMISSIONS: {
   {
     code: "inventory.shipments.process",
     description: "Mark a sales order as shipped (physical fulfillment)",
-    // RBAC Phase 2A: OWNER removed — starting/marking ready/shipping are
+    // RBAC: OWNER and ADMIN removed — starting/marking ready/shipping are
     // routine warehouse-operator execution, not owner-level controls.
-    // OWNER retains read access via inventory.shipments.read above.
+    // OWNER and ADMIN retain read access via inventory.shipments.read above.
     // Matches prisma/seed.ts exactly.
-    roleCodes: ["ADMIN", "WAREHOUSE"],
+    roleCodes: ["WAREHOUSE"],
   },
 ];
 
