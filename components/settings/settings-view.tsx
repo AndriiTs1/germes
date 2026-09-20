@@ -1,4 +1,4 @@
-import { ArrowRight, Bell, CircleHelp, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Bell, FileText, LifeBuoy, ShieldCheck, UserRound } from "lucide-react";
 
 import { setLocaleAction } from "@/app/settings/actions";
 import { logout } from "@/lib/auth/actions";
@@ -97,7 +97,7 @@ export function SettingsView({ locale, dictionary }: SettingsViewProps) {
           >
             <span className="flex items-center gap-2.5">
               <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
-                <CircleHelp className="h-4 w-4" strokeWidth={1.75} />
+                <LifeBuoy className="h-4 w-4" strokeWidth={1.75} />
               </span>
 
               <span>
@@ -117,12 +117,18 @@ export function SettingsView({ locale, dictionary }: SettingsViewProps) {
             type="button"
             className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
           >
-            <span>
-              <span className="block text-[13.5px] font-medium text-slate-700">
-                {dictionary.settings.support.myTickets}
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+                <FileText className="h-4 w-4" strokeWidth={1.75} />
               </span>
-              <span className="block text-[11.5px] text-slate-400">
-                {dictionary.settings.support.historyDescription}
+
+              <span>
+                <span className="block text-[13.5px] font-medium text-slate-700">
+                  {dictionary.settings.support.myTickets}
+                </span>
+                <span className="block text-[11.5px] text-slate-400">
+                  {dictionary.settings.support.historyDescription}
+                </span>
               </span>
             </span>
 
