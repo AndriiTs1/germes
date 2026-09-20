@@ -1,14 +1,14 @@
 import { Package } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
-import { recentOrders } from "@/components/dashboard/operations/operations-data";
+import { getRecentOrders, type RecentOrderData } from "@/lib/services/dashboard/get-recent-orders";
 import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
 /** "Today, 14:32" or "10 Sep, 16:05" — the day/time digits and demo meaning are unchanged; only "Today," and the month name are locale-aware. */
 function formatTimestamp(
-  order: (typeof recentOrders)[number],
+  order: RecentOrderData,
   locale: Locale,
   t: Dictionary["commandCenter"]["recentOrders"],
 ): string {
@@ -16,12 +16,15 @@ function formatTimestamp(
     return `${t.todayPrefix} ${order.time}`;
   }
   const monthLabel = new Intl.DateTimeFormat(INTL_LOCALE_MAP[locale], { month: "short" }).format(
-    new Date(Date.UTC(2000, order.monthIndex ?? 0, 1)),
+    order.orderDate,
   );
-  return `${order.day} ${monthLabel}, ${order.time}`;
+
+  const day = order.orderDate.getUTCDate();
+
+  return `${day} ${monthLabel}, ${order.time}`;
 }
 
-export function RecentOrders({
+export async function RecentOrders({
   className,
   locale,
   dictionary,
@@ -31,6 +34,7 @@ export function RecentOrders({
   dictionary: Dictionary;
 }) {
   const t = dictionary.commandCenter.recentOrders;
+  const recentOrders = await getRecentOrders();
 
   return (
     <OperationsCard
