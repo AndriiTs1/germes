@@ -1,5 +1,5 @@
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
-import { cashFlow } from "@/components/dashboard/analytics/analytics-data";
+import { getCashFlow } from "@/lib/services/dashboard/get-cash-flow";
 import { buildSmoothLinePath } from "@/components/dashboard/analytics/chart-utils";
 import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
@@ -8,8 +8,8 @@ const VIEW_W = 240;
 const VIEW_H = 72;
 const PADDING_Y = 6;
 
-export function CashFlow({ locale, dictionary }: { locale: Locale; dictionary: Dictionary }) {
-  const { value, unit, monthIndex, year, points } = cashFlow;
+export async function CashFlow({ locale, dictionary }: { locale: Locale; dictionary: Dictionary }) {
+  const { value, unit, monthIndex, year, points } = await getCashFlow();
   const max = Math.max(...points);
   const min = Math.min(...points);
   const range = max - min || 1;
