@@ -1,4 +1,4 @@
-import { Bell, ShieldCheck, UserRound } from "lucide-react";
+import { ArrowRight, Bell, CircleHelp, ShieldCheck, UserRound } from "lucide-react";
 
 import { setLocaleAction } from "@/app/settings/actions";
 import { logout } from "@/lib/auth/actions";
@@ -83,6 +83,52 @@ export function SettingsView({ locale, dictionary }: SettingsViewProps) {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section className={cardClassName}>
+        <h2 className="text-[13.5px] font-semibold tracking-tight text-slate-900">
+          {dictionary.settings.support.title}
+        </h2>
+
+        <div className="mt-3 flex flex-col gap-2">
+          <button
+            type="button"
+            className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
+          >
+            <span className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-violet-50 text-violet-600">
+                <CircleHelp className="h-4 w-4" strokeWidth={1.75} />
+              </span>
+
+              <span>
+                <span className="block text-[13.5px] font-medium text-slate-700">
+                  {dictionary.settings.support.createTicket}
+                </span>
+                <span className="block text-[11.5px] text-slate-400">
+                  {dictionary.settings.support.contactDescription}
+                </span>
+              </span>
+            </span>
+
+            <ArrowRight className="h-4 w-4 text-slate-300" strokeWidth={1.75} />
+          </button>
+
+          <button
+            type="button"
+            className="flex items-center justify-between rounded-xl border border-slate-100 px-3 py-2.5 text-left transition-colors hover:bg-slate-50"
+          >
+            <span>
+              <span className="block text-[13.5px] font-medium text-slate-700">
+                {dictionary.settings.support.myTickets}
+              </span>
+              <span className="block text-[11.5px] text-slate-400">
+                {dictionary.settings.support.historyDescription}
+              </span>
+            </span>
+
+            <ArrowRight className="h-4 w-4 text-slate-300" strokeWidth={1.75} />
+          </button>
+        </div>
       </section>
 
       <section className="rounded-2xl border border-red-200/70 bg-red-50/40 p-4 xl:p-5">

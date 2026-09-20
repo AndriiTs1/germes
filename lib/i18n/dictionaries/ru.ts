@@ -175,7 +175,17 @@ export const ru: Dictionary = {
       notifications: "Уведомления",
       security: "Безопасность",
     },
+    support: {
+      title: "Помощь и поддержка",
+      createTicket: "Создать обращение",
+      myTickets: "Мои обращения",
+      contactDescription: "Связаться с командой поддержки Germes",
+      historyDescription: "История ваших обращений",
+    },
     comingSoon: "Скоро",
+
+
+
     account: {
       title: "Аккаунт",
       signOutDescription: "Выйти из аккаунта Germes на этом устройстве.",

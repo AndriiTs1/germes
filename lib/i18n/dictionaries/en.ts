@@ -181,7 +181,17 @@ export const en = {
       notifications: "Notifications",
       security: "Security",
     },
+    support: {
+      title: "Help & Support",
+      createTicket: "Create support request",
+      myTickets: "My requests",
+      contactDescription: "Contact Germes support team",
+      historyDescription: "View your support history",
+    },
     comingSoon: "Coming soon",
+
+
+
     account: {
       title: "Account",
       signOutDescription: "Sign out of your Germes account on this device.",
