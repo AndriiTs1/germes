@@ -1,5 +1,5 @@
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
-import { inventoryStatus } from "@/components/dashboard/analytics/analytics-data";
+import { getInventoryStatus } from "@/lib/services/dashboard/get-inventory-status";
 import type { ChartAccent, InventorySegmentKey } from "@/components/dashboard/analytics/analytics-data";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
@@ -16,8 +16,8 @@ const accentStyles: Record<ChartAccent, { stroke: string; dot: string }> = {
   rose: { stroke: "stroke-rose-500", dot: "bg-rose-500" },
 };
 
-export function InventoryStatus({ dictionary }: { dictionary: Dictionary }) {
-  const { value, segments } = inventoryStatus;
+export async function InventoryStatus({ dictionary }: { dictionary: Dictionary }) {
+  const { value, segments } = await getInventoryStatus();
   const t = dictionary.commandCenter.inventoryStatus;
   const segmentLabel = (key: InventorySegmentKey) => t.segments[key];
   const summary = segments.map((s) => `${segmentLabel(s.key)} ${s.pct}%`).join(", ");
