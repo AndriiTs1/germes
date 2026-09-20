@@ -1,7 +1,7 @@
 import { ArrowUpRight } from "lucide-react";
 
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
-import { salesPerformance } from "@/components/dashboard/analytics/analytics-data";
+import { getSalesPerformance } from "@/lib/services/dashboard/get-sales-performance";
 import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
@@ -13,8 +13,8 @@ function shortMonthLabel(monthIndex: number, locale: Locale): string {
   );
 }
 
-export function SalesPerformance({ locale, dictionary }: { locale: Locale; dictionary: Dictionary }) {
-  const { value, unit, trendValue, months } = salesPerformance;
+export async function SalesPerformance({ locale, dictionary }: { locale: Locale; dictionary: Dictionary }) {
+  const { value, unit, trendValue, months } = await getSalesPerformance();
   const maxPct = Math.max(...months.map((m) => m.pct));
   const t = dictionary.commandCenter.salesPerformance;
 

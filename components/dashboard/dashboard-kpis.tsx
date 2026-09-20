@@ -1,14 +1,45 @@
 import { KpiCard, KpiRow } from "@/components/dashboard/kpi-card";
+import { formatMoney } from "@/components/sales/format";
 import { kpiData } from "@/components/dashboard/kpi-data";
+import { getCommandCenterKpis } from "@/lib/services/dashboard/get-command-center-kpis";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { Locale } from "@/lib/i18n/config";
 
-export function DashboardKpis({ dictionary }: { dictionary: Dictionary }) {
+export async function DashboardKpis({
+  locale,
+  dictionary,
+}: {
+  locale: Locale;
+  dictionary: Dictionary;
+}) {
   const t = dictionary.commandCenter.kpi;
-  const items = kpiData.map((kpi) => ({
-    ...kpi,
-    label: t[kpi.id],
-    comparisonLabel: t.comparisonLabel,
-  }));
+  const commandCenterKpis = await getCommandCenterKpis();
+
+  const items = kpiData.map((kpi) => {
+    const valueMap = {
+      cashBanks: commandCenterKpis.cashBanks.value,
+      receivables: commandCenterKpis.receivables.total,
+      overdueAr: commandCenterKpis.overdueReceivables.total,
+      payables: commandCenterKpis.payables.total,
+      inventoryValue: commandCenterKpis.inventoryValue.value,
+      grossMargin: commandCenterKpis.grossMargin.percent + "%",
+    };
+
+    return {
+      ...kpi,
+      value:
+        kpi.id === "grossMargin"
+          ? `${commandCenterKpis.grossMargin.percent}%`
+          : formatMoney(
+              valueMap[kpi.id],
+              commandCenterKpis.salesTurnover.currency,
+              locale,
+            ),
+      unit: undefined,
+      label: t[kpi.id],
+      comparisonLabel: t.comparisonLabel,
+    };
+  });
 
   return (
     <>

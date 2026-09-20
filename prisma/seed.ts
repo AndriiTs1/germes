@@ -812,6 +812,40 @@ async function main() {
     },
   });
 
+
+  const order4 = await prisma.salesOrder.create({
+    data: {
+      orderNumber: "SO-2026-004",
+      customerId: customer1.id,
+      responsibleId: salesManager.id,
+      status: "COMPLETED",
+      orderDate: new Date("2026-06-15T10:00:00Z"),
+      currency: "UAH",
+    },
+  });
+
+  const order5 = await prisma.salesOrder.create({
+    data: {
+      orderNumber: "SO-2026-005",
+      customerId: customer2.id,
+      responsibleId: salesManager.id,
+      status: "COMPLETED",
+      orderDate: new Date("2026-07-12T10:00:00Z"),
+      currency: "UAH",
+    },
+  });
+
+  const order6 = await prisma.salesOrder.create({
+    data: {
+      orderNumber: "SO-2026-006",
+      customerId: customer1.id,
+      responsibleId: salesManager.id,
+      status: "COMPLETED",
+      orderDate: new Date("2026-08-20T10:00:00Z"),
+      currency: "UAH",
+    },
+  });
+
   await prisma.salesOrderItem.createMany({
     data: [
       {
@@ -825,6 +859,24 @@ async function main() {
         productId: chicken.id,
         quantityKg: 2200,
         pricePerKg: 149,
+      },
+      {
+        salesOrderId: order4.id,
+        productId: chicken.id,
+        quantityKg: 3000,
+        pricePerKg: 150,
+      },
+      {
+        salesOrderId: order5.id,
+        productId: pork.id,
+        quantityKg: 3500,
+        pricePerKg: 177,
+      },
+      {
+        salesOrderId: order6.id,
+        productId: beef.id,
+        quantityKg: 2800,
+        pricePerKg: 182,
       },
     ],
   });

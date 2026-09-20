@@ -76,7 +76,7 @@ export default async function Home() {
         </div>
       </div>
 
-      <DashboardKpis dictionary={dictionary} />
+      <DashboardKpis locale={locale} dictionary={dictionary} />
 
       <div className="mt-4">
         <DashboardAnalytics locale={locale} dictionary={dictionary} />
