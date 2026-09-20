@@ -1,8 +1,9 @@
 import { ChevronRight } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
-import { needsAttention } from "@/components/dashboard/operations/operations-data";
+import { getAttentionItems } from "@/lib/services/dashboard/get-attention-items";
 import type { AttentionAccent, AttentionItem } from "@/components/dashboard/operations/operations-data";
+import { CircleAlert, ClipboardCheck, Truck } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { pluralize } from "@/lib/i18n/pluralize";
@@ -31,7 +32,7 @@ function itemValue(item: AttentionItem, locale: Locale, t: Dictionary["commandCe
   return item.value ?? "";
 }
 
-export function NeedsAttention({
+export async function NeedsAttention({
   className,
   locale,
   dictionary,
@@ -41,6 +42,23 @@ export function NeedsAttention({
   dictionary: Dictionary;
 }) {
   const t = dictionary.commandCenter.needsAttention;
+  const attentionData = await getAttentionItems();
+
+  const needsAttention: AttentionItem[] = attentionData.map((item) => ({
+    ...item,
+    icon:
+      item.kind === "overdueCustomerPayments"
+        ? CircleAlert
+        : item.kind === "supplierInvoiceAwaitingApproval"
+          ? ClipboardCheck
+          : Truck,
+    accent:
+      item.kind === "overdueCustomerPayments"
+        ? "rose"
+        : item.kind === "supplierInvoiceAwaitingApproval"
+          ? "violet"
+          : "blue",
+  }));
 
   return (
     <OperationsCard
