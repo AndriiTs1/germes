@@ -2,6 +2,7 @@ import { Prisma, type SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type SalesOrderListItem = {
   id: string;
@@ -19,6 +20,11 @@ export type SalesOrderListItem = {
 };
 
 export type ListSalesOrdersOptions = {
+  /**
+   * Read visibility. Defaults to "own" so every existing caller preserves
+   * salesperson isolation unless it explicitly opts into supervisory reads.
+   */
+  scope?: SalesReadScope;
   /** Page size. Defaults to 20. */
   limit?: number;
   /** SalesOrder.id to resume after — simple cursor pagination. Ignored when `page` is set. */
@@ -50,8 +56,10 @@ export type ListSalesOrdersResult = {
 };
 
 /**
- * Sales orders owned by currentUserId (SalesOrder.responsibleId), most
- * recent first. Total value is not stored on SalesOrder, so it is derived
+ * Sales orders visible in the requested read scope, most recent first.
+ * The default "own" scope filters by SalesOrder.responsibleId=currentUserId;
+ * "all" is reserved for a caller that has already resolved supervisory
+ * visibility. Total value is not stored on SalesOrder, so it is derived
  * from SalesOrderItem (quantityKg * pricePerKg) using Prisma.Decimal
  * arithmetic — never JS floating point.
  *
@@ -62,14 +70,22 @@ export async function listSalesOrders(
   currentUserId: string,
   options: ListSalesOrdersOptions = {},
 ): Promise<ListSalesOrdersResult> {
-  const { limit = 20, cursor, page, onlyActive = false, status, search } = options;
+  const {
+    scope = "own",
+    limit = 20,
+    cursor,
+    page,
+    onlyActive = false,
+    status,
+    search,
+  } = options;
 
   const trimmedSearch = search?.trim();
   const usePageMode = page !== undefined;
   const currentPage = usePageMode && page! > 0 ? Math.floor(page!) : 1;
 
   const where: Prisma.SalesOrderWhereInput = {
-    responsibleId: currentUserId,
+    responsibleId: scope === "all" ? undefined : currentUserId,
     status: status ?? (onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
     OR: trimmedSearch
       ? [

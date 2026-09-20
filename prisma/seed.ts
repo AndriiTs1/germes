@@ -231,7 +231,9 @@ async function main() {
     {
       code: "finance.receivables.update",
       description: "Update accounts receivable records and status",
-      roles: ["OWNER", "ADMIN", "ACCOUNTING"],
+      // Operational accounting action: OWNER/ADMIN may supervise receivables,
+      // but only ACCOUNTING records or changes receivable payment state.
+      roles: ["ACCOUNTING"],
     },
     {
       code: "finance.payables.read",

@@ -14,6 +14,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getBatchWarehouseAvailability } from "@/lib/services/sales/get-batch-warehouse-availability";
 import { getSalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail";
@@ -39,6 +40,9 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const roleCodes = user.roles.map((entry) => entry.role.code);
+  const readScope = resolveSalesReadScope(roleCodes);
+
   const canUpdate = permissionCodes.includes(SALES_ORDERS_UPDATE_PERMISSION);
   const canReadReservations = permissionCodes.includes(
     RESERVATIONS_READ_PERMISSION,
@@ -58,7 +62,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   }
 
   const { id } = await props.params;
-  const order = await getSalesOrderDetail(user.id, id);
+  const order = await getSalesOrderDetail(user.id, id, readScope);
 
   // getSalesOrderDetail returns null for BOTH "no such order" and "order
   // belongs to another salesperson" — the exact same query, no separate
@@ -138,7 +142,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
         <OrderDetailItems items={order.items} currency={order.currency} locale={locale} dictionary={dictionary} />
 
         {hasSecondaryRow ? (
-          <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2 xl:items-start xl:gap-3">
+          <div className="grid grid-cols-1 gap-4 min-[1024px]:grid-cols-2 xl:items-stretch xl:gap-3">
             {showReservations ? (
               <OrderDetailReservations
                 orderId={order.id}

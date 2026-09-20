@@ -9,6 +9,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 import {
   listSalesOrders,
   type ListSalesOrdersOptions,
@@ -50,6 +51,8 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const roleCodes = user.roles.map((entry) => entry.role.code);
+  const readScope = resolveSalesReadScope(roleCodes);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -63,6 +66,7 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
   const requestedPage = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
 
   const result = await listSalesOrders(user.id, {
+    scope: readScope,
     limit: PAGE_SIZE,
     page: requestedPage,
     search: q || undefined,

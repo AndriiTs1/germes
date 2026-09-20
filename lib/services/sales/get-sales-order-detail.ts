@@ -1,6 +1,7 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type SalesOrderDetailItem = {
   id: string;
@@ -109,8 +110,10 @@ function buildReceivableAggregate(
 }
 
 /**
- * Full detail for exactly one order owned by currentUserId. Scoped
- * directly in the query (id + responsibleId together, via findFirst) so
+ * Full detail for exactly one order visible in the requested read scope.
+ * The default "own" scope keeps id + responsibleId together in the query;
+ * "all" is reserved for a caller that has already resolved supervisory
+ * visibility.
  * "doesn't exist" and "belongs to someone else" are indistinguishable —
  * both resolve to null from this single query, never a separate
  * existence check that could leak which case occurred.
@@ -127,9 +130,13 @@ function buildReceivableAggregate(
 export async function getSalesOrderDetail(
   currentUserId: string,
   orderId: string,
+  scope: SalesReadScope = "own",
 ): Promise<SalesOrderDetail | null> {
   const order = await prisma.salesOrder.findFirst({
-    where: { id: orderId, responsibleId: currentUserId },
+    where: {
+      id: orderId,
+      responsibleId: scope === "all" ? undefined : currentUserId,
+    },
     select: {
       id: true,
       orderNumber: true,

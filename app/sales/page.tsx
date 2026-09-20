@@ -5,6 +5,7 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 
 const SALES_WORKSPACE_PERMISSION = "workspace.sales.access";
 
@@ -22,6 +23,8 @@ export default async function SalesPage() {
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const roleCodes = user.roles.map((entry) => entry.role.code);
+  const readScope = resolveSalesReadScope(roleCodes);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -44,7 +47,13 @@ export default async function SalesPage() {
         </p>
       </div>
 
-      <SalesWorkspace userId={user.id} permissionCodes={permissionCodes} locale={locale} dictionary={dictionary} />
+      <SalesWorkspace
+        userId={user.id}
+        permissionCodes={permissionCodes}
+        readScope={readScope}
+        locale={locale}
+        dictionary={dictionary}
+      />
     </DashboardShell>
   );
 }

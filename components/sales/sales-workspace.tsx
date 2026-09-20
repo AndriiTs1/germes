@@ -16,12 +16,14 @@ import { formatKg } from "@/components/sales/format";
 import { SalesKpiSummary, type SalesKpiCardProps } from "@/components/sales/sales-kpi-row";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 const RECENT_ORDERS_LIMIT = 5;
 
 type SalesWorkspaceProps = {
   userId: string;
   permissionCodes: string[];
+  readScope: SalesReadScope;
   locale: Locale;
   dictionary: Dictionary;
 };
@@ -33,7 +35,13 @@ type SalesWorkspaceProps = {
  * to see. Each service stays permission-agnostic, as designed in Stage 8C;
  * all authorization decisions live in this Server Component instead.
  */
-export async function SalesWorkspace({ userId, permissionCodes, locale, dictionary }: SalesWorkspaceProps) {
+export async function SalesWorkspace({
+  userId,
+  permissionCodes,
+  readScope,
+  locale,
+  dictionary,
+}: SalesWorkspaceProps) {
   const canReadCustomers = permissionCodes.includes("customers.read");
   const canReadOrders = permissionCodes.includes("sales.orders.read");
   const canReadStock = permissionCodes.includes("inventory.stock.read");
@@ -45,13 +53,13 @@ export async function SalesWorkspace({ userId, permissionCodes, locale, dictiona
   }
 
   const [attentionCustomers, ordersResult, stock, reservations, receivables] = await Promise.all([
-    canReadCustomers ? getAttentionCustomers(userId) : Promise.resolve(null),
+    canReadCustomers ? getAttentionCustomers(userId, readScope) : Promise.resolve(null),
     canReadOrders
-      ? listSalesOrders(userId, { onlyActive: true, limit: RECENT_ORDERS_LIMIT })
+      ? listSalesOrders(userId, { scope: readScope, onlyActive: true, limit: RECENT_ORDERS_LIMIT })
       : Promise.resolve(null),
     canReadStock ? getStockAvailability() : Promise.resolve(null),
-    canReadReservations ? getReservationsRequiringAttention(userId) : Promise.resolve(null),
-    canReadReceivables ? getReceivableExposure(userId) : Promise.resolve(null),
+    canReadReservations ? getReservationsRequiringAttention(userId, readScope) : Promise.resolve(null),
+    canReadReceivables ? getReceivableExposure(userId, readScope) : Promise.resolve(null),
   ]);
 
   const kpi = dictionary.sales.workspace.kpi;

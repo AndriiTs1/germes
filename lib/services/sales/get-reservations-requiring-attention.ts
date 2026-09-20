@@ -2,6 +2,7 @@ import { ReservationStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { RESERVATION_EXPIRING_SOON_HOURS } from "@/lib/services/sales/config";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type ReservationAttentionState = "EXPIRED_ACTIVE" | "EXPIRING_SOON" | "ACTIVE";
 
@@ -20,9 +21,11 @@ export type ReservationAttentionItem = {
 };
 
 /**
- * ACTIVE reservations belonging to orders owned by currentUserId
- * (StockReservation.salesOrder.responsibleId) — a reservation with no
- * salesOrderId has no owning salesperson signal and is correctly excluded.
+ * ACTIVE reservations visible in the requested read scope. The default
+ * "own" scope filters by StockReservation.salesOrder.responsibleId=currentUserId;
+ * "all" is reserved for a caller that has already resolved supervisory visibility.
+ * A reservation with no salesOrderId has no owning salesperson signal and is
+ * correctly excluded.
  * Batch internals are never exposed even though batchId exists on the row.
  *
  * "EXPIRED_ACTIVE" flags rows whose expiresAt has passed while status is
@@ -33,6 +36,7 @@ export type ReservationAttentionItem = {
  */
 export async function getReservationsRequiringAttention(
   currentUserId: string,
+  scope: SalesReadScope = "own",
 ): Promise<ReservationAttentionItem[]> {
   const now = new Date();
   const expiringSoonBefore = new Date(
@@ -42,7 +46,9 @@ export async function getReservationsRequiringAttention(
   const reservations = await prisma.stockReservation.findMany({
     where: {
       status: ReservationStatus.ACTIVE,
-      salesOrder: { responsibleId: currentUserId },
+      salesOrder: {
+        responsibleId: scope === "all" ? undefined : currentUserId,
+      },
     },
     select: {
       id: true,

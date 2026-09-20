@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/db/prisma";
 import { STALE_CONTACT_DAYS, STALE_PURCHASE_DAYS } from "@/lib/services/sales/config";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type AttentionReasonType =
   | "NEXT_ACTION_OVERDUE"
@@ -25,12 +26,14 @@ function daysAgo(days: number, from: Date): Date {
 }
 
 /**
- * Customers assigned to currentUserId that need action, per V1 signals only:
- * an overdue nextActionAt, or a stale lastContactAt/lastPurchaseAt. Scoped
- * strictly to Customer.responsibleId — never all customers.
+ * Customers visible in the requested read scope that need action, per V1
+ * signals only: an overdue nextActionAt, or a stale lastContactAt/lastPurchaseAt.
+ * The default "own" scope filters by Customer.responsibleId=currentUserId;
+ * "all" is reserved for a caller that has already resolved supervisory visibility.
  */
 export async function getAttentionCustomers(
   currentUserId: string,
+  scope: SalesReadScope = "own",
 ): Promise<AttentionCustomer[]> {
   const now = new Date();
   const staleContactBefore = daysAgo(STALE_CONTACT_DAYS, now);
@@ -38,7 +41,7 @@ export async function getAttentionCustomers(
 
   const customers = await prisma.customer.findMany({
     where: {
-      responsibleId: currentUserId,
+      responsibleId: scope === "all" ? undefined : currentUserId,
       isActive: true,
       OR: [
         { nextActionAt: { lte: now } },
