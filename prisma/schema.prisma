@@ -8,18 +8,21 @@ datasource db {
 }
 
 model User {
-  id          String       @id @default(uuid())
-  email       String       @unique
-  name        String?
-  isActive    Boolean      @default(true)
-  authUserId  String?      @unique
-  roles       UserRole[]
-  customers   Customer[]
-  suppliers   Supplier[]
-  salesOrders SalesOrder[]
-  auditLogs   AuditLog[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  id                     String           @id @default(uuid())
+  email                  String           @unique
+  name                   String?
+  isActive               Boolean          @default(true)
+  authUserId             String?          @unique
+  roles                  UserRole[]
+  customers              Customer[]
+  suppliers              Supplier[]
+  salesOrders            SalesOrder[]
+  auditLogs              AuditLog[]
+  supportTicketsCreated  SupportTicket[]  @relation("SupportTicketCreatedBy")
+  supportTicketsAssigned SupportTicket[]  @relation("SupportTicketAssignedTo")
+  supportMessages        SupportMessage[]
+  createdAt              DateTime         @default(now())
+  updatedAt              DateTime         @updatedAt
 
   @@map("users")
 }
@@ -429,4 +432,67 @@ model Payable {
   @@index([status])
   @@index([dueDate])
   @@map("payables")
+}
+
+enum SupportTicketStatus {
+  NEW
+  IN_PROGRESS
+  WAITING_CUSTOMER
+  RESOLVED
+  CLOSED
+}
+
+enum SupportTicketCategory {
+  BUG
+  QUESTION
+  FEATURE_REQUEST
+  ACCOUNT
+  OTHER
+}
+
+enum SupportTicketPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
+}
+
+model SupportTicket {
+  id            String                @id @default(uuid())
+  number        Int                   @unique @default(autoincrement())
+  subject       String
+  category      SupportTicketCategory
+  priority      SupportTicketPriority @default(NORMAL)
+  status        SupportTicketStatus   @default(NEW)
+  createdById   String
+  assignedToId  String?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  lastMessageAt DateTime              @default(now())
+  resolvedAt    DateTime?
+  closedAt      DateTime?
+
+  createdBy  User             @relation("SupportTicketCreatedBy", fields: [createdById], references: [id])
+  assignedTo User?            @relation("SupportTicketAssignedTo", fields: [assignedToId], references: [id], onDelete: SetNull)
+  messages   SupportMessage[]
+
+  @@index([createdById, lastMessageAt])
+  @@index([assignedToId, status])
+  @@index([status, lastMessageAt])
+  @@map("support_tickets")
+}
+
+model SupportMessage {
+  id        String   @id @default(uuid())
+  ticketId  String
+  authorId  String
+  body      String
+  createdAt DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+  author User          @relation(fields: [authorId], references: [id])
+
+  @@index([ticketId, createdAt])
+  @@index([authorId])
+  @@map("support_messages")
 }
