@@ -23,8 +23,6 @@ export type KpiId =
 
 export type KpiDatum = {
   id: KpiId;
-  value: string;
-  unit?: string;
   trendValue: string;
   trendDirection: KpiTrendDirection;
   /**
@@ -46,8 +44,6 @@ export type KpiDatum = {
 export const kpiData: KpiDatum[] = [
   {
     id: "cashBanks",
-    value: "12 480 000",
-    unit: "UAH",
     trendValue: "+12%",
     trendDirection: "up",
     trendSentiment: "positive",
@@ -56,8 +52,6 @@ export const kpiData: KpiDatum[] = [
   },
   {
     id: "receivables",
-    value: "8 230 000",
-    unit: "UAH",
     trendValue: "+18%",
     trendDirection: "up",
     trendSentiment: "neutral",
@@ -66,8 +60,6 @@ export const kpiData: KpiDatum[] = [
   },
   {
     id: "overdueAr",
-    value: "2 340 000",
-    unit: "UAH",
     trendValue: "+24%",
     trendDirection: "up",
     trendSentiment: "negative",
@@ -76,8 +68,6 @@ export const kpiData: KpiDatum[] = [
   },
   {
     id: "payables",
-    value: "3 120 000",
-    unit: "UAH",
     trendValue: "-8%",
     trendDirection: "down",
     trendSentiment: "positive",
@@ -86,8 +76,6 @@ export const kpiData: KpiDatum[] = [
   },
   {
     id: "inventoryValue",
-    value: "15 640 000",
-    unit: "UAH",
     trendValue: "+6%",
     trendDirection: "up",
     trendSentiment: "neutral",
@@ -96,7 +84,6 @@ export const kpiData: KpiDatum[] = [
   },
   {
     id: "grossMargin",
-    value: "18.4%",
     trendValue: "+2.6 pp",
     trendDirection: "up",
     trendSentiment: "positive",
