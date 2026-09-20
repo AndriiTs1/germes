@@ -321,6 +321,18 @@ async function main() {
     },
   });
 
+  const admin = await prisma.user.upsert({
+    where: { email: "admin@germes.demo" },
+    update: {
+      name: "Наталія Романенко",
+      isActive: true,
+    },
+    create: {
+      email: "admin@germes.demo",
+      name: "Наталія Романенко",
+    },
+  });
+
   const salesManager = await prisma.user.upsert({
     where: { email: "sales@germes.demo" },
     update: {
@@ -374,6 +386,7 @@ async function main() {
       userId: {
         in: [
           owner.id,
+          admin.id,
           salesManager.id,
           procurementManager.id,
           accountant.id,
@@ -392,6 +405,7 @@ async function main() {
       // a real database to actually apply this to an existing account —
       // this seed file alone never reaches production.
       { userId: owner.id, roleId: roleByCode.OWNER.id },
+      { userId: admin.id, roleId: roleByCode.ADMIN.id },
       { userId: salesManager.id, roleId: roleByCode.SALES.id },
       { userId: procurementManager.id, roleId: roleByCode.PROCUREMENT.id },
       { userId: accountant.id, roleId: roleByCode.ACCOUNTING.id },
