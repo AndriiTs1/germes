@@ -1,25 +1,25 @@
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
-import { paymentCalendar } from "@/components/dashboard/operations/operations-data";
-import type { PaymentStatus } from "@/components/dashboard/operations/operations-data";
+import { getPaymentCalendar } from "@/lib/services/dashboard/get-payment-calendar";
+import type { PaymentCalendarData } from "@/lib/services/dashboard/get-payment-calendar";
 import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
-const statusTextStyles: Record<PaymentStatus, string> = {
+const statusTextStyles: Record<PaymentCalendarData["status"], string> = {
   overdue: "text-rose-600",
   positive: "text-emerald-600",
   neutral: "text-slate-400",
   upcoming: "text-slate-400",
 };
 
-const amountStyles: Record<PaymentStatus, string> = {
+const amountStyles: Record<PaymentCalendarData["status"], string> = {
   overdue: "text-rose-600",
   positive: "text-emerald-600",
   neutral: "text-slate-900",
   upcoming: "text-slate-900",
 };
 
-export function PaymentCalendar({
+export async function PaymentCalendar({
   className,
   locale,
   dictionary,
@@ -28,6 +28,7 @@ export function PaymentCalendar({
   locale: Locale;
   dictionary: Dictionary;
 }) {
+  const items = await getPaymentCalendar();
   const t = dictionary.commandCenter.paymentCalendar;
   const monthFormatter = new Intl.DateTimeFormat(INTL_LOCALE_MAP[locale], { month: "short" });
 
@@ -45,7 +46,7 @@ export function PaymentCalendar({
       }
     >
       <ul className="flex flex-1 flex-col justify-between">
-        {paymentCalendar.map((item, index) => {
+        {items.map((item, index) => {
           const monthLabel = monthFormatter.format(new Date(Date.UTC(2000, item.monthIndex, 1)));
           const eventLabel = t.events[item.eventType];
           const statusLabel = t.status[item.status];
