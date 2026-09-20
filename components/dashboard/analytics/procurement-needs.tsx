@@ -1,7 +1,7 @@
 import { Beef, Drumstick, type LucideIcon } from "lucide-react";
 
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
-import { procurementNeeds } from "@/components/dashboard/analytics/analytics-data";
+import { getProcurementNeeds } from "@/lib/services/dashboard/get-procurement-needs";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
@@ -10,10 +10,13 @@ const productIcons: Record<string, LucideIcon> = {
   "Chicken Fillet": Drumstick,
   "Pork Neck": Beef,
   "Beef Trim 80/20": Beef,
+  "Філе куряче заморожене": Drumstick,
+  "Ошийок свинячий": Beef,
+  "Яловичина Trim 80/20": Beef,
 };
 
-export function ProcurementNeeds({ dictionary }: { dictionary: Dictionary }) {
-  const { value, items } = procurementNeeds;
+export async function ProcurementNeeds({ dictionary }: { dictionary: Dictionary }) {
+  const { value, items } = await getProcurementNeeds();
   const t = dictionary.commandCenter.procurementNeeds;
 
   return (
