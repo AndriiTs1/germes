@@ -469,28 +469,28 @@ async function main() {
   const warehouseKyiv = await prisma.warehouse.upsert({
     where: { code: "WH-KYIV" },
     update: {
-      name: "Склад Київ",
+      name: "Київ",
       address: "Київ, Україна",
       isActive: true,
     },
     create: {
       code: "WH-KYIV",
-      name: "Склад Київ",
+      name: "Київ",
       address: "Київ, Україна",
     },
   });
 
-  const warehouseLviv = await prisma.warehouse.upsert({
-    where: { code: "WH-LVIV" },
+  const warehouseLutsk = await prisma.warehouse.upsert({
+    where: { code: "WH-LUTSK" },
     update: {
-      name: "Склад Львів",
-      address: "Львів, Україна",
+      name: "Луцьк",
+      address: "Луцьк, Україна",
       isActive: true,
     },
     create: {
-      code: "WH-LVIV",
-      name: "Склад Львів",
-      address: "Львів, Україна",
+      code: "WH-LUTSK",
+      name: "Луцьк",
+      address: "Луцьк, Україна",
     },
   });
 
