@@ -1,5 +1,9 @@
 import { prisma } from "@/lib/db/prisma";
-import { STALE_CONTACT_DAYS, STALE_PURCHASE_DAYS } from "@/lib/services/sales/config";
+import {
+  attentionCustomerWhere,
+  getAttentionCutoffs,
+  getAttentionReasons,
+} from "@/lib/services/sales/attention-rules";
 import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type AttentionReasonType =
@@ -21,13 +25,10 @@ export type AttentionCustomer = {
   lastPurchaseAt: string | null;
 };
 
-function daysAgo(days: number, from: Date): Date {
-  return new Date(from.getTime() - days * 24 * 60 * 60 * 1000);
-}
-
 /**
  * Customers visible in the requested read scope that need action, per V1
- * signals only: an overdue nextActionAt, or a stale lastContactAt/lastPurchaseAt.
+ * signals only: an overdue nextActionAt, or a stale lastContactAt/lastPurchaseAt
+ * (rules shared with getSalesTeamSummary via attention-rules.ts).
  * The default "own" scope filters by Customer.responsibleId=currentUserId;
  * "all" is reserved for a caller that has already resolved supervisory visibility.
  */
@@ -35,19 +36,13 @@ export async function getAttentionCustomers(
   currentUserId: string,
   scope: SalesReadScope = "own",
 ): Promise<AttentionCustomer[]> {
-  const now = new Date();
-  const staleContactBefore = daysAgo(STALE_CONTACT_DAYS, now);
-  const stalePurchaseBefore = daysAgo(STALE_PURCHASE_DAYS, now);
+  const cutoffs = getAttentionCutoffs();
 
   const customers = await prisma.customer.findMany({
     where: {
       responsibleId: scope === "all" ? undefined : currentUserId,
       isActive: true,
-      OR: [
-        { nextActionAt: { lte: now } },
-        { lastContactAt: { lt: staleContactBefore } },
-        { lastPurchaseAt: { lt: stalePurchaseBefore } },
-      ],
+      ...attentionCustomerWhere(cutoffs),
     },
     select: {
       id: true,
@@ -59,31 +54,10 @@ export async function getAttentionCustomers(
   });
 
   const result: AttentionCustomer[] = customers.map((customer) => {
-    const reasons: AttentionReason[] = [];
-
-    if (customer.nextActionAt && customer.nextActionAt <= now) {
-      reasons.push({
-        type: "NEXT_ACTION_OVERDUE",
-        since: customer.nextActionAt.toISOString(),
-      });
-    }
-    if (customer.lastContactAt && customer.lastContactAt < staleContactBefore) {
-      reasons.push({
-        type: "STALE_CONTACT",
-        since: customer.lastContactAt.toISOString(),
-      });
-    }
-    if (customer.lastPurchaseAt && customer.lastPurchaseAt < stalePurchaseBefore) {
-      reasons.push({
-        type: "STALE_PURCHASE",
-        since: customer.lastPurchaseAt.toISOString(),
-      });
-    }
-
     return {
       customerId: customer.id,
       customerName: customer.name,
-      reasons,
+      reasons: getAttentionReasons(customer, cutoffs),
       nextActionAt: customer.nextActionAt?.toISOString() ?? null,
       lastContactAt: customer.lastContactAt?.toISOString() ?? null,
       lastPurchaseAt: customer.lastPurchaseAt?.toISOString() ?? null,
