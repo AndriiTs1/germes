@@ -309,6 +309,8 @@ export const ru: Dictionary = {
       title: "Доступный остаток",
       empty: "Пока нет товаров",
       reservedLabel: "Зарезервировано",
+      showAll: "Показать все ({count})",
+      collapse: "Свернуть",
     },
     reservationsCard: {
       title: "Резервирования",

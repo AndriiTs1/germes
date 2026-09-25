@@ -315,6 +315,8 @@ export const en = {
       title: "Available Stock",
       empty: "No products yet",
       reservedLabel: "Reserved",
+      showAll: "Show all ({count})",
+      collapse: "Collapse",
     },
     reservationsCard: {
       title: "Reservations",

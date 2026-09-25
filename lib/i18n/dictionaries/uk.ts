@@ -309,6 +309,8 @@ export const uk: Dictionary = {
       title: "Доступний залишок",
       empty: "Поки немає товарів",
       reservedLabel: "Зарезервовано",
+      showAll: "Показати всі ({count})",
+      collapse: "Згорнути",
     },
     reservationsCard: {
       title: "Резервування",
