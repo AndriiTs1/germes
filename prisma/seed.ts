@@ -48,6 +48,11 @@ async function main() {
       name: "Accounting",
       description: "Finance, payments, receivables and payables",
     },
+    {
+      code: "SUPPORT",
+      name: "Support",
+      description: "Internal Germes customer support workspace",
+    },
   ];
 
   for (const role of roles) {
@@ -65,7 +70,7 @@ async function main() {
   // Permissions
   //
   // NOTE: The delete-then-recreate RolePermission strategy below is valid
-  // ONLY while OWNER/ADMIN/SALES/PROCUREMENT/WAREHOUSE/ACCOUNTING remain
+  // ONLY while OWNER/ADMIN/SALES/PROCUREMENT/WAREHOUSE/ACCOUNTING/SUPPORT remain
   // seed-managed system roles and this seed file is the single source of
   // truth for their grants. If Germes later supports runtime/custom role
   // permission editing (an admin screen that grants or revokes permissions
@@ -94,6 +99,11 @@ async function main() {
       code: "workspace.admin.access",
       description: "See the Administration workspace and its navigation in the sidebar",
       roles: ["OWNER", "ADMIN"],
+    },
+    {
+      code: "support.workspace.access",
+      description: "Access the internal Germes support workspace",
+      roles: ["SUPPORT"],
     },
     {
       code: "sales.orders.read",

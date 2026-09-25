@@ -46,6 +46,7 @@ export const uk: Dictionary = {
     warehouse: "Склад",
     finance: "Фінанси",
     administration: "Адміністрування",
+    support: "Підтримка",
     orders: "Замовлення",
     customers: "Клієнти",
     settings: "Налаштування",

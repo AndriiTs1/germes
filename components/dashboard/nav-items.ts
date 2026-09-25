@@ -1,6 +1,7 @@
 import {
   ClipboardList,
   Landmark,
+  LifeBuoy,
   LayoutDashboard,
   ShieldCheck,
   Settings,
@@ -19,6 +20,7 @@ export type NavItemKey =
   | "warehouse"
   | "finance"
   | "administration"
+  | "support"
   | "orders"
   | "customers"
   | "settings";
@@ -99,6 +101,12 @@ export const navSections: NavSection[] = [
         href: "/admin",
         requiredPermission: "workspace.admin.access",
         icon: ShieldCheck,
+      },
+      {
+        labelKey: "support",
+        href: "/support",
+        requiredPermission: "support.workspace.access",
+        icon: LifeBuoy,
       },
     ],
   },

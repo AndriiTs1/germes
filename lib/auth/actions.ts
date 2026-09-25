@@ -3,6 +3,7 @@
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getCurrentUser } from "@/lib/auth/get-current-user";
+import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { loginSchema, type LoginInput } from "@/lib/validation/auth";
@@ -44,6 +45,15 @@ export async function login(
   if (!user || !user.isActive) {
     await supabase.auth.signOut();
     return { error: genericError };
+  }
+
+  const permissionCodes = await getPermissionCodesForUser(user.id);
+
+  if (
+    permissionCodes.includes("support.workspace.access") &&
+    !permissionCodes.includes("dashboard.command_center.read")
+  ) {
+    redirect("/support");
   }
 
   redirect("/");

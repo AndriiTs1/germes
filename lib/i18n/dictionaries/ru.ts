@@ -46,6 +46,7 @@ export const ru: Dictionary = {
     warehouse: "Склад",
     finance: "Финансы",
     administration: "Администрирование",
+    support: "Поддержка",
     orders: "Заказы",
     customers: "Клиенты",
     settings: "Настройки",

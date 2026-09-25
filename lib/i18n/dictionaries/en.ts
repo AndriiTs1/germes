@@ -52,6 +52,7 @@ export const en = {
     warehouse: "Warehouse",
     finance: "Finance",
     administration: "Administration",
+    support: "Support",
     orders: "Orders",
     customers: "Customers",
     settings: "Settings",
