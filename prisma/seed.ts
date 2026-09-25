@@ -620,57 +620,70 @@ async function main() {
   // Suppliers
   // --------------------------------------------------
 
-  const supplier1 = await prisma.supplier.upsert({
-    where: { code: "SUP-001" },
-    update: {
-      name: "Baltic Meat Export",
-      status: "ACTIVE",
-      country: "Poland",
-      paymentTermDays: 21,
-      rating: 5,
-      responsibleId: procurementManager.id,
-    },
-    create: {
-      code: "SUP-001",
-      name: "Baltic Meat Export",
-      legalName: "Baltic Meat Export Sp. z o.o.",
-      status: "ACTIVE",
-      contactPerson: "Piotr Nowak",
-      email: "sales@balticmeat.demo",
-      country: "Poland",
-      paymentTermDays: 21,
-      rating: 5,
-      responsibleId: procurementManager.id,
-      lastContactAt: new Date("2026-09-10T08:00:00Z"),
-      nextActionAt: new Date("2026-09-16T08:00:00Z"),
-    },
-  });
+  const suppliers: { code: string; name: string; country?: string }[] = [
+    { code: "SUP-001", name: "Baltic Meat Supply" },
+    { code: "SUP-002", name: "Bernard SA" },
+    { code: "SUP-003", name: "CARNIS INTERNATIONAL" },
+    { code: "SUP-004", name: "DANISH CROWN", country: "Данія" },
+    { code: "SUP-005", name: "ESS-FOOD A/S", country: "Данія" },
+    { code: "SUP-006", name: "ETABLISSEMENTS" },
+    { code: "SUP-007", name: "GLOBAL MEAT POLAND", country: "Польща" },
+    { code: "SUP-008", name: "HAND-FOOD" },
+    { code: "SUP-009", name: "HAP Foods Holland B.V.", country: "Нідерланди" },
+    { code: "SUP-010", name: "Leomeat" },
+    { code: "SUP-011", name: "Mediterranean" },
+    { code: "SUP-012", name: "MULTI TRADE" },
+    { code: "SUP-013", name: "Orlani Sp.z.o.o", country: "Польща" },
+    { code: "SUP-014", name: "P.W.ARAD" },
+    { code: "SUP-015", name: "PPM ECO-DAR" },
+    { code: "SUP-016", name: "SEGEA LTD" },
+    { code: "SUP-017", name: "SKORPOL" },
+    { code: "SUP-018", name: "STERVAT" },
+    { code: "SUP-019", name: "TECHNO GROUP" },
+    { code: "SUP-020", name: "TIMTRANS" },
+    { code: "SUP-021", name: "Tonnies Lebensmittel", country: "Німеччина" },
+    { code: "SUP-022", name: "Wedlinka Group" },
+    { code: "SUP-023", name: "Агроль ТОВ", country: "Україна" },
+    { code: "SUP-024", name: "Асорті М" },
+    { code: "SUP-025", name: "Атлант М'ясний дім ТОВ", country: "Україна" },
+    { code: "SUP-026", name: "Бізнес міт продукт ТОВ", country: "Україна" },
+    { code: "SUP-027", name: "Буковина Агро Трейд-2011 ТОВ", country: "Україна" },
+    { code: "SUP-028", name: "Вавілон фуд ТОВ", country: "Україна" },
+    { code: "SUP-029", name: "ВЕЛ МПТ ТОВ", country: "Україна" },
+    { code: "SUP-030", name: "Вербівське ТОВ ВКП", country: "Україна" },
+    { code: "SUP-031", name: "ВПТА-ПРОДУКТ ТОВ", country: "Україна" },
+    { code: "SUP-032", name: "Деметра ПП", country: "Україна" },
+    { code: "SUP-033", name: "ДНІПРОМЯСО ТРЕЙД ТОВ", country: "Україна" },
+    { code: "SUP-034", name: "Дуб ФОП", country: "Україна" },
+    { code: "SUP-035", name: "Едельвейс СФГ", country: "Україна" },
+    { code: "SUP-036", name: "ЕЛІТ МПТ" },
+    { code: "SUP-037", name: "Євро-Комерс ТОВ", country: "Україна" },
+    { code: "SUP-038", name: "ЗЕВС" },
+    { code: "SUP-039", name: "Козятинський МК ПрАТ", country: "Україна" },
+    { code: "SUP-040", name: "Конотопм'ясо ТДВ", country: "Україна" },
+    { code: "SUP-041", name: "М'ясо БЦ ТОВ", country: "Україна" },
+    { code: "SUP-042", name: "Майстер М'яса ТОВ", country: "Україна" },
+    { code: "SUP-043", name: "МАФІН ФОП", country: "Україна" },
+    { code: "SUP-044", name: "МАЦЮК ФОП", country: "Україна" },
+  ];
 
-  const supplier2 = await prisma.supplier.upsert({
-    where: { code: "SUP-002" },
-    update: {
-      name: "Danube Foods",
-      status: "ACTIVE",
-      country: "Romania",
-      paymentTermDays: 14,
-      rating: 4,
-      responsibleId: procurementManager.id,
-    },
-    create: {
-      code: "SUP-002",
-      name: "Danube Foods",
-      legalName: "Danube Foods SRL",
-      status: "ACTIVE",
-      contactPerson: "Mihai Popescu",
-      email: "export@danubefoods.demo",
-      country: "Romania",
-      paymentTermDays: 14,
-      rating: 4,
-      responsibleId: procurementManager.id,
-      lastContactAt: new Date("2026-09-09T08:00:00Z"),
-      nextActionAt: new Date("2026-09-13T08:00:00Z"),
-    },
-  });
+  for (const supplier of suppliers) {
+    await prisma.supplier.upsert({
+      where: { code: supplier.code },
+      update: {
+        name: supplier.name,
+        country: supplier.country ?? null,
+        status: "ACTIVE",
+        isActive: true,
+      },
+      create: {
+        code: supplier.code,
+        name: supplier.name,
+        country: supplier.country ?? null,
+        status: "ACTIVE",
+      },
+    });
+  }
 
   // --------------------------------------------------
   // Replace demo transactional data
@@ -770,38 +783,6 @@ async function main() {
         dueDate: new Date("2026-09-09"),
         status: "OVERDUE",
         reference: "INV-260870",
-      },
-    ],
-  });
-
-  await prisma.payable.createMany({
-    data: [
-      {
-        supplierId: supplier1.id,
-        amount: 1422000,
-        paidAmount: 900000,
-        currency: "UAH",
-        dueDate: new Date("2026-09-17"),
-        status: "PARTIALLY_PAID",
-        reference: "SUP-INV-PL-901",
-      },
-      {
-        supplierId: supplier2.id,
-        amount: 1207000,
-        paidAmount: 1207000,
-        currency: "UAH",
-        dueDate: new Date("2026-09-10"),
-        status: "PAID",
-        reference: "SUP-INV-RO-902",
-      },
-      {
-        supplierId: supplier1.id,
-        amount: 640000,
-        paidAmount: 0,
-        currency: "UAH",
-        dueDate: new Date("2026-09-08"),
-        status: "OVERDUE",
-        reference: "SUP-INV-PL-880",
       },
     ],
   });
