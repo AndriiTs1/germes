@@ -362,6 +362,34 @@ async function main() {
     },
   });
 
+  // Explicit ids so SALES2_USER_ID / SALES3_USER_ID in .env are known
+  // before this row exists — scripts/bootstrap-user.ts selects by id.
+  const salesManager2 = await prisma.user.upsert({
+    where: { email: "sales2@germes.demo" },
+    update: {
+      name: "Дмитро Ткаченко",
+      isActive: true,
+    },
+    create: {
+      id: "451030fb-4085-47cc-89e4-b8b93a5a779b",
+      email: "sales2@germes.demo",
+      name: "Дмитро Ткаченко",
+    },
+  });
+
+  const salesManager3 = await prisma.user.upsert({
+    where: { email: "sales3@germes.demo" },
+    update: {
+      name: "Оксана Литвиненко",
+      isActive: true,
+    },
+    create: {
+      id: "95ce9fdc-0a9c-43be-a658-d7e497a1724d",
+      email: "sales3@germes.demo",
+      name: "Оксана Литвиненко",
+    },
+  });
+
   const procurementManager = await prisma.user.upsert({
     where: { email: "procurement@germes.demo" },
     update: {
@@ -405,6 +433,8 @@ async function main() {
           owner.id,
           admin.id,
           salesManager.id,
+          salesManager2.id,
+          salesManager3.id,
           procurementManager.id,
           accountant.id,
           warehouseManager.id,
@@ -424,6 +454,8 @@ async function main() {
       { userId: owner.id, roleId: roleByCode.OWNER.id },
       { userId: admin.id, roleId: roleByCode.ADMIN.id },
       { userId: salesManager.id, roleId: roleByCode.SALES.id },
+      { userId: salesManager2.id, roleId: roleByCode.SALES.id },
+      { userId: salesManager3.id, roleId: roleByCode.SALES.id },
       { userId: procurementManager.id, roleId: roleByCode.PROCUREMENT.id },
       { userId: accountant.id, roleId: roleByCode.ACCOUNTING.id },
       { userId: warehouseManager.id, roleId: roleByCode.WAREHOUSE.id },
