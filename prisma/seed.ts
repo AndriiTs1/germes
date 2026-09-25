@@ -426,6 +426,24 @@ async function main() {
     },
   });
 
+  // Organizational separation only — both warehouse workers currently see
+  // both warehouses; real per-warehouse access scoping is a separate task
+  // pending client's answer on mixed-warehouse orders.
+  // Explicit id so WAREHOUSE2_USER_ID in .env is known before this row
+  // exists — scripts/bootstrap-user.ts selects by id.
+  const warehouseManager2 = await prisma.user.upsert({
+    where: { email: "warehouse2@germes.demo" },
+    update: {
+      name: "Тарас Кравчук",
+      isActive: true,
+    },
+    create: {
+      id: "bdd1087e-f0b2-45f8-a12a-9069cd86777e",
+      email: "warehouse2@germes.demo",
+      name: "Тарас Кравчук",
+    },
+  });
+
   await prisma.userRole.deleteMany({
     where: {
       userId: {
@@ -438,6 +456,7 @@ async function main() {
           procurementManager.id,
           accountant.id,
           warehouseManager.id,
+          warehouseManager2.id,
         ],
       },
     },
@@ -459,6 +478,7 @@ async function main() {
       { userId: procurementManager.id, roleId: roleByCode.PROCUREMENT.id },
       { userId: accountant.id, roleId: roleByCode.ACCOUNTING.id },
       { userId: warehouseManager.id, roleId: roleByCode.WAREHOUSE.id },
+      { userId: warehouseManager2.id, roleId: roleByCode.WAREHOUSE.id },
     ],
   });
 
