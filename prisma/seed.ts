@@ -396,7 +396,10 @@ async function main() {
       name: "Максим Бондар",
       isActive: true,
     },
+    // Explicit id (the row's existing id) so PROCUREMENT_USER_ID in .env
+    // stays valid after a reset — scripts/bootstrap-user.ts selects by id.
     create: {
+      id: "88e096dc-12b9-42a7-a7b4-fb285eedeead",
       email: "procurement@germes.demo",
       name: "Максим Бондар",
     },
