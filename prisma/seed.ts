@@ -456,56 +456,73 @@ async function main() {
   // Products
   // --------------------------------------------------
 
-  const chicken = await prisma.product.upsert({
-    where: { sku: "CHK-FILLET" },
-    update: {
-      name: "Філе куряче заморожене",
-      category: "Poultry",
-      brand: "Germes Select",
-      unit: "kg",
-      isActive: true,
-    },
-    create: {
-      sku: "CHK-FILLET",
-      name: "Філе куряче заморожене",
-      category: "Poultry",
-      brand: "Germes Select",
-    },
-  });
+  const products: { sku: string; name: string; category: string }[] = [
+    // Готова продукція
+    { sku: "POULTRY-001", name: "Жир курячий", category: "Готова продукція" },
+    { sku: "POULTRY-002", name: "Курячий каркас", category: "Готова продукція" },
+    { sku: "POULTRY-003", name: "ММО", category: "Готова продукція" },
+    { sku: "POULTRY-004", name: "Печінка куряча імпорт", category: "Готова продукція" },
+    { sku: "POULTRY-005", name: "Філе індиче", category: "Готова продукція" },
+    { sku: "POULTRY-006", name: "Шия куряча", category: "Готова продукція" },
 
-  const pork = await prisma.product.upsert({
-    where: { sku: "PORK-NECK" },
-    update: {
-      name: "Ошийок свинячий",
-      category: "Pork",
-      brand: "Germes Select",
-      unit: "kg",
-      isActive: true,
-    },
-    create: {
-      sku: "PORK-NECK",
-      name: "Ошийок свинячий",
-      category: "Pork",
-      brand: "Germes Select",
-    },
-  });
+    // Свинина
+    { sku: "PORK-001", name: "Баки (щоковинна) свин.", category: "Свинина" },
+    { sku: "PORK-002", name: "Балик св.", category: "Свинина" },
+    { sku: "PORK-003", name: "Вуха свинячі (імпорт)", category: "Свинина" },
+    { sku: "PORK-004", name: "Грудинка свин.", category: "Свинина" },
+    { sku: "PORK-005", name: "Діафрагма свинна імпорт", category: "Свинина" },
+    { sku: "PORK-006", name: "Жир сирець свиний внутрішній", category: "Свинина" },
+    { sku: "PORK-007", name: "Легені свині", category: "Свинина" },
+    { sku: "PORK-008", name: "Легені свині пп", category: "Свинина" },
+    { sku: "PORK-009", name: "М'ясо котлетне 70/30 імпорт", category: "Свинина" },
+    { sku: "PORK-010", name: "М'ясо котлетне 80/20 імпорт", category: "Свинина" },
+    { sku: "PORK-011", name: "М'ясо котлетне 90/10 імпорт", category: "Свинина" },
+    { sku: "PORK-012", name: "Нирки свині", category: "Свинина" },
+    { sku: "PORK-013", name: "Окорок свинячий імпорт", category: "Свинина" },
+    { sku: "PORK-014", name: "Печінка свина", category: "Свинина" },
+    { sku: "PORK-015", name: "Печінка свина промка", category: "Свинина" },
+    { sku: "PORK-016", name: "Ребро св. імпорт", category: "Свинина" },
+    { sku: "PORK-017", name: "Сало іберіка", category: "Свинина" },
+    { sku: "PORK-018", name: "Сало хребтове", category: "Свинина" },
+    { sku: "PORK-019", name: "Сало хребтове (імпортне)", category: "Свинина" },
+    { sku: "PORK-020", name: "Свинина односортна", category: "Свинина" },
+    { sku: "PORK-021", name: "Серце свиняче (імпорт)", category: "Свинина" },
+    { sku: "PORK-022", name: "Шия свиняча", category: "Свинина" },
+    { sku: "PORK-023", name: "Шия свиняча імпорт", category: "Свинина" },
+    { sku: "PORK-024", name: "Шкіра свиняча", category: "Свинина" },
+    { sku: "PORK-025", name: "Язик свиний (картон) імпорт", category: "Свинина" },
+    { sku: "PORK-026", name: "Язик свиний імпорт", category: "Свинина" },
 
-  const beef = await prisma.product.upsert({
-    where: { sku: "BEEF-TRIM" },
-    update: {
-      name: "Яловичина Trim 80/20",
-      category: "Beef",
-      brand: "Germes Select",
-      unit: "kg",
-      isActive: true,
-    },
-    create: {
-      sku: "BEEF-TRIM",
-      name: "Яловичина Trim 80/20",
-      category: "Beef",
-      brand: "Germes Select",
-    },
-  });
+    // Яловичина
+    { sku: "BEEF-001", name: "Жилка мембрана імпорт", category: "Яловичина" },
+    { sku: "BEEF-002", name: "Жилка яловича", category: "Яловичина" },
+    { sku: "BEEF-003", name: "Жилка яловича імпорт", category: "Яловичина" },
+    { sku: "BEEF-004", name: "Жир яловичий внутрішній", category: "Яловичина" },
+    { sku: "BEEF-005", name: "Жир яловичий кишечний", category: "Яловичина" },
+    { sku: "BEEF-006", name: "Печінка яловича імпорт", category: "Яловичина" },
+    { sku: "BEEF-007", name: "Серце яловиче", category: "Яловичина" },
+    { sku: "BEEF-008", name: "Яловичина в блоках 1/г", category: "Яловичина" },
+    { sku: "BEEF-009", name: "Яловичина в блоках 2/г", category: "Яловичина" },
+    { sku: "BEEF-010", name: "Яловичина в блоках в/г", category: "Яловичина" },
+  ];
+
+  for (const product of products) {
+    await prisma.product.upsert({
+      where: { sku: product.sku },
+      update: {
+        name: product.name,
+        category: product.category,
+        unit: "kg",
+        isActive: true,
+      },
+      create: {
+        sku: product.sku,
+        name: product.name,
+        category: product.category,
+        unit: "kg",
+      },
+    });
+  }
 
   // --------------------------------------------------
   // Customers
@@ -646,88 +663,6 @@ async function main() {
   });
 
   // --------------------------------------------------
-  // Batches
-  // --------------------------------------------------
-
-  const batchChicken = await prisma.batch.upsert({
-    where: {
-      batchNumber_productId: {
-        batchNumber: "PL-CHK-260901",
-        productId: chicken.id,
-      },
-    },
-    update: {
-      receivedKg: 12000,
-      status: "AVAILABLE",
-      unitCost: 118.5,
-    },
-    create: {
-      batchNumber: "PL-CHK-260901",
-      productId: chicken.id,
-      receivedKg: 12000,
-      productionDate: new Date("2026-08-27"),
-      expiryDate: new Date("2027-08-27"),
-      manufacturer: "Baltic Meat Export",
-      country: "Poland",
-      temperature: -18,
-      unitCost: 118.5,
-      status: "AVAILABLE",
-    },
-  });
-
-  const batchPork = await prisma.batch.upsert({
-    where: {
-      batchNumber_productId: {
-        batchNumber: "RO-PRK-260902",
-        productId: pork.id,
-      },
-    },
-    update: {
-      receivedKg: 8500,
-      status: "AVAILABLE",
-      unitCost: 142,
-    },
-    create: {
-      batchNumber: "RO-PRK-260902",
-      productId: pork.id,
-      receivedKg: 8500,
-      productionDate: new Date("2026-08-29"),
-      expiryDate: new Date("2027-02-28"),
-      manufacturer: "Danube Foods",
-      country: "Romania",
-      temperature: -18,
-      unitCost: 142,
-      status: "AVAILABLE",
-    },
-  });
-
-  const batchBeef = await prisma.batch.upsert({
-    where: {
-      batchNumber_productId: {
-        batchNumber: "PL-BEEF-260903",
-        productId: beef.id,
-      },
-    },
-    update: {
-      receivedKg: 6200,
-      status: "AVAILABLE",
-      unitCost: 184,
-    },
-    create: {
-      batchNumber: "PL-BEEF-260903",
-      productId: beef.id,
-      receivedKg: 6200,
-      productionDate: new Date("2026-08-30"),
-      expiryDate: new Date("2027-06-30"),
-      manufacturer: "Baltic Meat Export",
-      country: "Poland",
-      temperature: -18,
-      unitCost: 184,
-      status: "AVAILABLE",
-    },
-  });
-
-  // --------------------------------------------------
   // Replace demo transactional data
   // --------------------------------------------------
 
@@ -737,52 +672,6 @@ async function main() {
   await prisma.salesOrderItem.deleteMany();
   await prisma.salesOrder.deleteMany();
   await prisma.stockMovement.deleteMany();
-
-  // --------------------------------------------------
-  // Stock movements
-  // --------------------------------------------------
-
-  await prisma.stockMovement.createMany({
-    data: [
-      {
-        type: "RECEIPT",
-        batchId: batchChicken.id,
-        toWarehouseId: warehouseKyiv.id,
-        quantityKg: 12000,
-        reference: "GRN-260901",
-      },
-      {
-        type: "TRANSFER",
-        batchId: batchChicken.id,
-        fromWarehouseId: warehouseKyiv.id,
-        toWarehouseId: warehouseLviv.id,
-        quantityKg: 2500,
-        reference: "TR-260905",
-      },
-      {
-        type: "RECEIPT",
-        batchId: batchPork.id,
-        toWarehouseId: warehouseKyiv.id,
-        quantityKg: 8500,
-        reference: "GRN-260902",
-      },
-      {
-        type: "RECEIPT",
-        batchId: batchBeef.id,
-        toWarehouseId: warehouseLviv.id,
-        quantityKg: 6200,
-        reference: "GRN-260903",
-      },
-      {
-        type: "WRITE_OFF",
-        batchId: batchPork.id,
-        fromWarehouseId: warehouseKyiv.id,
-        quantityKg: 120,
-        reference: "WO-260908",
-        notes: "Quality adjustment",
-      },
-    ],
-  });
 
   // --------------------------------------------------
   // Sales orders
@@ -844,59 +733,6 @@ async function main() {
       orderDate: new Date("2026-08-20T10:00:00Z"),
       currency: "UAH",
     },
-  });
-
-  await prisma.salesOrderItem.createMany({
-    data: [
-      {
-        salesOrderId: order2.id,
-        productId: pork.id,
-        quantityKg: 1500,
-        pricePerKg: 181,
-      },
-      {
-        salesOrderId: order3.id,
-        productId: chicken.id,
-        quantityKg: 2200,
-        pricePerKg: 149,
-      },
-      {
-        salesOrderId: order4.id,
-        productId: chicken.id,
-        quantityKg: 3000,
-        pricePerKg: 150,
-      },
-      {
-        salesOrderId: order5.id,
-        productId: pork.id,
-        quantityKg: 3500,
-        pricePerKg: 177,
-      },
-      {
-        salesOrderId: order6.id,
-        productId: beef.id,
-        quantityKg: 2800,
-        pricePerKg: 182,
-      },
-    ],
-  });
-
-  // --------------------------------------------------
-  // Reservations
-  // --------------------------------------------------
-
-  await prisma.stockReservation.createMany({
-    data: [
-      {
-        productId: pork.id,
-        batchId: batchPork.id,
-        salesOrderId: order2.id,
-        quantityKg: 1500,
-        status: "ACTIVE",
-        expiresAt: new Date("2026-09-13T18:00:00Z"),
-        reference: "RES-SO-002-1",
-      },
-    ],
   });
 
   // --------------------------------------------------
