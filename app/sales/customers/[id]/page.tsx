@@ -12,6 +12,7 @@ import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getSalesCustomerDetail } from "@/lib/services/sales/get-sales-customer-detail";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 import { cn } from "@/lib/utils";
 
 const CUSTOMERS_READ_PERMISSION = "customers.read";
@@ -31,6 +32,8 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const roleCodes = user.roles.map((entry) => entry.role.code);
+  const readScope = resolveSalesReadScope(roleCodes);
   const canReadReceivables = permissionCodes.includes(RECEIVABLES_READ_PERMISSION);
   const canCreateOrder = permissionCodes.includes(SALES_ORDERS_CREATE_PERMISSION);
 
@@ -39,6 +42,7 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
 
   const { id } = await props.params;
   const customer = await getSalesCustomerDetail(user.id, id, {
+    scope: readScope,
     includeReceivables: canReadReceivables,
   });
 

@@ -1,6 +1,7 @@
 import { FinanceStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
+import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type SalesCustomerDetailOrder = {
   id: string;
@@ -62,6 +63,11 @@ export type SalesCustomerDetail = {
 
 export type GetSalesCustomerDetailOptions = {
   /**
+   * Read visibility. Defaults to "own" so every existing caller preserves
+   * salesperson isolation unless it explicitly opts into supervisory reads.
+   */
+  scope?: SalesReadScope;
+  /**
    * Whether to fetch receivable data at all. Defaults to false (fail
    * closed): the caller (the page) must explicitly pass true only after
    * confirming the current user holds finance.receivables.read, so a
@@ -72,12 +78,14 @@ export type GetSalesCustomerDetailOptions = {
 };
 
 /**
- * Full detail for exactly one customer owned by currentUserId. Scoped
- * directly in the query (id + responsibleId + isActive together, via
- * findFirst) so "doesn't exist", "belongs to someone else", and "is
- * inactive" are all indistinguishable — every case resolves to null from
- * this single query, never a separate existence check. No role.code, no
- * OWNER bypass — identical philosophy to getSalesOrderDetail.
+ * Full detail for exactly one customer visible in the requested read
+ * scope. The default "own" scope keeps id + responsibleId + isActive
+ * together in the query (via findFirst); "all" drops only responsibleId
+ * and is reserved for a caller that has already resolved supervisory
+ * visibility — identical philosophy to getSalesOrderDetail. "Doesn't
+ * exist", "belongs to someone else", and "is inactive" are all
+ * indistinguishable — every case resolves to null from this single query,
+ * never a separate existence check. No role.code logic here.
  *
  * Recent orders come from the same scoped customer record's own
  * salesOrders relation (nested select — Prisma resolves this as part of
@@ -106,10 +114,14 @@ export async function getSalesCustomerDetail(
   customerId: string,
   options: GetSalesCustomerDetailOptions = {},
 ): Promise<SalesCustomerDetail | null> {
-  const { includeReceivables = false } = options;
+  const { scope = "own", includeReceivables = false } = options;
 
   const customer = await prisma.customer.findFirst({
-    where: { id: customerId, responsibleId: currentUserId, isActive: true },
+    where: {
+      id: customerId,
+      responsibleId: scope === "all" ? undefined : currentUserId,
+      isActive: true,
+    },
     select: {
       id: true,
       code: true,

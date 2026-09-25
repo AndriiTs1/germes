@@ -11,6 +11,7 @@ import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { listSalesCustomers } from "@/lib/services/sales/list-sales-customers";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 
 const CUSTOMERS_READ_PERMISSION = "customers.read";
 const PAGE_SIZE = 20;
@@ -36,6 +37,8 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
   }
 
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  const roleCodes = user.roles.map((entry) => entry.role.code);
+  const readScope = resolveSalesReadScope(roleCodes);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -49,6 +52,7 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
   const requestedPage = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
 
   const result = await listSalesCustomers(user.id, {
+    scope: readScope,
     limit: PAGE_SIZE,
     page: requestedPage,
     search: q || undefined,
