@@ -6,6 +6,7 @@ import { getReceivableExposure } from "@/lib/services/sales/get-receivable-expos
 import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getReservationsRequiringAttention } from "@/lib/services/sales/get-reservations-requiring-attention";
 import { getStockAvailability } from "@/lib/services/sales/get-stock-availability";
+import { getSalesTeamSummary } from "@/lib/services/sales/get-sales-team-summary";
 import { listSalesOrders } from "@/lib/services/sales/list-sales-orders";
 import { ActiveOrdersCard } from "@/components/sales/active-orders-card";
 import { AvailableStockCard } from "@/components/sales/available-stock-card";
@@ -14,6 +15,7 @@ import { ReceivablesCard } from "@/components/sales/receivables-card";
 import { ReservationsCard } from "@/components/sales/reservations-card";
 import { formatKg } from "@/components/sales/format";
 import { SalesKpiSummary, type SalesKpiCardProps } from "@/components/sales/sales-kpi-row";
+import { SalesTeamSummary } from "@/components/sales/sales-team-summary";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { SalesReadScope } from "@/lib/services/sales/read-scope";
@@ -47,12 +49,15 @@ export async function SalesWorkspace({
   const canReadStock = permissionCodes.includes("inventory.stock.read");
   const canReadReservations = permissionCodes.includes("sales.reservations.read");
   const canReadReceivables = permissionCodes.includes("finance.receivables.read");
+  // Supervisory team block — only ever fetched/rendered for the "all" read
+  // scope; the "own" (SALES) path never calls getSalesTeamSummary.
+  const showTeam = readScope === "all" && canReadCustomers && canReadOrders;
 
   if (canReadStock || canReadReservations) {
     await expireStockReservations();
   }
 
-  const [attentionCustomers, ordersResult, stock, reservations, receivables] = await Promise.all([
+  const [attentionCustomers, ordersResult, stock, reservations, receivables, teamSummary] = await Promise.all([
     canReadCustomers ? getAttentionCustomers(userId, readScope) : Promise.resolve(null),
     canReadOrders
       ? listSalesOrders(userId, { scope: readScope, onlyActive: true, limit: RECENT_ORDERS_LIMIT })
@@ -60,6 +65,7 @@ export async function SalesWorkspace({
     canReadStock ? getStockAvailability() : Promise.resolve(null),
     canReadReservations ? getReservationsRequiringAttention(userId, readScope) : Promise.resolve(null),
     canReadReceivables ? getReceivableExposure(userId, readScope) : Promise.resolve(null),
+    showTeam ? getSalesTeamSummary() : Promise.resolve(null),
   ]);
 
   const kpi = dictionary.sales.workspace.kpi;
@@ -137,6 +143,10 @@ export async function SalesWorkspace({
   return (
     <div className="flex flex-col gap-4 xl:gap-3.5">
       <SalesKpiSummary items={kpis} />
+
+      {teamSummary ? (
+        <SalesTeamSummary summary={teamSummary} locale={locale} dictionary={dictionary} />
+      ) : null}
 
       <div
         className={`grid grid-cols-1 gap-4 ${

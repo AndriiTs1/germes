@@ -279,6 +279,22 @@ export const uk: Dictionary = {
         reservationsNeedReview: "Деякі резервування потребують перевірки",
       },
       activeOrdersEmpty: "Наразі немає активних замовлень",
+      team: {
+        title: "Команда продажів",
+        subtitle: "Підсумок по компанії та портфель кожного менеджера",
+        companyTotal: "Разом по компанії",
+        outsideTeam: "Без менеджера",
+        outsideTeamHint: "Клієнти або замовлення без активного менеджера",
+        openCustomers: "Переглянути клієнтів",
+        metrics: {
+          customers: "Клієнти",
+          activeOrders: "Активні замовлення",
+          attention: "Потребують уваги",
+          turnover: "Оборот",
+          receivables: "Дебіторка",
+          overdue: "Прострочено",
+        },
+      },
     },
     needsAttention: {
       title: "Потребують уваги",

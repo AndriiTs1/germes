@@ -279,6 +279,22 @@ export const ru: Dictionary = {
         reservationsNeedReview: "Некоторые резервирования требуют проверки",
       },
       activeOrdersEmpty: "Сейчас нет активных заказов",
+      team: {
+        title: "Команда продаж",
+        subtitle: "Итог по компании и портфель каждого менеджера",
+        companyTotal: "Итого по компании",
+        outsideTeam: "Без менеджера",
+        outsideTeamHint: "Клиенты или заказы без активного менеджера",
+        openCustomers: "Смотреть клиентов",
+        metrics: {
+          customers: "Клиенты",
+          activeOrders: "Активные заказы",
+          attention: "Требуют внимания",
+          turnover: "Оборот",
+          receivables: "Дебиторка",
+          overdue: "Просрочено",
+        },
+      },
     },
     needsAttention: {
       title: "Требуют внимания",

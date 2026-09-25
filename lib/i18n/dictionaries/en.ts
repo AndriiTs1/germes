@@ -285,6 +285,22 @@ export const en = {
         reservationsNeedReview: "Some reservations need review",
       },
       activeOrdersEmpty: "No active orders right now",
+      team: {
+        title: "Sales team",
+        subtitle: "Company-wide totals and each manager's portfolio",
+        companyTotal: "Company total",
+        outsideTeam: "No manager",
+        outsideTeamHint: "Customers or orders without an active sales manager",
+        openCustomers: "View customers",
+        metrics: {
+          customers: "Customers",
+          activeOrders: "Active orders",
+          attention: "Needs attention",
+          turnover: "Turnover",
+          receivables: "Receivables",
+          overdue: "Overdue",
+        },
+      },
     },
     needsAttention: {
       title: "Needs Attention",
