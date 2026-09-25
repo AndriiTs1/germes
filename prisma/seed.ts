@@ -570,83 +570,74 @@ async function main() {
   // Customers
   // --------------------------------------------------
 
-  const customer1 = await prisma.customer.upsert({
-    where: { code: "CUST-001" },
-    update: {
-      name: "М'ясний Дім",
-      legalName: "ТОВ М'ясний Дім",
-      status: "ACTIVE",
-      country: "Ukraine",
-      creditLimit: 1500000,
-      paymentTermDays: 14,
-      responsibleId: salesManager.id,
-    },
-    create: {
-      code: "CUST-001",
-      name: "М'ясний Дім",
-      legalName: "ТОВ М'ясний Дім",
-      status: "ACTIVE",
-      contactPerson: "Віталій Кравченко",
-      phone: "+380501110011",
-      email: "office@meathouse.demo",
-      country: "Ukraine",
-      creditLimit: 1500000,
-      paymentTermDays: 14,
-      responsibleId: salesManager.id,
-      lastContactAt: new Date("2026-09-10T09:30:00Z"),
-      lastPurchaseAt: new Date("2026-09-09T12:00:00Z"),
-      nextActionAt: new Date("2026-09-15T09:00:00Z"),
-    },
-  });
+  // TEMPORARY: responsibleId below is a RANDOM ~even split (14/14/13)
+  // across the three demo sales managers, with no selection logic.
+  // Replace once the client provides the real "manager → customers"
+  // structure. "Кінцевий споживач" (retail placeholder) is intentionally
+  // excluded — it will become a separate record type later.
+  const customers: { code: string; name: string; responsibleId: string }[] = [
+    { code: "CUST-001", name: "24 РЕСТОРАНИ ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-002", name: "Агро Інвест ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-003", name: "Агрофірма Столична ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-004", name: "Алан ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-005", name: "АЛЬФА-ЕТЕКС ТОВ ТД", responsibleId: salesManager.id },
+    { code: "CUST-006", name: "Амтек трейд ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-007", name: "Атлант М'ясний дім ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-008", name: "Бізнес міт продукт ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-009", name: "ВІДЖИ ПРОДАКШН ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-010", name: "ВІТА-ПРОДУКТ ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-011", name: "ВП СЛОБОЖАНСЬКИЙ ПРОДУКТ ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-012", name: "ГАРНА СТРАВА ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-013", name: "Глобинський М'ясокомбінат ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-014", name: "Голик ФОП", responsibleId: salesManager.id },
+    { code: "CUST-015", name: "Грін Рей Торговий дім", responsibleId: salesManager.id },
+    { code: "CUST-016", name: "ДНІПРОМЯСО ТРЕЙД ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-017", name: "ЕКОВТОРПРОМ ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-018", name: "Елікатний смак ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-019", name: "Житомирський м'ясокомбінат ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-020", name: "ЗМЖК Ювілейний ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-021", name: "Качура А. ФОП", responsibleId: salesManager.id },
+    { code: "CUST-022", name: "Київський М'ясокомбінат ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-023", name: "Клебанський Олексій ФОП", responsibleId: salesManager.id },
+    { code: "CUST-024", name: "Козацька Ферма ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-025", name: "Лакі Мгт ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-026", name: "Либідь Проект ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-027", name: "М'ясний МК ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-028", name: "М'ЯСОК КРАФТ ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-029", name: "Мітекспорт ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-030", name: "МХП КУЛІНАРНЕ ВИРОБНИЦТВО ФІЛІЯ ПАТ МХП", responsibleId: salesManager3.id },
+    { code: "CUST-031", name: "МХП ПАТ", responsibleId: salesManager3.id },
+    { code: "CUST-032", name: "МХП ПрАТ \"МХП\" Філія \"М'ясний мультикомплекс\"", responsibleId: salesManager.id },
+    { code: "CUST-033", name: "Новак ФОП", responsibleId: salesManager3.id },
+    { code: "CUST-034", name: "Нововолинський м'ясокомбінат ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-035", name: "Новожановський МК ТОВ", responsibleId: salesManager3.id },
+    { code: "CUST-036", name: "Павлів Є.В. ФОП", responsibleId: salesManager3.id },
+    { code: "CUST-037", name: "ПІК І К ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-038", name: "Прилуки-Агропереробка ВКП ТОВ", responsibleId: salesManager.id },
+    { code: "CUST-039", name: "ПРОФУДС КР", responsibleId: salesManager.id },
+    { code: "CUST-040", name: "Родинна ковбаска ТОВ", responsibleId: salesManager2.id },
+    { code: "CUST-041", name: "Салтівський МК ТОВ", responsibleId: salesManager2.id },
+  ];
 
-  const customer2 = await prisma.customer.upsert({
-    where: { code: "CUST-002" },
-    update: {
-      name: "Fresh Market",
-      status: "ACTIVE",
-      country: "Ukraine",
-      creditLimit: 900000,
-      paymentTermDays: 10,
-      responsibleId: salesManager.id,
-    },
-    create: {
-      code: "CUST-002",
-      name: "Fresh Market",
-      legalName: "ТОВ Fresh Market",
-      status: "ACTIVE",
-      contactPerson: "Олег Марченко",
-      phone: "+380502220022",
-      email: "buy@freshmarket.demo",
-      country: "Ukraine",
-      creditLimit: 900000,
-      paymentTermDays: 10,
-      responsibleId: salesManager.id,
-      lastContactAt: new Date("2026-09-08T10:00:00Z"),
-      lastPurchaseAt: new Date("2026-09-07T12:00:00Z"),
-      nextActionAt: new Date("2026-09-14T10:00:00Z"),
-    },
-  });
-
-  await prisma.customer.upsert({
-    where: { code: "CUST-003" },
-    update: {
-      name: "Ресторан Груп",
-      status: "POTENTIAL",
-      country: "Ukraine",
-      responsibleId: salesManager.id,
-    },
-    create: {
-      code: "CUST-003",
-      name: "Ресторан Груп",
-      status: "POTENTIAL",
-      contactPerson: "Анна Левченко",
-      phone: "+380503330033",
-      country: "Ukraine",
-      responsibleId: salesManager.id,
-      lastContactAt: new Date("2026-08-15T10:00:00Z"),
-      nextActionAt: new Date("2026-09-12T10:00:00Z"),
-    },
-  });
+  for (const customer of customers) {
+    await prisma.customer.upsert({
+      where: { code: customer.code },
+      update: {
+        name: customer.name,
+        status: "ACTIVE",
+        country: "Україна",
+        responsibleId: customer.responsibleId,
+        isActive: true,
+      },
+      create: {
+        code: customer.code,
+        name: customer.name,
+        status: "ACTIVE",
+        country: "Україна",
+        responsibleId: customer.responsibleId,
+      },
+    });
+  }
 
   // --------------------------------------------------
   // Suppliers
@@ -727,97 +718,6 @@ async function main() {
   await prisma.salesOrderItem.deleteMany();
   await prisma.salesOrder.deleteMany();
   await prisma.stockMovement.deleteMany();
-
-  // --------------------------------------------------
-  // Sales orders
-  // --------------------------------------------------
-
-  const order2 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-002",
-      customerId: customer2.id,
-      responsibleId: salesManager.id,
-      status: "CONFIRMED",
-      orderDate: new Date("2026-09-10T10:00:00Z"),
-      requestedDate: new Date("2026-09-13T08:00:00Z"),
-      currency: "UAH",
-    },
-  });
-
-  const order3 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-003",
-      customerId: customer1.id,
-      responsibleId: salesManager.id,
-      status: "COMPLETED",
-      orderDate: new Date("2026-09-04T10:00:00Z"),
-      shippedAt: new Date("2026-09-06T12:00:00Z"),
-      currency: "UAH",
-    },
-  });
-
-
-  const order4 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-004",
-      customerId: customer1.id,
-      responsibleId: salesManager.id,
-      status: "COMPLETED",
-      orderDate: new Date("2026-06-15T10:00:00Z"),
-      currency: "UAH",
-    },
-  });
-
-  const order5 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-005",
-      customerId: customer2.id,
-      responsibleId: salesManager.id,
-      status: "COMPLETED",
-      orderDate: new Date("2026-07-12T10:00:00Z"),
-      currency: "UAH",
-    },
-  });
-
-  const order6 = await prisma.salesOrder.create({
-    data: {
-      orderNumber: "SO-2026-006",
-      customerId: customer1.id,
-      responsibleId: salesManager.id,
-      status: "COMPLETED",
-      orderDate: new Date("2026-08-20T10:00:00Z"),
-      currency: "UAH",
-    },
-  });
-
-  // --------------------------------------------------
-  // Finance
-  // --------------------------------------------------
-
-  await prisma.receivable.createMany({
-    data: [
-      {
-        customerId: customer2.id,
-        salesOrderId: order2.id,
-        amount: 271500,
-        paidAmount: 0,
-        currency: "UAH",
-        dueDate: new Date("2026-09-20"),
-        status: "OPEN",
-        reference: "INV-260902",
-      },
-      {
-        customerId: customer1.id,
-        salesOrderId: order3.id,
-        amount: 327800,
-        paidAmount: 180000,
-        currency: "UAH",
-        dueDate: new Date("2026-09-09"),
-        status: "OVERDUE",
-        reference: "INV-260870",
-      },
-    ],
-  });
 
   console.log("Germes demo data seeded successfully.");
 }
