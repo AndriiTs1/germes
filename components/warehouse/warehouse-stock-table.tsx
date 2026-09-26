@@ -28,6 +28,14 @@ function isNegative(value: string): boolean {
   return value.trim().startsWith("-");
 }
 
+function rowRequiresAttention(row: StockByWarehouseRow): boolean {
+  return (
+    isNegative(row.total.availableKg) ||
+    Object.values(row.byWarehouse).some((cell) => isNegative(cell.availableKg)) ||
+    row.inconsistentReservedKg !== "0"
+  );
+}
+
 function StockCellView({
   cell,
   locale,
@@ -61,6 +69,38 @@ function StockCellView({
   );
 }
 
+/** One labelled warehouse/total line inside a mobile product card. */
+function MobileStockLine({
+  label,
+  cell,
+  locale,
+  kgUnit,
+  detailTemplate,
+  strong,
+}: {
+  label: string;
+  cell: StockCell;
+  locale: Locale;
+  kgUnit: string;
+  detailTemplate: string;
+  strong?: boolean;
+}) {
+  return (
+    <div className="flex items-start justify-between gap-3">
+      <dt className={cn("text-[12px] text-slate-500", strong && "font-medium text-slate-700")}>{label}</dt>
+      <dd className="text-right">
+        <StockCellView
+          cell={cell}
+          locale={locale}
+          kgUnit={kgUnit}
+          detailTemplate={detailTemplate}
+          strong={strong}
+        />
+      </dd>
+    </div>
+  );
+}
+
 /**
  * Client-only expand/collapse for the warehouse "Залишки" table. Every row
  * is already loaded (and sorted) server-side — expanding only reveals
@@ -86,7 +126,8 @@ export function WarehouseStockTable({
 
   return (
     <>
-      <div className="overflow-x-auto">
+      {/* >=768px: table (fits the 720px min width without sidebar). <768px: cards below. */}
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[720px] border-collapse text-left">
           <thead>
             <tr className="border-b border-slate-200/70 bg-slate-50/70">
@@ -102,10 +143,7 @@ export function WarehouseStockTable({
 
           <tbody className="divide-y divide-slate-100">
             {visible.map((row) => {
-              const requiresAttention =
-                isNegative(row.total.availableKg) ||
-                Object.values(row.byWarehouse).some((cell) => isNegative(cell.availableKg)) ||
-                row.inconsistentReservedKg !== "0";
+              const requiresAttention = rowRequiresAttention(row);
 
               return (
                 <tr key={row.productId} className="transition-colors hover:bg-slate-50/60">
@@ -163,6 +201,62 @@ export function WarehouseStockTable({
           </tbody>
         </table>
       </div>
+
+      {/* <768px: one card per product — warehouses stacked instead of columns, no horizontal scroll. */}
+      <ul className="divide-y divide-slate-100 md:hidden">
+        {visible.map((row) => (
+          <li key={row.productId} className="px-4 py-3">
+            <div className="flex items-center gap-2">
+              <span className="min-w-0 truncate text-[13px] font-medium text-slate-900">{row.name}</span>
+              {rowRequiresAttention(row) ? (
+                <span title={labels.attention} className="shrink-0">
+                  <AlertTriangle className="h-3.5 w-3.5 text-amber-500" aria-hidden="true" />
+                </span>
+              ) : null}
+            </div>
+            <div className="mt-0.5 text-[11.5px] text-slate-400">{row.sku}</div>
+
+            <dl className="mt-2.5 space-y-2">
+              {warehouses.map((warehouse) => (
+                <MobileStockLine
+                  key={warehouse.id}
+                  label={warehouse.name}
+                  cell={row.byWarehouse[warehouse.id]}
+                  locale={locale}
+                  kgUnit={kgUnit}
+                  detailTemplate={labels.cellDetail}
+                />
+              ))}
+              <div className="border-t border-slate-100 pt-2">
+                <MobileStockLine
+                  label={labels.total}
+                  cell={row.total}
+                  locale={locale}
+                  kgUnit={kgUnit}
+                  detailTemplate={labels.cellDetail}
+                  strong
+                />
+                {row.unallocatedReservedKg !== "0" ? (
+                  <p className="mt-0.5 text-right text-[11px] text-amber-600">
+                    {labels.unallocatedReserved.replace(
+                      "{value}",
+                      `${formatKg(row.unallocatedReservedKg, locale)} ${kgUnit}`,
+                    )}
+                  </p>
+                ) : null}
+                {row.inactiveWarehouseOnHandKg !== "0" ? (
+                  <p className="mt-0.5 text-right text-[11px] text-amber-600">
+                    {labels.inactiveWarehouses.replace(
+                      "{value}",
+                      `${formatKg(row.inactiveWarehouseOnHandKg, locale)} ${kgUnit}`,
+                    )}
+                  </p>
+                ) : null}
+              </div>
+            </dl>
+          </li>
+        ))}
+      </ul>
 
       {canToggle ? (
         <div className="border-t border-slate-100 px-5 py-2.5">
