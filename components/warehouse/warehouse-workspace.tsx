@@ -2,14 +2,14 @@ import { CheckCircle2, ClipboardCheck, Loader, PackageCheck } from "lucide-react
 
 import { FulfillmentQueue } from "@/components/warehouse/fulfillment-queue";
 import { WarehouseBatchStock } from "@/components/warehouse/warehouse-batch-stock";
-import { WarehouseStockOverview } from "@/components/warehouse/warehouse-stock-overview";
+import { WarehouseStockByWarehouse } from "@/components/warehouse/warehouse-stock-by-warehouse";
 import {
   WarehouseKpiSummary,
   type WarehouseKpiCardProps,
 } from "@/components/warehouse/warehouse-kpi-row";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
-import { getStockAvailability } from "@/lib/services/sales/get-stock-availability";
+import { getStockByWarehouse } from "@/lib/services/warehouse/get-stock-by-warehouse";
 import { listBatchWarehouseStock } from "@/lib/services/warehouse/list-batch-warehouse-stock";
 import { listWarehouseOrders } from "@/lib/services/warehouse/list-warehouse-orders";
 
@@ -42,7 +42,7 @@ export async function WarehouseWorkspace({
 }: WarehouseWorkspaceProps) {
   const [orders, stock, batchStock] = await Promise.all([
     listWarehouseOrders(),
-    canReadStock ? getStockAvailability() : Promise.resolve(null),
+    canReadStock ? getStockByWarehouse() : Promise.resolve(null),
     canReadStock ? listBatchWarehouseStock() : Promise.resolve(null),
   ]);
 
@@ -72,7 +72,7 @@ export async function WarehouseWorkspace({
       <WarehouseKpiSummary items={kpis} />
 
       {stock ? (
-        <WarehouseStockOverview
+        <WarehouseStockByWarehouse
           stock={stock}
           locale={locale}
           dictionary={dictionary}

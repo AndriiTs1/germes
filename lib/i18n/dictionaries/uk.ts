@@ -600,6 +600,12 @@ export const uk: Dictionary = {
         empty: "Поки немає товарів",
         noBatchStock: "Немає залишків за партіями",
         attention: "Потрібна перевірка складських даних",
+        total: "Разом",
+        cellDetail: "фіз. {physical} · рез. {reserved}",
+        unallocatedReserved: "у т. ч. резерв без складу: {value}",
+        inactiveWarehouses: "у т. ч. на неактивних складах: {value}",
+        showAll: "Показати всі ({count})",
+        collapse: "Згорнути",
       },
     },
     queue: {

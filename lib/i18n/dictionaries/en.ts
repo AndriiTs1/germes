@@ -606,6 +606,12 @@ export const en = {
         empty: "No products yet",
         noBatchStock: "No batch stock available",
         attention: "Warehouse data requires attention",
+        total: "Total",
+        cellDetail: "on hand {physical} · res. {reserved}",
+        unallocatedReserved: "incl. reserved without warehouse: {value}",
+        inactiveWarehouses: "incl. on inactive warehouses: {value}",
+        showAll: "Show all ({count})",
+        collapse: "Collapse",
       },
     },
     queue: {

@@ -600,6 +600,12 @@ export const ru: Dictionary = {
         empty: "Пока нет товаров",
         noBatchStock: "Нет остатков по партиям",
         attention: "Требует проверки складских данных",
+        total: "Итого",
+        cellDetail: "физ. {physical} · рез. {reserved}",
+        unallocatedReserved: "в т. ч. резерв без склада: {value}",
+        inactiveWarehouses: "в т. ч. на неактивных складах: {value}",
+        showAll: "Показать все ({count})",
+        collapse: "Свернуть",
       },
     },
     queue: {
