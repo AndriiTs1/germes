@@ -31,6 +31,13 @@ export const ru: Dictionary = {
       sku: "Артикул",
       requested: "Желаемая дата",
       fulfillment: "Выполнение",
+      manager: "Менеджер",
+    },
+    managerFilter: {
+      label: "Менеджер",
+      clear: "Сбросить фильтр по менеджеру",
+      viewOrders: "Заказы менеджера",
+      viewCustomers: "Клиенты менеджера",
     },
   },
 

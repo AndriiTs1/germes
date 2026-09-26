@@ -37,6 +37,13 @@ export const en = {
       sku: "SKU",
       requested: "Requested",
       fulfillment: "Fulfillment",
+      manager: "Manager",
+    },
+    managerFilter: {
+      label: "Manager",
+      clear: "Clear manager filter",
+      viewOrders: "Manager's orders",
+      viewCustomers: "Manager's customers",
     },
   },
 

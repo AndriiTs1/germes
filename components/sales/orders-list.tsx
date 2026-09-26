@@ -13,6 +13,8 @@ type OrdersListProps = {
   emptyMessage: string;
   locale: Locale;
   dictionary: Dictionary;
+  /** Supervisory ("all" scope) views only: adds the responsible manager column/line. */
+  showResponsible?: boolean;
 };
 
 function StatusBadge({ status, statusLabels }: { status: string; statusLabels: Dictionary["status"]["order"] }) {
@@ -34,7 +36,13 @@ function StatusBadge({ status, statusLabels }: { status: string; statusLabels: D
  * verified /sales breakpoints): compact cards — a table only "prefers"
  * columns at desktop widths, per spec, not shrunk until unreadable.
  */
-export function OrdersList({ orders, emptyMessage, locale, dictionary }: OrdersListProps) {
+export function OrdersList({
+  orders,
+  emptyMessage,
+  locale,
+  dictionary,
+  showResponsible = false,
+}: OrdersListProps) {
   if (orders.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-12 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
@@ -61,6 +69,11 @@ export function OrdersList({ orders, emptyMessage, locale, dictionary }: OrdersL
               <th scope="col" className="px-4 py-3">
                 {t.status}
               </th>
+              {showResponsible ? (
+                <th scope="col" className="px-4 py-3">
+                  {t.manager}
+                </th>
+              ) : null}
               <th scope="col" className="px-4 py-3">
                 {t.date}
               </th>
@@ -89,6 +102,11 @@ export function OrdersList({ orders, emptyMessage, locale, dictionary }: OrdersL
                 <td className="px-4 py-3">
                   <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
                 </td>
+                {showResponsible ? (
+                  <td className="max-w-[180px] truncate px-4 py-3 text-slate-700">
+                    {order.responsible?.name ?? "—"}
+                  </td>
+                ) : null}
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">
                   {formatShortDate(order.orderDate, locale)}
                 </td>
@@ -118,6 +136,11 @@ export function OrdersList({ orders, emptyMessage, locale, dictionary }: OrdersL
                 <StatusBadge status={order.status} statusLabels={dictionary.status.order} />
               </div>
               <p className="mt-1 truncate text-[12.5px] text-slate-600">{order.customerName}</p>
+              {showResponsible ? (
+                <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
+                  {t.manager}: {order.responsible?.name ?? "—"}
+                </p>
+              ) : null}
               <div className="mt-2 flex items-center justify-between gap-2 text-[11.5px] text-slate-400">
                 <span className="truncate">
                   {formatShortDate(order.orderDate, locale)} ·{" "}

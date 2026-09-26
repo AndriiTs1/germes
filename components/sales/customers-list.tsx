@@ -17,6 +17,8 @@ type CustomersListProps = {
   emptyMessage: string;
   locale: Locale;
   dictionary: Dictionary;
+  /** Supervisory ("all" scope) views only: adds the responsible manager column/line. */
+  showResponsible?: boolean;
 };
 
 function StatusBadge({ status, statusLabels }: { status: string; statusLabels: Dictionary["status"]["customer"] }) {
@@ -83,7 +85,13 @@ function ReceivableLines({
  * the <tr> itself is never wrapped/clickable). <1024px: the whole card is
  * a single Link, matching OrdersList's mobile convention exactly.
  */
-export function CustomersList({ customers, emptyMessage, locale, dictionary }: CustomersListProps) {
+export function CustomersList({
+  customers,
+  emptyMessage,
+  locale,
+  dictionary,
+  showResponsible = false,
+}: CustomersListProps) {
   if (customers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 rounded-2xl border border-slate-200/70 bg-white px-4 py-12 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
@@ -107,6 +115,11 @@ export function CustomersList({ customers, emptyMessage, locale, dictionary }: C
               <th scope="col" className="px-4 py-3">
                 {t.status}
               </th>
+              {showResponsible ? (
+                <th scope="col" className="px-4 py-3">
+                  {t.manager}
+                </th>
+              ) : null}
               <th scope="col" className="px-4 py-3">
                 {dictionary.customers.table.lastPurchase}
               </th>
@@ -141,6 +154,11 @@ export function CustomersList({ customers, emptyMessage, locale, dictionary }: C
                 <td className="px-4 py-3">
                   <StatusBadge status={customer.status} statusLabels={dictionary.status.customer} />
                 </td>
+                {showResponsible ? (
+                  <td className="max-w-[180px] truncate px-4 py-3 text-slate-700">
+                    {customer.responsible?.name ?? "—"}
+                  </td>
+                ) : null}
                 <td className="px-4 py-3 whitespace-nowrap text-slate-500">
                   {customer.lastPurchaseAt ? formatShortDate(customer.lastPurchaseAt, locale) : "—"}
                 </td>
@@ -189,6 +207,11 @@ export function CustomersList({ customers, emptyMessage, locale, dictionary }: C
                   {customer.code}
                   {contact ? ` · ${contact}` : ""}
                 </p>
+                {showResponsible ? (
+                  <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
+                    {t.manager}: {customer.responsible?.name ?? "—"}
+                  </p>
+                ) : null}
                 {customer.activeOrdersCount > 0 ? (
                   <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
                     {pluralize(locale, customer.activeOrdersCount, dictionary.customers.activeOrders)}

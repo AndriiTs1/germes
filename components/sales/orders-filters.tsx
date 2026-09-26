@@ -9,11 +9,14 @@ export type OrdersStatusFilter = "all" | "active" | "completed" | "cancelled";
 type OrdersFiltersProps = {
   q: string;
   status: OrdersStatusFilter;
+  /** Supervisory ?manager= filter to carry through every link/search. Omitted = unchanged URLs. */
+  manager?: string;
   dictionary: Dictionary;
 };
 
-function buildFilterHref(status: OrdersStatusFilter, q: string): string {
+function buildFilterHref(status: OrdersStatusFilter, q: string, manager?: string): string {
   const params = new URLSearchParams();
+  if (manager) params.set("manager", manager);
   if (status !== "all") params.set("status", status);
   if (q) params.set("q", q);
   const qs = params.toString();
@@ -28,7 +31,7 @@ function buildFilterHref(status: OrdersStatusFilter, q: string): string {
  * parameter VALUES ("active"/"completed"/"cancelled") are never localized
  * — only the tab's rendered label is.
  */
-export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
+export function OrdersFilters({ q, status, manager, dictionary }: OrdersFiltersProps) {
   const statusTabs: { value: OrdersStatusFilter; label: string }[] = [
     { value: "all", label: dictionary.orders.filters.all },
     { value: "active", label: dictionary.orders.filters.active },
@@ -44,7 +47,7 @@ export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
           return (
             <Link
               key={tab.value}
-              href={buildFilterHref(tab.value, q)}
+              href={buildFilterHref(tab.value, q, manager)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors",
@@ -70,6 +73,7 @@ export function OrdersFilters({ q, status, dictionary }: OrdersFiltersProps) {
         right-docked width.
       */}
       <form method="GET" className="flex w-full items-center gap-2 min-[640px]:w-auto">
+        {manager ? <input type="hidden" name="manager" value={manager} /> : null}
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="orders-search" className="sr-only">
           {dictionary.orders.search.ariaLabel}

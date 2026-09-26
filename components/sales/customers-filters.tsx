@@ -9,11 +9,14 @@ export type CustomersStatusFilter = "all" | "ACTIVE" | "POTENTIAL" | "INACTIVE" 
 type CustomersFiltersProps = {
   q: string;
   status: CustomersStatusFilter;
+  /** Supervisory ?manager= filter to carry through every link/search. Omitted = unchanged URLs. */
+  manager?: string;
   dictionary: Dictionary;
 };
 
-function buildFilterHref(status: CustomersStatusFilter, q: string): string {
+function buildFilterHref(status: CustomersStatusFilter, q: string, manager?: string): string {
   const params = new URLSearchParams();
+  if (manager) params.set("manager", manager);
   if (status !== "all") params.set("status", status);
   if (q) params.set("q", q);
   const qs = params.toString();
@@ -27,7 +30,7 @@ function buildFilterHref(status: CustomersStatusFilter, q: string): string {
  * CustomerStatus value is already a standalone meaningful state). Query
  * parameter VALUES are never localized — only the tab's rendered label is.
  */
-export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProps) {
+export function CustomersFilters({ q, status, manager, dictionary }: CustomersFiltersProps) {
   const statusTabs: { value: CustomersStatusFilter; label: string }[] = [
     { value: "all", label: dictionary.customers.filters.all },
     { value: "ACTIVE", label: dictionary.customers.filters.active },
@@ -44,7 +47,7 @@ export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProp
           return (
             <Link
               key={tab.value}
-              href={buildFilterHref(tab.value, q)}
+              href={buildFilterHref(tab.value, q, manager)}
               aria-current={isActive ? "page" : undefined}
               className={cn(
                 "rounded-full px-3 py-1.5 text-[12.5px] font-medium transition-colors",
@@ -69,6 +72,7 @@ export function CustomersFilters({ q, status, dictionary }: CustomersFiltersProp
         right-docked width.
       */}
       <form method="GET" className="flex w-full items-center gap-2 min-[640px]:w-auto">
+        {manager ? <input type="hidden" name="manager" value={manager} /> : null}
         {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
         <label htmlFor="customers-search" className="sr-only">
           {dictionary.customers.search.ariaLabel}

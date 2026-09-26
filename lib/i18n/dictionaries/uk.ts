@@ -31,6 +31,13 @@ export const uk: Dictionary = {
       sku: "Артикул",
       requested: "Бажана дата",
       fulfillment: "Виконання",
+      manager: "Менеджер",
+    },
+    managerFilter: {
+      label: "Менеджер",
+      clear: "Скинути фільтр за менеджером",
+      viewOrders: "Замовлення менеджера",
+      viewCustomers: "Клієнти менеджера",
     },
   },
 
