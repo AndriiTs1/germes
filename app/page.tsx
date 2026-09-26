@@ -14,6 +14,7 @@ const COMMAND_CENTER_PERMISSION = "dashboard.command_center.read";
 const SALES_WORKSPACE_PERMISSION = "workspace.sales.access";
 const WAREHOUSE_WORKSPACE_PERMISSION = "workspace.warehouse.access";
 const FINANCE_WORKSPACE_PERMISSION = "finance.dashboard.read";
+const PROCUREMENT_WORKSPACE_PERMISSION = "procurement.overview.read";
 
 export default async function Home() {
   let user: Awaited<ReturnType<typeof requireUser>>;
@@ -44,6 +45,10 @@ export default async function Home() {
 
     if (permissionCodes.includes(FINANCE_WORKSPACE_PERMISSION)) {
       redirect("/finance");
+    }
+
+    if (permissionCodes.includes(PROCUREMENT_WORKSPACE_PERMISSION)) {
+      redirect("/procurement");
     }
 
     return (

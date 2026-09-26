@@ -2,9 +2,9 @@ import { SupplierStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export type ProcurementOverview = {
-  /** Supplier records not archived (isActive: true). */
+  /** All Supplier records, regardless of isActive or status. */
   supplierCount: number;
-  /** Of those, suppliers whose status is ACTIVE. */
+  /** Suppliers that are not archived (isActive: true) and whose status is ACTIVE. */
   activeSupplierCount: number;
 };
 
@@ -17,7 +17,7 @@ export type ProcurementOverview = {
  */
 export async function getProcurementOverview(): Promise<ProcurementOverview> {
   const [supplierCount, activeSupplierCount] = await Promise.all([
-    prisma.supplier.count({ where: { isActive: true } }),
+    prisma.supplier.count(),
     prisma.supplier.count({ where: { isActive: true, status: SupplierStatus.ACTIVE } }),
   ]);
 
