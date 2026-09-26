@@ -17,6 +17,8 @@ type DashboardShellProps = {
   showPeriodControl?: boolean;
   /** Optional compact-header search placeholder override for md..xl layouts. */
   compactSearchPlaceholder?: string;
+  /** Defaults to true — pass false only where the page content has its own search. */
+  showGlobalSearch?: boolean;
   children: ReactNode;
 };
 
@@ -36,6 +38,7 @@ export function DashboardShell({
   dictionary,
   showPeriodControl,
   compactSearchPlaceholder,
+  showGlobalSearch,
   children,
 }: DashboardShellProps) {
   const userDisplay = buildUserDisplay(user, dictionary.common.genericAccountLabel);
@@ -59,6 +62,7 @@ export function DashboardShell({
           navigationProfile={navigationProfile}
           showPeriodControl={showPeriodControl}
           compactSearchPlaceholder={compactSearchPlaceholder}
+          showGlobalSearch={showGlobalSearch}
         />
         <main className="min-w-0 flex-1 overflow-y-auto overflow-x-hidden">
           <div className="mx-auto w-full max-w-[1400px] px-4 pt-6 pb-6 sm:px-6 sm:pb-8 sm:max-[1439px]:pt-8 xl:px-8">

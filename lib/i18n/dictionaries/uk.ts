@@ -103,13 +103,50 @@ export const uk: Dictionary = {
       title: "Закупівлі",
       subtitle: "Огляд постачальників і закупівель",
       kpi: {
-        suppliers: "Постачальники",
+        suppliers: "Усього постачальників",
         activeSuppliers: "Активні постачальники",
       },
       notConnected: {
         title: "Облік закупівель у системі ще не ведеться",
         description: "Замовлення постачальникам, товари в дорозі та приймання партій з'являться тут, коли облік закупівель буде підключено.",
       },
+    },
+    suppliers: {
+      title: "Постачальники",
+      count: {
+        one: "{count} постачальник",
+        few: "{count} постачальники",
+        many: "{count} постачальників",
+        other: "{count} постачальника",
+      },
+      filters: {
+        all: "Усі",
+        ACTIVE: "Активні",
+        POTENTIAL: "Потенційні",
+        IN_PROGRESS: "На опрацюванні",
+        INACTIVE: "Неактивні",
+        BLOCKED: "Заблоковані",
+        statusAriaLabel: "Фільтр постачальників за статусом",
+        countryAll: "Усі країни",
+        countryNone: "Не вказано",
+        countryAriaLabel: "Фільтр постачальників за країною",
+      },
+      search: {
+        placeholder: "Пошук за назвою або кодом",
+        ariaLabel: "Пошук постачальників",
+      },
+      table: {
+        supplier: "Постачальник",
+        country: "Країна",
+        status: "Статус",
+        countryNone: "Не вказано",
+      },
+      empty: {
+        noSuppliers: "Постачальників ще немає",
+        noResults: "За цими фільтрами постачальників не знайдено",
+        clearFilters: "Скинути фільтри",
+      },
+      paginationAriaLabel: "Сторінки списку постачальників",
     },
   },
 
@@ -278,6 +315,13 @@ export const uk: Dictionary = {
     customer: {
       ACTIVE: "Активний",
       POTENTIAL: "Потенційний",
+      INACTIVE: "Неактивний",
+      BLOCKED: "Заблокований",
+    },
+    supplier: {
+      ACTIVE: "Активний",
+      POTENTIAL: "Потенційний",
+      IN_PROGRESS: "На опрацюванні",
       INACTIVE: "Неактивний",
       BLOCKED: "Заблокований",
     },

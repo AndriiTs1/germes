@@ -103,13 +103,50 @@ export const ru: Dictionary = {
       title: "Закупки",
       subtitle: "Обзор поставщиков и закупок",
       kpi: {
-        suppliers: "Поставщики",
+        suppliers: "Всего поставщиков",
         activeSuppliers: "Активные поставщики",
       },
       notConnected: {
         title: "Учёт закупок в системе пока не ведётся",
         description: "Заказы поставщикам, товары в пути и приёмка партий появятся здесь, когда учёт закупок будет подключён.",
       },
+    },
+    suppliers: {
+      title: "Поставщики",
+      count: {
+        one: "{count} поставщик",
+        few: "{count} поставщика",
+        many: "{count} поставщиков",
+        other: "{count} поставщика",
+      },
+      filters: {
+        all: "Все",
+        ACTIVE: "Активные",
+        POTENTIAL: "Потенциальные",
+        IN_PROGRESS: "В обработке",
+        INACTIVE: "Неактивные",
+        BLOCKED: "Заблокированные",
+        statusAriaLabel: "Фильтр поставщиков по статусу",
+        countryAll: "Все страны",
+        countryNone: "Не указана",
+        countryAriaLabel: "Фильтр поставщиков по стране",
+      },
+      search: {
+        placeholder: "Поиск по названию или коду",
+        ariaLabel: "Поиск поставщиков",
+      },
+      table: {
+        supplier: "Поставщик",
+        country: "Страна",
+        status: "Статус",
+        countryNone: "Не указана",
+      },
+      empty: {
+        noSuppliers: "Поставщиков пока нет",
+        noResults: "По этим фильтрам поставщики не найдены",
+        clearFilters: "Сбросить фильтры",
+      },
+      paginationAriaLabel: "Страницы списка поставщиков",
     },
   },
 
@@ -278,6 +315,13 @@ export const ru: Dictionary = {
     customer: {
       ACTIVE: "Активный",
       POTENTIAL: "Потенциальный",
+      INACTIVE: "Неактивный",
+      BLOCKED: "Заблокирован",
+    },
+    supplier: {
+      ACTIVE: "Активный",
+      POTENTIAL: "Потенциальный",
+      IN_PROGRESS: "В обработке",
       INACTIVE: "Неактивный",
       BLOCKED: "Заблокирован",
     },

@@ -109,13 +109,50 @@ export const en = {
       title: "Procurement",
       subtitle: "Suppliers and purchasing overview",
       kpi: {
-        suppliers: "Suppliers",
+        suppliers: "Total suppliers",
         activeSuppliers: "Active suppliers",
       },
       notConnected: {
         title: "Purchasing is not tracked in the system yet",
         description: "Purchase orders, goods in transit and batch receiving will appear here once purchasing is connected.",
       },
+    },
+    suppliers: {
+      title: "Suppliers",
+      count: {
+        one: "{count} supplier",
+        few: "{count} suppliers",
+        many: "{count} suppliers",
+        other: "{count} suppliers",
+      },
+      filters: {
+        all: "All",
+        ACTIVE: "Active",
+        POTENTIAL: "Potential",
+        IN_PROGRESS: "In progress",
+        INACTIVE: "Inactive",
+        BLOCKED: "Blocked",
+        statusAriaLabel: "Filter suppliers by status",
+        countryAll: "All countries",
+        countryNone: "Not specified",
+        countryAriaLabel: "Filter suppliers by country",
+      },
+      search: {
+        placeholder: "Search by name or code",
+        ariaLabel: "Search suppliers",
+      },
+      table: {
+        supplier: "Supplier",
+        country: "Country",
+        status: "Status",
+        countryNone: "Not specified",
+      },
+      empty: {
+        noSuppliers: "No suppliers yet",
+        noResults: "No suppliers match these filters",
+        clearFilters: "Clear filters",
+      },
+      paginationAriaLabel: "Supplier list pages",
     },
   },
 
@@ -284,6 +321,13 @@ export const en = {
     customer: {
       ACTIVE: "Active",
       POTENTIAL: "Potential",
+      INACTIVE: "Inactive",
+      BLOCKED: "Blocked",
+    },
+    supplier: {
+      ACTIVE: "Active",
+      POTENTIAL: "Potential",
+      IN_PROGRESS: "In progress",
       INACTIVE: "Inactive",
       BLOCKED: "Blocked",
     },

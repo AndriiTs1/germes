@@ -16,6 +16,11 @@ type DashboardHeaderProps = {
   showPeriodControl?: boolean;
   /** Optional placeholder override for the md..xl compact search field. */
   compactSearchPlaceholder?: string;
+  /**
+   * Defaults to true. A page whose own content already has the relevant
+   * search (e.g. a filtered list) can pass false to avoid two search fields.
+   */
+  showGlobalSearch?: boolean;
 };
 
 export function DashboardHeader({
@@ -26,6 +31,7 @@ export function DashboardHeader({
   navigationProfile,
   showPeriodControl = true,
   compactSearchPlaceholder,
+  showGlobalSearch = true,
 }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
@@ -46,48 +52,52 @@ export function DashboardHeader({
         </span>
       </div>
 
-      {/*
-        Tablet / compact desktop: same field, shorter placeholder — a native
-        <input> placeholder can't respond to a media query, so this is a
-        second element gated by the same named breakpoints (md/xl) already
-        driving the width change, rather than truncating text that doesn't
-        fit.
-      */}
-      <div className="relative hidden min-w-0 flex-1 md:block md:max-w-[220px] xl:hidden">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
-          strokeWidth={1.75}
-        />
-        <input
-          type="text"
-          placeholder={
-            compactSearchPlaceholder ?? dictionary.header.searchPlaceholderShort
-          }
-          // text-base md:text-[13px] (not a fixed text-[13px]): a real
-          // text-entry control, visible from md up on touch-capable
-          // devices (tablet/compact desktop) — iOS Safari auto-zooms the
-          // visual viewport when a focused input's computed font-size is
-          // below 16px.
-          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
-        />
-      </div>
+      {showGlobalSearch ? (
+        <>
+          {/*
+            Tablet / compact desktop: same field, shorter placeholder — a native
+            <input> placeholder can't respond to a media query, so this is a
+            second element gated by the same named breakpoints (md/xl) already
+            driving the width change, rather than truncating text that doesn't
+            fit.
+          */}
+          <div className="relative hidden min-w-0 flex-1 md:block md:max-w-[220px] xl:hidden">
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+              strokeWidth={1.75}
+            />
+            <input
+              type="text"
+              placeholder={
+                compactSearchPlaceholder ?? dictionary.header.searchPlaceholderShort
+              }
+              // text-base md:text-[13px] (not a fixed text-[13px]): a real
+              // text-entry control, visible from md up on touch-capable
+              // devices (tablet/compact desktop) — iOS Safari auto-zooms the
+              // visual viewport when a focused input's computed font-size is
+              // below 16px.
+              className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]"
+            />
+          </div>
 
-      {/* Large desktop: full search field with the original placeholder, unchanged (still md:text-[13px], no height change). */}
-      <div className="relative hidden min-w-0 flex-1 xl:block xl:max-w-[420px]">
-        <Search
-          className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
-          strokeWidth={1.75}
-        />
-        <input
-          type="text"
-          placeholder={dictionary.header.searchPlaceholderFull}
-          // text-base md:text-[13px] — same iOS Safari auto-zoom
-          // prevention as the compact variant above. xl: overrides below
-          // are desktop-only visual polish (softer neutral background,
-          // tighter focus ring) — height/size/placeholder untouched.
-          className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px] xl:border-slate-200/60 xl:bg-slate-50 xl:focus:ring-[3px]"
-        />
-      </div>
+          {/* Large desktop: full search field with the original placeholder, unchanged (still md:text-[13px], no height change). */}
+          <div className="relative hidden min-w-0 flex-1 xl:block xl:max-w-[420px]">
+            <Search
+              className="pointer-events-none absolute top-1/2 left-3.5 h-4 w-4 -translate-y-1/2 text-slate-400"
+              strokeWidth={1.75}
+            />
+            <input
+              type="text"
+              placeholder={dictionary.header.searchPlaceholderFull}
+              // text-base md:text-[13px] — same iOS Safari auto-zoom
+              // prevention as the compact variant above. xl: overrides below
+              // are desktop-only visual polish (softer neutral background,
+              // tighter focus ring) — height/size/placeholder untouched.
+              className="h-9 w-full rounded-full border border-slate-200/70 bg-slate-100/70 pr-3 pl-10 text-base text-slate-700 placeholder:text-slate-400 transition-colors focus:border-blue-300 focus:bg-white focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px] xl:border-slate-200/60 xl:bg-slate-50 xl:focus:ring-[3px]"
+            />
+          </div>
+        </>
+      ) : null}
 
 
       <div className="ml-auto flex shrink-0 items-center gap-1.5 sm:gap-2 xl:gap-2.5">
