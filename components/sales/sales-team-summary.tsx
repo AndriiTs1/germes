@@ -154,7 +154,6 @@ export function SalesTeamSummary({
                   <span className="block truncate text-[13.5px] font-semibold text-slate-900">
                     {manager.name ?? manager.email}
                   </span>
-                  <span className="block truncate text-[11px] text-slate-400">{manager.email}</span>
                 </span>
               </div>
               <MetricList metrics={metrics} labels={labels} locale={locale} className="mt-3" />
