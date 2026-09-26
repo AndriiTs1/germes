@@ -606,6 +606,10 @@ export const ru: Dictionary = {
         inactiveWarehouses: "в т. ч. на неактивных складах: {value}",
         showAll: "Показать все ({count})",
         collapse: "Свернуть",
+        warehouseFilter: {
+          label: "Склад",
+          all: "Все склады",
+        },
       },
     },
     queue: {

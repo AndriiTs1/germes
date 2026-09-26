@@ -606,6 +606,10 @@ export const uk: Dictionary = {
         inactiveWarehouses: "у т. ч. на неактивних складах: {value}",
         showAll: "Показати всі ({count})",
         collapse: "Згорнути",
+        warehouseFilter: {
+          label: "Склад",
+          all: "Усі склади",
+        },
       },
     },
     queue: {

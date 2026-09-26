@@ -59,6 +59,8 @@ export function WarehouseStockByWarehouse({
               kgUnit: dictionary.common.kgUnit,
               showAll: labels.showAll,
               collapse: labels.collapse,
+              warehouseFilterLabel: labels.warehouseFilter.label,
+              allWarehouses: labels.warehouseFilter.all,
             }}
           />
         )}

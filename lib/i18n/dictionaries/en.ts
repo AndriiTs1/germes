@@ -612,6 +612,10 @@ export const en = {
         inactiveWarehouses: "incl. on inactive warehouses: {value}",
         showAll: "Show all ({count})",
         collapse: "Collapse",
+        warehouseFilter: {
+          label: "Warehouse",
+          all: "All warehouses",
+        },
       },
     },
     queue: {
