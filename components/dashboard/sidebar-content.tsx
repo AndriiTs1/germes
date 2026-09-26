@@ -46,7 +46,7 @@ export function SidebarContent({
 
   return (
     <>
-      <div className="px-5 pt-6 pb-5 xl:pt-7 xl:pb-6">
+      <div className="px-5 pt-6 pb-5 xl:pt-4 xl:pb-6">
         <div className="flex items-center gap-2.5 xl:gap-3">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-[13px] font-semibold text-white">
             G
@@ -55,9 +55,6 @@ export function SidebarContent({
             Germes
           </span>
         </div>
-        <p className="mt-1 pl-[42px] text-[11px] tracking-wide text-slate-400">
-          Trade. People. Growth.
-        </p>
       </div>
 
       <nav className="flex-1 overflow-y-auto px-3 pb-4">
