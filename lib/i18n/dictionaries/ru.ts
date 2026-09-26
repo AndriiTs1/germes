@@ -50,6 +50,7 @@ export const ru: Dictionary = {
     },
     commandCenter: "Командный центр",
     sales: "Продажи",
+    procurement: "Закупки",
     warehouse: "Склад",
     finance: "Финансы",
     administration: "Администрирование",
@@ -94,6 +95,21 @@ export const ru: Dictionary = {
         unlinked: "Не подключён",
       },
       empty: "Пользователи не найдены",
+    },
+  },
+
+  procurement: {
+    workspace: {
+      title: "Закупки",
+      subtitle: "Обзор поставщиков и закупок",
+      kpi: {
+        suppliers: "Поставщики",
+        activeSuppliers: "Активные поставщики",
+      },
+      notConnected: {
+        title: "Учёт закупок в системе пока не ведётся",
+        description: "Заказы поставщикам, товары в пути и приёмка партий появятся здесь, когда учёт закупок будет подключён.",
+      },
     },
   },
 

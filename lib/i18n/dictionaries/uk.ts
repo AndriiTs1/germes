@@ -50,6 +50,7 @@ export const uk: Dictionary = {
     },
     commandCenter: "Командний центр",
     sales: "Продажі",
+    procurement: "Закупівлі",
     warehouse: "Склад",
     finance: "Фінанси",
     administration: "Адміністрування",
@@ -94,6 +95,21 @@ export const uk: Dictionary = {
         unlinked: "Не підключено",
       },
       empty: "Користувачів не знайдено",
+    },
+  },
+
+  procurement: {
+    workspace: {
+      title: "Закупівлі",
+      subtitle: "Огляд постачальників і закупівель",
+      kpi: {
+        suppliers: "Постачальники",
+        activeSuppliers: "Активні постачальники",
+      },
+      notConnected: {
+        title: "Облік закупівель у системі ще не ведеться",
+        description: "Замовлення постачальникам, товари в дорозі та приймання партій з'являться тут, коли облік закупівель буде підключено.",
+      },
     },
   },
 

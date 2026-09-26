@@ -56,6 +56,7 @@ export const en = {
     },
     commandCenter: "Command Center",
     sales: "Sales",
+    procurement: "Procurement",
     warehouse: "Warehouse",
     finance: "Finance",
     administration: "Administration",
@@ -100,6 +101,21 @@ export const en = {
         unlinked: "Not connected",
       },
       empty: "No users found",
+    },
+  },
+
+  procurement: {
+    workspace: {
+      title: "Procurement",
+      subtitle: "Suppliers and purchasing overview",
+      kpi: {
+        suppliers: "Suppliers",
+        activeSuppliers: "Active suppliers",
+      },
+      notConnected: {
+        title: "Purchasing is not tracked in the system yet",
+        description: "Purchase orders, goods in transit and batch receiving will appear here once purchasing is connected.",
+      },
     },
   },
 

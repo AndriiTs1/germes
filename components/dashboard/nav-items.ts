@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Settings,
   ShoppingCart,
+  Truck,
   Users,
   Warehouse,
   type LucideIcon,
@@ -17,6 +18,7 @@ import type { NavigationProfile } from "@/components/dashboard/navigation-profil
 export type NavItemKey =
   | "commandCenter"
   | "sales"
+  | "procurement"
   | "warehouse"
   | "finance"
   | "administration"
@@ -58,7 +60,7 @@ export type NavSection = {
  * changes which items exist or who sees them.
  *
  * Only routes that exist today are listed here. Reservations/Receivables/
- * Stock/Procurement/Inventory/Finance/Suppliers/Team/Documents are
+ * Stock/Inventory/Finance/Suppliers/Team/Documents are
  * intentionally omitted rather than linked with a placeholder href — those
  * pages don't exist yet. Adding one later is a one-line addition: a real
  * href plus its exact Permission.code plus a new nav dictionary key.
@@ -83,6 +85,12 @@ export const navSections: NavSection[] = [
         href: "/sales",
         requiredPermission: "workspace.sales.access",
         icon: ShoppingCart,
+      },
+      {
+        labelKey: "procurement",
+        href: "/procurement",
+        requiredPermission: "procurement.overview.read",
+        icon: Truck,
       },
       {
         labelKey: "warehouse",
