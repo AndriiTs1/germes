@@ -2,7 +2,7 @@ import { Prisma, type SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
-import type { SalesReadScope } from "@/lib/services/sales/read-scope";
+import { resolveResponsibleFilter, type SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type SalesOrderListItem = {
   id: string;
@@ -17,6 +17,8 @@ export type SalesOrderListItem = {
   totalValue: string;
   totalQuantityKg: string;
   itemCount: number;
+  /** Responsible sales manager; null when unassigned. */
+  responsible: { id: string; name: string | null } | null;
 };
 
 export type ListSalesOrdersOptions = {
@@ -25,6 +27,11 @@ export type ListSalesOrdersOptions = {
    * salesperson isolation unless it explicitly opts into supervisory reads.
    */
   scope?: SalesReadScope;
+  /**
+   * Narrow an "all"-scope read to one manager's orders. Ignored for "own"
+   * (see resolveResponsibleFilter) — never a way to widen visibility.
+   */
+  managerId?: string;
   /** Page size. Defaults to 20. */
   limit?: number;
   /** SalesOrder.id to resume after — simple cursor pagination. Ignored when `page` is set. */
@@ -72,6 +79,7 @@ export async function listSalesOrders(
 ): Promise<ListSalesOrdersResult> {
   const {
     scope = "own",
+    managerId,
     limit = 20,
     cursor,
     page,
@@ -85,7 +93,7 @@ export async function listSalesOrders(
   const currentPage = usePageMode && page! > 0 ? Math.floor(page!) : 1;
 
   const where: Prisma.SalesOrderWhereInput = {
-    responsibleId: scope === "all" ? undefined : currentUserId,
+    responsibleId: resolveResponsibleFilter(scope, currentUserId, managerId),
     status: status ?? (onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
     OR: trimmedSearch
       ? [
@@ -114,6 +122,7 @@ export async function listSalesOrders(
         shippedAt: true,
         currency: true,
         customer: { select: { id: true, name: true } },
+        responsible: { select: { id: true, name: true } },
         items: { select: { quantityKg: true, pricePerKg: true } },
       },
       orderBy: { orderDate: "desc" },
@@ -149,6 +158,7 @@ export async function listSalesOrders(
       totalValue: decimalToString(totalValue),
       totalQuantityKg: decimalToString(totalQuantityKg),
       itemCount: order.items.length,
+      responsible: order.responsible,
     };
   });
 

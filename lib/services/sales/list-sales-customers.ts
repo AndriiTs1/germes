@@ -2,7 +2,7 @@ import { Prisma, type CustomerStatus, FinanceStatus } from "@/lib/generated/pris
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
-import type { SalesReadScope } from "@/lib/services/sales/read-scope";
+import { resolveResponsibleFilter, type SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type CustomerReceivableSummary = {
   currency: string;
@@ -27,6 +27,8 @@ export type SalesCustomerListItem = {
   activeOrdersCount: number;
   /** Grouped by currency, never summed across currencies. Empty array = no outstanding receivables. */
   receivables: CustomerReceivableSummary[];
+  /** Responsible sales manager; null when unassigned. */
+  responsible: { id: string; name: string | null } | null;
 };
 
 export type ListSalesCustomersOptions = {
@@ -35,6 +37,11 @@ export type ListSalesCustomersOptions = {
    * salesperson isolation unless it explicitly opts into supervisory reads.
    */
   scope?: SalesReadScope;
+  /**
+   * Narrow an "all"-scope read to one manager's customers. Ignored for
+   * "own" (see resolveResponsibleFilter) — never a way to widen visibility.
+   */
+  managerId?: string;
   /** Matches name, code, phone, or email — case-insensitive where meaningful, via Prisma. */
   search?: string;
   /** Exact CustomerStatus filter. Omitted/undefined = all statuses. */
@@ -83,13 +90,13 @@ export async function listSalesCustomers(
   currentUserId: string,
   options: ListSalesCustomersOptions = {},
 ): Promise<ListSalesCustomersResult> {
-  const { scope = "own", search, status, page: rawPage, limit = 20 } = options;
+  const { scope = "own", managerId, search, status, page: rawPage, limit = 20 } = options;
 
   const trimmedSearch = search?.trim();
   const page = rawPage && rawPage > 0 ? Math.floor(rawPage) : 1;
 
   const where: Prisma.CustomerWhereInput = {
-    responsibleId: scope === "all" ? undefined : currentUserId,
+    responsibleId: resolveResponsibleFilter(scope, currentUserId, managerId),
     isActive: true,
     status: status ?? undefined,
     OR: trimmedSearch
@@ -118,6 +125,7 @@ export async function listSalesCustomers(
         nextActionAt: true,
         creditLimit: true,
         paymentTermDays: true,
+        responsible: { select: { id: true, name: true } },
         _count: {
           select: {
             salesOrders: { where: { status: { notIn: TERMINAL_SALES_ORDER_STATUSES } } },
@@ -207,6 +215,7 @@ export async function listSalesCustomers(
       paymentTermDays: customer.paymentTermDays,
       activeOrdersCount: customer._count.salesOrders,
       receivables: receivableSummaries,
+      responsible: customer.responsible,
     };
   });
 
