@@ -21,10 +21,10 @@ import type {
 } from "@/lib/services/procurement/get-new-purchase-order-form-options";
 import {
   createPurchaseOrderSchema,
+  PURCHASE_ORDER_CURRENCIES,
   type CreatePurchaseOrderFormValues,
   type PurchaseOrderItemFormValues,
 } from "@/lib/validation/purchase-order";
-import { cn } from "@/lib/utils";
 
 type NewPurchaseOrderFormProps = {
   suppliers: NewPurchaseOrderFormSupplier[];
@@ -50,10 +50,6 @@ const cardClassName =
 const sectionTitleClassName = "text-[13.5px] font-semibold tracking-tight text-slate-900";
 
 const labelClassName = "text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase";
-
-/** text-base md:text-[13px]: iOS Safari auto-zoom prevention for a real text-entry control. */
-const textFieldClassName =
-  "mt-1 h-9 w-full rounded-lg border border-slate-200/70 bg-white px-2.5 text-base text-slate-700 transition-colors placeholder:text-slate-400 placeholder:normal-case focus:border-blue-300 focus:ring-4 focus:ring-blue-500/10 focus:outline-none md:text-[13px]";
 
 const errorClassName = "mt-1 text-[11.5px] text-rose-600";
 
@@ -96,6 +92,12 @@ export function NewPurchaseOrderForm({
   const supplierOptions = suppliers.map((supplier) => ({
     value: supplier.id,
     label: `${supplier.name} (${supplier.code})`,
+  }));
+
+  // Only the allowed codes; the stored form value is the code, never the label.
+  const currencyOptions = PURCHASE_ORDER_CURRENCIES.map((code) => ({
+    value: code,
+    label: dictionary.currencyOptions[code],
   }));
 
   const warehouseOptions = [
@@ -197,17 +199,23 @@ export function NewPurchaseOrderForm({
               <label htmlFor="currency" className={labelClassName}>
                 {dictionary.currency}
               </label>
-              <input
-                id="currency"
-                type="text"
-                maxLength={3}
-                autoCapitalize="characters"
-                autoComplete="off"
-                spellCheck={false}
-                placeholder={dictionary.currencyPlaceholder}
-                aria-invalid={!!errors.currency}
-                className={cn(textFieldClassName, "uppercase", errors.currency && "border-rose-300")}
-                {...register("currency")}
+              <Controller
+                control={control}
+                name="currency"
+                render={({ field }) => (
+                  <div className="mt-1">
+                    <Select
+                      id="currency"
+                      value={field.value}
+                      onValueChange={field.onChange}
+                      onBlur={field.onBlur}
+                      options={currencyOptions}
+                      placeholder={dictionary.selectCurrency}
+                      emptyMessage={dictionary.noOptions}
+                      error={!!errors.currency}
+                    />
+                  </div>
+                )}
               />
               {errors.currency ? (
                 <p className={errorClassName}>{resolveFieldError(dictionary.errors, errors.currency.message)}</p>

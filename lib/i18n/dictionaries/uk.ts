@@ -230,7 +230,11 @@ export const uk: Dictionary = {
       destinationWarehouse: "Склад призначення",
       noWarehouse: "Склад не обрано",
       currency: "Валюта",
-      currencyPlaceholder: "напр. UAH",
+      selectCurrency: "Оберіть валюту",
+      currencyOptions: {
+        UAH: "Українська гривня (UAH)",
+        EUR: "Євро (EUR)",
+      },
       expectedArrival: "Очікуване прибуття",
       selectDate: "Оберіть дату",
       notesPlaceholder: "Необов'язково",
@@ -251,7 +255,7 @@ export const uk: Dictionary = {
       errors: {
         selectSupplier: "Оберіть постачальника",
         invalidWarehouse: "Оберіть коректний склад",
-        invalidCurrency: "Вкажіть код валюти з 3 літер, напр. UAH",
+        invalidCurrency: "Оберіть валюту: UAH або EUR",
         invalidDate: "Вкажіть коректну дату",
         notesTooLong: "Примітки мають бути не довшими за 2000 символів",
         itemsRequired: "Додайте хоча б одну позицію",

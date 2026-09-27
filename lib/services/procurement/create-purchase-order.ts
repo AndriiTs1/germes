@@ -1,7 +1,7 @@
 import { Prisma, PurchaseOrderStatus, SupplierStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { generatePurchaseOrderNumber } from "@/lib/services/procurement/generate-purchase-order-number";
-import type { CreatePurchaseOrderInput } from "@/lib/validation/purchase-order";
+import { isPurchaseOrderCurrency, type CreatePurchaseOrderInput } from "@/lib/validation/purchase-order";
 
 /**
  * A DRAFT may be raised with an established supplier or one still being
@@ -142,6 +142,12 @@ export async function createPurchaseOrder(
   currentUserId: string,
   input: CreatePurchaseOrderInput,
 ): Promise<CreatePurchaseOrderResult> {
+  // Zod already restricts this to PURCHASE_ORDER_CURRENCIES; the write
+  // boundary re-checks it rather than trusting that a caller validated.
+  if (!isPurchaseOrderCurrency(input.currency)) {
+    return { ok: false, error: "CREATE_FAILED" };
+  }
+
   const destinationWarehouseId = input.destinationWarehouseId ?? null;
   const expectedArrivalDate = parseExpectedArrivalDate(input.expectedArrivalDate);
   const notes = input.notes && input.notes.length > 0 ? input.notes : null;

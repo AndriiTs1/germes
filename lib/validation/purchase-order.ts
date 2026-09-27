@@ -31,11 +31,17 @@ const QUANTITY_KG_PATTERN = /^\d{1,11}(\.\d{1,3})?$/;
 const PRICE_PER_KG_PATTERN = /^\d{1,10}(\.\d{1,4})?$/;
 
 /**
- * Structural ISO-4217-style check only (three letters, after uppercasing).
- * Deliberately no whitelist: currency is stored as a plain String because
- * procurement may be international.
+ * The only currencies a purchase order may use today (business rule).
+ * Exact ISO codes — no trimming or case folding, so "uah"/" EUR" are
+ * rejected, not normalized. The DB column stays a plain String; this list
+ * is the single source for the form options and for server validation.
  */
-const CURRENCY_CODE_PATTERN = /^[A-Z]{3}$/;
+export const PURCHASE_ORDER_CURRENCIES = ["UAH", "EUR"] as const;
+export type PurchaseOrderCurrency = (typeof PURCHASE_ORDER_CURRENCIES)[number];
+
+export function isPurchaseOrderCurrency(value: string): value is PurchaseOrderCurrency {
+  return (PURCHASE_ORDER_CURRENCIES as readonly string[]).includes(value);
+}
 
 const NOTES_MAX_LENGTH = 2000;
 
@@ -114,11 +120,9 @@ export const createPurchaseOrderSchema = z
       .refine((value) => value === undefined || uuidSchema.safeParse(value).success, {
         message: "invalidWarehouse" satisfies PurchaseOrderFormErrorCode,
       }),
-    currency: z
-      .string()
-      .trim()
-      .toUpperCase()
-      .regex(CURRENCY_CODE_PATTERN, "invalidCurrency" satisfies PurchaseOrderFormErrorCode),
+    // Form state starts as "" (nothing selected), so the input type stays
+    // string; the output is exactly one of PURCHASE_ORDER_CURRENCIES.
+    currency: z.string().pipe(z.enum(PURCHASE_ORDER_CURRENCIES, "invalidCurrency" satisfies PurchaseOrderFormErrorCode)),
     expectedArrivalDate: z
       .string()
       .optional()

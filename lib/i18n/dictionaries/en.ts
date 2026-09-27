@@ -236,7 +236,11 @@ export const en = {
       destinationWarehouse: "Destination warehouse",
       noWarehouse: "No warehouse selected",
       currency: "Currency",
-      currencyPlaceholder: "e.g. UAH",
+      selectCurrency: "Select a currency",
+      currencyOptions: {
+        UAH: "Ukrainian hryvnia (UAH)",
+        EUR: "Euro (EUR)",
+      },
       expectedArrival: "Expected arrival",
       selectDate: "Select a date",
       notesPlaceholder: "Optional",
@@ -257,7 +261,7 @@ export const en = {
       errors: {
         selectSupplier: "Select a supplier",
         invalidWarehouse: "Select a valid warehouse",
-        invalidCurrency: "Enter a 3-letter currency code, e.g. UAH",
+        invalidCurrency: "Select a currency: UAH or EUR",
         invalidDate: "Enter a valid date",
         notesTooLong: "Notes must be 2000 characters or fewer",
         itemsRequired: "Add at least one item",
