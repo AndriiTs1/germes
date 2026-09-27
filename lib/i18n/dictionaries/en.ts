@@ -52,6 +52,7 @@ export const en = {
       overview: "Overview",
       workspace: "Workspace",
       sell: "Sell",
+      buy: "Procurement",
       account: "Account",
     },
     commandCenter: "Command Center",
@@ -63,6 +64,8 @@ export const en = {
     support: "Support",
     orders: "Orders",
     customers: "Customers",
+    purchaseOrders: "Purchase orders",
+    suppliers: "Suppliers",
     settings: "Settings",
   },
 
@@ -107,7 +110,7 @@ export const en = {
   procurement: {
     workspace: {
       title: "Procurement",
-      subtitle: "Suppliers and purchasing overview",
+      subtitle: "Procurement workspace",
       createOrder: "Create purchase order",
       kpi: {
         suppliers: "Total suppliers",

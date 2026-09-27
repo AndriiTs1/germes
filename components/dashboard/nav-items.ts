@@ -1,4 +1,5 @@
 import {
+  Building2,
   ClipboardList,
   Landmark,
   LifeBuoy,
@@ -25,10 +26,12 @@ export type NavItemKey =
   | "support"
   | "orders"
   | "customers"
+  | "purchaseOrders"
+  | "suppliers"
   | "settings";
 
 /** Keys into dictionary.nav.sections — the group heading, resolved per current locale. */
-export type NavSectionKey = "overview" | "workspace" | "sell" | "account";
+export type NavSectionKey = "overview" | "workspace" | "sell" | "buy" | "account";
 
 export type NavItem = {
   labelKey: NavItemKey;
@@ -40,6 +43,12 @@ export type NavItem = {
    * concerns. Every other item keeps requiring its exact Permission.code.
    */
   requiredPermission?: string;
+  /**
+   * For a route gated on more than one permission: EVERY code listed here
+   * must be present (in addition to requiredPermission, if also set), so
+   * the item is only shown when the page would actually let the user in.
+   */
+  requiredPermissions?: string[];
   icon: LucideIcon;
   /** Computed by filterNavSections from the current activePath — never set here. */
   active?: boolean;
@@ -60,7 +69,7 @@ export type NavSection = {
  * changes which items exist or who sees them.
  *
  * Only routes that exist today are listed here. Reservations/Receivables/
- * Stock/Inventory/Finance/Suppliers/Team/Documents are
+ * Stock/Inventory/Team/Documents are
  * intentionally omitted rather than linked with a placeholder href — those
  * pages don't exist yet. Adding one later is a one-line addition: a real
  * href plus its exact Permission.code plus a new nav dictionary key.
@@ -136,6 +145,26 @@ export const navSections: NavSection[] = [
     ],
   },
   {
+    // Same pattern as "sell": the workspace "procurement" item (/procurement)
+    // is the Procurement overview entry; this section holds its sub-pages.
+    labelKey: "buy",
+    items: [
+      {
+        labelKey: "purchaseOrders",
+        href: "/procurement/orders",
+        requiredPermission: "procurement.orders.read",
+        icon: ClipboardList,
+      },
+      {
+        labelKey: "suppliers",
+        href: "/procurement/suppliers",
+        // Mirrors the page gate: /procurement/suppliers requires both.
+        requiredPermissions: ["procurement.overview.read", "suppliers.read"],
+        icon: Building2,
+      },
+    ],
+  },
+  {
     labelKey: "account",
     items: [
       {
@@ -206,7 +235,10 @@ export function filterNavSections(
   const permitted = profileFiltered.map((section) => ({
     ...section,
     items: section.items.filter(
-      (item) => !item.requiredPermission || permissionCodes.includes(item.requiredPermission),
+      (item) =>
+        (!item.requiredPermission || permissionCodes.includes(item.requiredPermission)) &&
+        (!item.requiredPermissions ||
+          item.requiredPermissions.every((code) => permissionCodes.includes(code))),
     ),
   }));
 

@@ -46,6 +46,7 @@ export const uk: Dictionary = {
       overview: "Огляд",
       workspace: "Робочий простір",
       sell: "Продажі",
+      buy: "Закупівлі",
       account: "Обліковий запис",
     },
     commandCenter: "Командний центр",
@@ -57,6 +58,8 @@ export const uk: Dictionary = {
     support: "Підтримка",
     orders: "Замовлення",
     customers: "Клієнти",
+    purchaseOrders: "Замовлення",
+    suppliers: "Постачальники",
     settings: "Налаштування",
   },
 
@@ -101,7 +104,7 @@ export const uk: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупівлі",
-      subtitle: "Огляд постачальників і закупівель",
+      subtitle: "Робочий простір закупівель",
       createOrder: "Створити замовлення",
       kpi: {
         suppliers: "Усього постачальників",

@@ -46,6 +46,7 @@ export const ru: Dictionary = {
       overview: "Обзор",
       workspace: "Рабочее пространство",
       sell: "Продажи",
+      buy: "Закупки",
       account: "Аккаунт",
     },
     commandCenter: "Командный центр",
@@ -57,6 +58,8 @@ export const ru: Dictionary = {
     support: "Поддержка",
     orders: "Заказы",
     customers: "Клиенты",
+    purchaseOrders: "Заказы",
+    suppliers: "Поставщики",
     settings: "Настройки",
   },
 
@@ -101,7 +104,7 @@ export const ru: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупки",
-      subtitle: "Обзор поставщиков и закупок",
+      subtitle: "Рабочее пространство закупок",
       createOrder: "Создать заказ",
       kpi: {
         suppliers: "Всего поставщиков",
