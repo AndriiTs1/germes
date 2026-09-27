@@ -202,6 +202,45 @@ export const uk: Dictionary = {
         address: "Адреса",
         responsible: "Відповідальний менеджер",
       },
+      tabs: {
+        ariaLabel: "Розділи постачальника",
+        overview: "Огляд",
+        agreements: "Договори",
+      },
+      agreements: {
+        columns: {
+          agreement: "Договір",
+          period: "Період",
+          currency: "Валюта",
+          terms: "Умови",
+          status: "Статус",
+        },
+        periodRange: "{from} — {to}",
+        periodOpenEnded: "з {from} · безстроково",
+        emptyTitle: "Договорів поки немає",
+        emptyDescription: "Закупівлі в цього постачальника можуть оформлюватися як разові замовлення без договору.",
+        payment: {
+          prepayment: "{percent}% передоплата",
+          balance: "{percent}% через {days} {basis}",
+          balanceSameDay: "{percent}% {basis}",
+          days: {
+            one: "{count} дн.",
+            few: "{count} дн.",
+            many: "{count} дн.",
+            other: "{count} дн.",
+          },
+          basisAfter: {
+            ORDER_DATE: "від дати замовлення",
+            INVOICE_DATE: "від дати інвойсу",
+            RECEIPT_DATE: "після приймання",
+          },
+          basisOn: {
+            ORDER_DATE: "у день замовлення",
+            INVOICE_DATE: "у день інвойсу",
+            RECEIPT_DATE: "під час приймання",
+          },
+        },
+      },
     },
     orderDetail: {
       title: "Замовлення постачальнику",
@@ -533,6 +572,13 @@ export const uk: Dictionary = {
       IN_PROGRESS: "На опрацюванні",
       INACTIVE: "Неактивний",
       BLOCKED: "Заблокований",
+    },
+    supplierAgreement: {
+      DRAFT: "Чернетка",
+      UPCOMING: "Ще не діє",
+      ACTIVE: "Діє",
+      EXPIRED: "Закінчився",
+      CLOSED: "Закрито",
     },
     purchaseOrder: {
       DRAFT: "Чернетка",

@@ -202,6 +202,45 @@ export const ru: Dictionary = {
         address: "Адрес",
         responsible: "Ответственный менеджер",
       },
+      tabs: {
+        ariaLabel: "Разделы поставщика",
+        overview: "Обзор",
+        agreements: "Договоры",
+      },
+      agreements: {
+        columns: {
+          agreement: "Договор",
+          period: "Период",
+          currency: "Валюта",
+          terms: "Условия",
+          status: "Статус",
+        },
+        periodRange: "{from} — {to}",
+        periodOpenEnded: "с {from} · бессрочно",
+        emptyTitle: "Договоров пока нет",
+        emptyDescription: "Закупки у этого поставщика могут оформляться как разовые заказы без договора.",
+        payment: {
+          prepayment: "{percent}% предоплата",
+          balance: "{percent}% через {days} {basis}",
+          balanceSameDay: "{percent}% {basis}",
+          days: {
+            one: "{count} дн.",
+            few: "{count} дн.",
+            many: "{count} дн.",
+            other: "{count} дн.",
+          },
+          basisAfter: {
+            ORDER_DATE: "от даты заказа",
+            INVOICE_DATE: "от даты инвойса",
+            RECEIPT_DATE: "после приёмки",
+          },
+          basisOn: {
+            ORDER_DATE: "в день заказа",
+            INVOICE_DATE: "в день инвойса",
+            RECEIPT_DATE: "при приёмке",
+          },
+        },
+      },
     },
     orderDetail: {
       title: "Заказ поставщику",
@@ -533,6 +572,13 @@ export const ru: Dictionary = {
       IN_PROGRESS: "В обработке",
       INACTIVE: "Неактивный",
       BLOCKED: "Заблокирован",
+    },
+    supplierAgreement: {
+      DRAFT: "Черновик",
+      UPCOMING: "Ещё не действует",
+      ACTIVE: "Действует",
+      EXPIRED: "Истёк",
+      CLOSED: "Закрыт",
     },
     purchaseOrder: {
       DRAFT: "Черновик",

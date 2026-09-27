@@ -208,6 +208,45 @@ export const en = {
         address: "Address",
         responsible: "Responsible manager",
       },
+      tabs: {
+        ariaLabel: "Supplier sections",
+        overview: "Overview",
+        agreements: "Agreements",
+      },
+      agreements: {
+        columns: {
+          agreement: "Agreement",
+          period: "Period",
+          currency: "Currency",
+          terms: "Terms",
+          status: "Status",
+        },
+        periodRange: "{from} — {to}",
+        periodOpenEnded: "from {from} · open-ended",
+        emptyTitle: "No agreements yet",
+        emptyDescription: "Purchases from this supplier can be placed as one-off orders without an agreement.",
+        payment: {
+          prepayment: "{percent}% prepayment",
+          balance: "{percent}% due {days} {basis}",
+          balanceSameDay: "{percent}% {basis}",
+          days: {
+            one: "{count} day",
+            few: "{count} days",
+            many: "{count} days",
+            other: "{count} days",
+          },
+          basisAfter: {
+            ORDER_DATE: "after order date",
+            INVOICE_DATE: "after invoice date",
+            RECEIPT_DATE: "after receipt",
+          },
+          basisOn: {
+            ORDER_DATE: "on order date",
+            INVOICE_DATE: "on invoice date",
+            RECEIPT_DATE: "on receipt",
+          },
+        },
+      },
     },
     orderDetail: {
       title: "Purchase order",
@@ -539,6 +578,13 @@ export const en = {
       IN_PROGRESS: "In progress",
       INACTIVE: "Inactive",
       BLOCKED: "Blocked",
+    },
+    supplierAgreement: {
+      DRAFT: "Draft",
+      UPCOMING: "Not yet in force",
+      ACTIVE: "In force",
+      EXPIRED: "Expired",
+      CLOSED: "Closed",
     },
     purchaseOrder: {
       DRAFT: "Draft",
