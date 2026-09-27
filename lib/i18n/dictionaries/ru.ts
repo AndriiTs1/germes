@@ -114,6 +114,7 @@ export const ru: Dictionary = {
     },
     suppliers: {
       title: "Поставщики",
+      subtitle: "Справочник поставщиков: статус и страна",
       count: {
         one: "{count} поставщик",
         few: "{count} поставщика",

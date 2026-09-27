@@ -4,6 +4,7 @@ import { Search } from "lucide-react";
 import { SupplierCountrySelect } from "@/components/procurement/supplier-country-select";
 import {
   buildSupplierListHref,
+  SUPPLIER_LIST_BASE_PATH,
   SUPPLIER_STATUSES,
   type SupplierStatusFilter,
 } from "@/components/procurement/supplier-list-url";
@@ -76,7 +77,7 @@ export function SupplierFilters({
           ariaLabel={t.filters.countryAriaLabel}
         />
 
-        <form method="GET" action="/procurement" className="w-full sm:w-72">
+        <form method="GET" action={SUPPLIER_LIST_BASE_PATH} className="w-full sm:w-72">
           {status !== "all" ? <input type="hidden" name="status" value={status} /> : null}
           {country ? <input type="hidden" name="country" value={country} /> : null}
           <label htmlFor="suppliers-search" className="sr-only">

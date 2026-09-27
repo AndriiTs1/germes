@@ -12,9 +12,15 @@ export type SupplierListQuery = {
   page?: number;
 };
 
+/** Canonical Supplier Directory route. Every generated supplier-list URL (and redirect) lives under it. */
+export const SUPPLIER_LIST_BASE_PATH = "/procurement/suppliers";
+
 /**
- * Single URL builder for the /procurement supplier list, shared by filters,
- * search reset and pagination so they always carry the same parameters.
+ * Single URL builder for the supplier list, shared by filters, search
+ * reset, pagination and the pages' normalization redirects so they always
+ * carry the same parameters. Always targets the canonical
+ * SUPPLIER_LIST_BASE_PATH — including when the directory is still rendered
+ * on /procurement during the transition to the real Procurement overview.
  * Omitting `page` (any filter/search change) always lands on page 1.
  */
 export function buildSupplierListHref({ q, status, country, page }: SupplierListQuery): string {
@@ -24,5 +30,5 @@ export function buildSupplierListHref({ q, status, country, page }: SupplierList
   if (country) params.set("country", country);
   if (page && page > 1) params.set("page", String(page));
   const qs = params.toString();
-  return qs ? `/procurement?${qs}` : "/procurement";
+  return qs ? `${SUPPLIER_LIST_BASE_PATH}?${qs}` : SUPPLIER_LIST_BASE_PATH;
 }

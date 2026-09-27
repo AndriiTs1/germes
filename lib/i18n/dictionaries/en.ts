@@ -120,6 +120,7 @@ export const en = {
     },
     suppliers: {
       title: "Suppliers",
+      subtitle: "Supplier directory: status and country",
       count: {
         one: "{count} supplier",
         few: "{count} suppliers",
