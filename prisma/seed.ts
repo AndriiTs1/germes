@@ -10,8 +10,40 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool);
 const prisma = new PrismaClient({ adapter });
 
+type SeedUser = {
+  email: string;
+  name: string;
+  roleCode: string;
+  /** Pinned id for accounts whose *_USER_ID in .env must be known before the row exists. */
+  id?: string;
+};
+
+/**
+ * Create-if-missing for a seed/demo employee, matched by email (the unique
+ * login identity). An EXISTING user is returned untouched: name, isActive,
+ * authUserId and role assignments are business/security state and a normal
+ * seed run never resets them (no reactivation, no role reset). Only a user
+ * created here gets its initial role, atomically in the same nested create.
+ */
+async function ensureSeedUser(roleByCode: Record<string, { id: string }>, user: SeedUser) {
+  const existing = await prisma.user.findUnique({ where: { email: user.email } });
+  if (existing) return existing;
+
+  return prisma.user.create({
+    data: {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+      roles: { create: { roleId: roleByCode[user.roleCode].id } },
+    },
+  });
+}
+
 async function main() {
-  console.log("Seeding Germes demo data...");
+  // Non-destructive by design: safe to rerun against a database that holds
+  // real operational data. Nothing here deletes business/operational rows,
+  // and existing master data / users / role assignments are left as-is.
+  console.log("Syncing Germes reference data (non-destructive)...");
 
   // --------------------------------------------------
   // Roles
@@ -69,10 +101,12 @@ async function main() {
   // --------------------------------------------------
   // Permissions
   //
-  // NOTE: The delete-then-recreate RolePermission strategy below is valid
-  // ONLY while OWNER/ADMIN/SALES/PROCUREMENT/WAREHOUSE/ACCOUNTING/SUPPORT remain
-  // seed-managed system roles and this seed file is the single source of
-  // truth for their grants. If Germes later supports runtime/custom role
+  // NOTE: Role/permission DEFINITIONS and the grants below are code-controlled
+  // RBAC configuration (not employee data). The reconcile below is bounded to
+  // the seed-managed system roles (OWNER/ADMIN/SALES/PROCUREMENT/WAREHOUSE/
+  // ACCOUNTING/SUPPORT) × the permissions listed in permissionCatalog, and runs
+  // in one transaction. It is valid ONLY while this seed file is the single
+  // source of truth for those grants. If Germes later supports runtime/custom role
   // permission editing (an admin screen that grants or revokes permissions
   // per role), this seed MUST stop blindly overwriting RolePermission for
   // those roles, or it will silently discard administrator-configured
@@ -305,12 +339,6 @@ async function main() {
     permissionRows.map((permission) => [permission.code, permission]),
   );
 
-  await prisma.rolePermission.deleteMany({
-    where: {
-      roleId: { in: roles.map((role) => roleByCode[role.code].id) },
-    },
-  });
-
   const rolePermissionRows = permissionCatalog.flatMap((permission) =>
     permission.roles.map((roleCode) => ({
       roleId: roleByCode[roleCode].id,
@@ -318,115 +346,85 @@ async function main() {
     })),
   );
 
-  await prisma.rolePermission.createMany({
-    data: rolePermissionRows,
-  });
+  // Atomic and bounded: only grants of catalog permissions on seed-managed
+  // roles are reconciled. Grants of any permission outside the catalog, or on
+  // any other role, are never touched. The transaction guarantees the roles
+  // are never left without grants if the recreate step fails.
+  await prisma.$transaction([
+    prisma.rolePermission.deleteMany({
+      where: {
+        roleId: { in: roles.map((role) => roleByCode[role.code].id) },
+        permissionId: { in: permissionCatalog.map((permission) => permissionByCode[permission.code].id) },
+      },
+    }),
+    prisma.rolePermission.createMany({
+      data: rolePermissionRows,
+    }),
+  ]);
 
   // --------------------------------------------------
   // Demo users
   // --------------------------------------------------
 
-  const owner = await prisma.user.upsert({
-    where: { email: "owner@germes.demo" },
-    update: {
-      name: "Олександр Коваль",
-      isActive: true,
-    },
-    create: {
-      email: "owner@germes.demo",
-      name: "Олександр Коваль",
-    },
+  // Create-if-missing only (see ensureSeedUser): an existing employee's
+  // name, isActive, authUserId and role assignments are never changed here.
+  // owner@germes.demo is created OWNER-only (RBAC Phase 1.1) — previously it
+  // also carried ADMIN, which silently restored every operational permission
+  // Phase 1 removed from OWNER via role union. Existing accounts are changed
+  // only by scripts/sync-workspace-permissions.ts, never by this seed.
+  await ensureSeedUser(roleByCode, {
+    email: "owner@germes.demo",
+    name: "Олександр Коваль",
+    roleCode: "OWNER",
   });
 
-  const admin = await prisma.user.upsert({
-    where: { email: "admin@germes.demo" },
-    update: {
-      name: "Наталія Романенко",
-      isActive: true,
-    },
-    create: {
-      email: "admin@germes.demo",
-      name: "Наталія Романенко",
-    },
+  await ensureSeedUser(roleByCode, {
+    email: "admin@germes.demo",
+    name: "Наталія Романенко",
+    roleCode: "ADMIN",
   });
 
-  const salesManager = await prisma.user.upsert({
-    where: { email: "sales@germes.demo" },
-    update: {
-      name: "Ірина Мельник",
-      isActive: true,
-    },
-    create: {
-      email: "sales@germes.demo",
-      name: "Ірина Мельник",
-    },
+  const salesManager = await ensureSeedUser(roleByCode, {
+    email: "sales@germes.demo",
+    name: "Ірина Мельник",
+    roleCode: "SALES",
   });
 
   // Explicit ids so SALES2_USER_ID / SALES3_USER_ID in .env are known
   // before this row exists — scripts/bootstrap-user.ts selects by id.
-  const salesManager2 = await prisma.user.upsert({
-    where: { email: "sales2@germes.demo" },
-    update: {
-      name: "Дмитро Ткаченко",
-      isActive: true,
-    },
-    create: {
-      id: "451030fb-4085-47cc-89e4-b8b93a5a779b",
-      email: "sales2@germes.demo",
-      name: "Дмитро Ткаченко",
-    },
+  const salesManager2 = await ensureSeedUser(roleByCode, {
+    id: "451030fb-4085-47cc-89e4-b8b93a5a779b",
+    email: "sales2@germes.demo",
+    name: "Дмитро Ткаченко",
+    roleCode: "SALES",
   });
 
-  const salesManager3 = await prisma.user.upsert({
-    where: { email: "sales3@germes.demo" },
-    update: {
-      name: "Оксана Литвиненко",
-      isActive: true,
-    },
-    create: {
-      id: "95ce9fdc-0a9c-43be-a658-d7e497a1724d",
-      email: "sales3@germes.demo",
-      name: "Оксана Литвиненко",
-    },
+  const salesManager3 = await ensureSeedUser(roleByCode, {
+    id: "95ce9fdc-0a9c-43be-a658-d7e497a1724d",
+    email: "sales3@germes.demo",
+    name: "Оксана Литвиненко",
+    roleCode: "SALES",
   });
 
-  const procurementManager = await prisma.user.upsert({
-    where: { email: "procurement@germes.demo" },
-    update: {
-      name: "Максим Бондар",
-      isActive: true,
-    },
-    // Explicit id (the row's existing id) so PROCUREMENT_USER_ID in .env
-    // stays valid after a reset — scripts/bootstrap-user.ts selects by id.
-    create: {
-      id: "88e096dc-12b9-42a7-a7b4-fb285eedeead",
-      email: "procurement@germes.demo",
-      name: "Максим Бондар",
-    },
+  // Explicit id (the row's existing id) so PROCUREMENT_USER_ID in .env
+  // stays valid after a reset — scripts/bootstrap-user.ts selects by id.
+  await ensureSeedUser(roleByCode, {
+    id: "88e096dc-12b9-42a7-a7b4-fb285eedeead",
+    email: "procurement@germes.demo",
+    name: "Максим Бондар",
+    roleCode: "PROCUREMENT",
   });
 
-  const accountant = await prisma.user.upsert({
-    where: { email: "accounting@germes.demo" },
-    update: {
-      name: "Олена Шевченко",
-      isActive: true,
-    },
-    create: {
-      email: "accounting@germes.demo",
-      name: "Олена Шевченко",
-    },
+  await ensureSeedUser(roleByCode, {
+    email: "accounting@germes.demo",
+    name: "Олена Шевченко",
+    roleCode: "ACCOUNTING",
   });
 
-  const warehouseManager = await prisma.user.upsert({
-    where: { email: "warehouse@germes.demo" },
-    update: {
-      name: "Андрій Петренко",
-      isActive: true,
-    },
-    create: {
-      email: "warehouse@germes.demo",
-      name: "Андрій Петренко",
-    },
+  await ensureSeedUser(roleByCode, {
+    email: "warehouse@germes.demo",
+    name: "Андрій Петренко",
+    roleCode: "WAREHOUSE",
   });
 
   // Organizational separation only — both warehouse workers currently see
@@ -434,68 +432,24 @@ async function main() {
   // pending client's answer on mixed-warehouse orders.
   // Explicit id so WAREHOUSE2_USER_ID in .env is known before this row
   // exists — scripts/bootstrap-user.ts selects by id.
-  const warehouseManager2 = await prisma.user.upsert({
-    where: { email: "warehouse2@germes.demo" },
-    update: {
-      name: "Тарас Кравчук",
-      isActive: true,
-    },
-    create: {
-      id: "bdd1087e-f0b2-45f8-a12a-9069cd86777e",
-      email: "warehouse2@germes.demo",
-      name: "Тарас Кравчук",
-    },
-  });
-
-  await prisma.userRole.deleteMany({
-    where: {
-      userId: {
-        in: [
-          owner.id,
-          admin.id,
-          salesManager.id,
-          salesManager2.id,
-          salesManager3.id,
-          procurementManager.id,
-          accountant.id,
-          warehouseManager.id,
-          warehouseManager2.id,
-        ],
-      },
-    },
-  });
-
-  await prisma.userRole.createMany({
-    data: [
-      // owner@germes.demo is OWNER-only (RBAC Phase 1.1) — previously
-      // also carried ADMIN, which silently restored every operational
-      // permission Phase 1 removed from OWNER via role union. See
-      // scripts/sync-workspace-permissions.ts, which must be run against
-      // a real database to actually apply this to an existing account —
-      // this seed file alone never reaches production.
-      { userId: owner.id, roleId: roleByCode.OWNER.id },
-      { userId: admin.id, roleId: roleByCode.ADMIN.id },
-      { userId: salesManager.id, roleId: roleByCode.SALES.id },
-      { userId: salesManager2.id, roleId: roleByCode.SALES.id },
-      { userId: salesManager3.id, roleId: roleByCode.SALES.id },
-      { userId: procurementManager.id, roleId: roleByCode.PROCUREMENT.id },
-      { userId: accountant.id, roleId: roleByCode.ACCOUNTING.id },
-      { userId: warehouseManager.id, roleId: roleByCode.WAREHOUSE.id },
-      { userId: warehouseManager2.id, roleId: roleByCode.WAREHOUSE.id },
-    ],
+  await ensureSeedUser(roleByCode, {
+    id: "bdd1087e-f0b2-45f8-a12a-9069cd86777e",
+    email: "warehouse2@germes.demo",
+    name: "Тарас Кравчук",
+    roleCode: "WAREHOUSE",
   });
 
   // --------------------------------------------------
   // Warehouses
+  //
+  // Business master data from here on (warehouses, products, customers,
+  // suppliers) is create-if-missing: `update: {}` leaves every existing row
+  // exactly as people edited it. The create payloads seed a fresh database.
   // --------------------------------------------------
 
   const warehouseKyiv = await prisma.warehouse.upsert({
     where: { code: "WH-KYIV" },
-    update: {
-      name: "Київ",
-      address: "Київ, Україна",
-      isActive: true,
-    },
+    update: {},
     create: {
       code: "WH-KYIV",
       name: "Київ",
@@ -505,11 +459,7 @@ async function main() {
 
   const warehouseLutsk = await prisma.warehouse.upsert({
     where: { code: "WH-LUTSK" },
-    update: {
-      name: "Луцьк",
-      address: "Луцьк, Україна",
-      isActive: true,
-    },
+    update: {},
     create: {
       code: "WH-LUTSK",
       name: "Луцьк",
@@ -574,12 +524,7 @@ async function main() {
   for (const product of products) {
     await prisma.product.upsert({
       where: { sku: product.sku },
-      update: {
-        name: product.name,
-        category: product.category,
-        unit: "kg",
-        isActive: true,
-      },
+      update: {},
       create: {
         sku: product.sku,
         name: product.name,
@@ -596,7 +541,10 @@ async function main() {
   // TEMPORARY: responsibleId below is a RANDOM ~even split (14/14/13)
   // across the three demo sales managers, with no selection logic.
   // Replace once the client provides the real "manager → customers"
-  // structure. "Кінцевий споживач" (retail placeholder) is intentionally
+  // structure. Applied ONLY when a customer is created (fresh database):
+  // `update: {}` below means an existing customer keeps its current
+  // responsible manager — rerunning the seed never reshuffles customers.
+  // "Кінцевий споживач" (retail placeholder) is intentionally
   // excluded — it will become a separate record type later.
   const customers: { code: string; name: string; responsibleId: string }[] = [
     { code: "CUST-001", name: "24 РЕСТОРАНИ ТОВ", responsibleId: salesManager2.id },
@@ -645,13 +593,7 @@ async function main() {
   for (const customer of customers) {
     await prisma.customer.upsert({
       where: { code: customer.code },
-      update: {
-        name: customer.name,
-        status: "ACTIVE",
-        country: "Україна",
-        responsibleId: customer.responsibleId,
-        isActive: true,
-      },
+      update: {},
       create: {
         code: customer.code,
         name: customer.name,
@@ -716,12 +658,7 @@ async function main() {
   for (const supplier of suppliers) {
     await prisma.supplier.upsert({
       where: { code: supplier.code },
-      update: {
-        name: supplier.name,
-        country: supplier.country ?? null,
-        status: "ACTIVE",
-        isActive: true,
-      },
+      update: {},
       create: {
         code: supplier.code,
         name: supplier.name,
@@ -731,18 +668,10 @@ async function main() {
     });
   }
 
-  // --------------------------------------------------
-  // Replace demo transactional data
-  // --------------------------------------------------
+  // No operational data (orders, reservations, stock movements, batches,
+  // receivables, payables) is created, modified or deleted by this seed.
 
-  await prisma.receivable.deleteMany();
-  await prisma.payable.deleteMany();
-  await prisma.stockReservation.deleteMany();
-  await prisma.salesOrderItem.deleteMany();
-  await prisma.salesOrder.deleteMany();
-  await prisma.stockMovement.deleteMany();
-
-  console.log("Germes demo data seeded successfully.");
+  console.log("Germes reference data synced (existing records left unchanged).");
 }
 
 main()
