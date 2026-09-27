@@ -154,6 +154,35 @@ export const en = {
       },
       paginationAriaLabel: "Supplier list pages",
     },
+    orderDetail: {
+      title: "Purchase order",
+      backToProcurement: "Back to Procurement",
+      createdOn: "Created {date}",
+      notSpecified: "Not specified",
+      overview: {
+        title: "Overview",
+        supplier: "Supplier",
+        destinationWarehouse: "Destination warehouse",
+        currency: "Currency",
+        expectedArrival: "Expected arrival",
+        orderDate: "Order date",
+        createdBy: "Created by",
+        totalQuantity: "Total quantity",
+        amount: "Amount",
+        incompleteAmount: "Incomplete: {missing} of {total} items have no price",
+      },
+      items: {
+        title: "Items",
+        product: "Product",
+        quantity: "Quantity",
+        pricePerKg: "Price / kg",
+        lineAmount: "Line total",
+        priceNotSpecified: "Price not specified",
+      },
+      notes: {
+        title: "Notes",
+      },
+    },
   },
 
   finance: {
@@ -330,6 +359,12 @@ export const en = {
       IN_PROGRESS: "In progress",
       INACTIVE: "Inactive",
       BLOCKED: "Blocked",
+    },
+    purchaseOrder: {
+      DRAFT: "Draft",
+      CONFIRMED: "Confirmed",
+      CLOSED: "Closed",
+      CANCELLED: "Cancelled",
     },
     reservation: {
       ACTIVE: "Active",

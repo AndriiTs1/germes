@@ -148,6 +148,35 @@ export const ru: Dictionary = {
       },
       paginationAriaLabel: "Страницы списка поставщиков",
     },
+    orderDetail: {
+      title: "Заказ поставщику",
+      backToProcurement: "Назад к закупкам",
+      createdOn: "Создан {date}",
+      notSpecified: "Не указан",
+      overview: {
+        title: "Обзор",
+        supplier: "Поставщик",
+        destinationWarehouse: "Склад назначения",
+        currency: "Валюта",
+        expectedArrival: "Ожидаемое прибытие",
+        orderDate: "Дата заказа",
+        createdBy: "Создал",
+        totalQuantity: "Общее количество",
+        amount: "Сумма",
+        incompleteAmount: "Неполная: {missing} из {total} позиций без цены",
+      },
+      items: {
+        title: "Позиции",
+        product: "Товар",
+        quantity: "Количество",
+        pricePerKg: "Цена / кг",
+        lineAmount: "Сумма строки",
+        priceNotSpecified: "Цена не указана",
+      },
+      notes: {
+        title: "Примечания",
+      },
+    },
   },
 
   finance: {
@@ -324,6 +353,12 @@ export const ru: Dictionary = {
       IN_PROGRESS: "В обработке",
       INACTIVE: "Неактивный",
       BLOCKED: "Заблокирован",
+    },
+    purchaseOrder: {
+      DRAFT: "Черновик",
+      CONFIRMED: "Подтверждён",
+      CLOSED: "Закрыт",
+      CANCELLED: "Отменён",
     },
     reservation: {
       ACTIVE: "Активна",

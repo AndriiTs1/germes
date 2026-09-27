@@ -148,6 +148,35 @@ export const uk: Dictionary = {
       },
       paginationAriaLabel: "Сторінки списку постачальників",
     },
+    orderDetail: {
+      title: "Замовлення постачальнику",
+      backToProcurement: "Назад до закупівель",
+      createdOn: "Створено {date}",
+      notSpecified: "Не вказано",
+      overview: {
+        title: "Огляд",
+        supplier: "Постачальник",
+        destinationWarehouse: "Склад призначення",
+        currency: "Валюта",
+        expectedArrival: "Очікуване прибуття",
+        orderDate: "Дата замовлення",
+        createdBy: "Створив",
+        totalQuantity: "Загальна кількість",
+        amount: "Сума",
+        incompleteAmount: "Неповна: {missing} з {total} позицій без ціни",
+      },
+      items: {
+        title: "Позиції",
+        product: "Товар",
+        quantity: "Кількість",
+        pricePerKg: "Ціна / кг",
+        lineAmount: "Сума рядка",
+        priceNotSpecified: "Ціну не вказано",
+      },
+      notes: {
+        title: "Примітки",
+      },
+    },
   },
 
   finance: {
@@ -324,6 +353,12 @@ export const uk: Dictionary = {
       IN_PROGRESS: "На опрацюванні",
       INACTIVE: "Неактивний",
       BLOCKED: "Заблокований",
+    },
+    purchaseOrder: {
+      DRAFT: "Чернетка",
+      CONFIRMED: "Підтверджено",
+      CLOSED: "Закрито",
+      CANCELLED: "Скасовано",
     },
     reservation: {
       ACTIVE: "Активне",
