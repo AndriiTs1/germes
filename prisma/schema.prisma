@@ -17,6 +17,7 @@ model User {
   customers              Customer[]
   suppliers              Supplier[]
   salesOrders            SalesOrder[]
+  purchaseOrdersCreated  PurchaseOrder[]
   auditLogs              AuditLog[]
   supportTicketsCreated  SupportTicket[]  @relation("SupportTicketCreatedBy")
   supportTicketsAssigned SupportTicket[]  @relation("SupportTicketAssignedTo")
@@ -99,18 +100,20 @@ model AuditLog {
 }
 
 model Product {
-  id              String             @id @default(uuid())
-  sku             String             @unique
-  name            String
-  category        String?
-  brand           String?
-  unit            String             @default("kg")
-  isActive        Boolean            @default(true)
-  batches         Batch[]
-  reservations    StockReservation[]
-  salesOrderItems SalesOrderItem[]
-  createdAt       DateTime           @default(now())
-  updatedAt       DateTime           @updatedAt
+  id                 String              @id @default(uuid())
+  sku                String              @unique
+  name               String
+  category           String?
+  brand              String?
+  unit               String              @default("kg")
+  isActive           Boolean             @default(true)
+  batches            Batch[]
+  reservations       StockReservation[]
+  salesOrderItems    SalesOrderItem[]
+  purchaseOrderItems PurchaseOrderItem[]
+  productSuppliers   SupplierProduct[]
+  createdAt          DateTime            @default(now())
+  updatedAt          DateTime            @updatedAt
 
   @@map("products")
 }
@@ -124,6 +127,7 @@ model Warehouse {
   outgoingMovements StockMovement[]    @relation("StockMovementFromWarehouse")
   incomingMovements StockMovement[]    @relation("StockMovementToWarehouse")
   reservations      StockReservation[]
+  purchaseOrders    PurchaseOrder[]
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -311,14 +315,32 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  responsible User?     @relation(fields: [responsibleId], references: [id])
-  payables    Payable[]
+  responsible      User?             @relation(fields: [responsibleId], references: [id])
+  payables         Payable[]
+  purchaseOrders   PurchaseOrder[]
+  suppliedProducts SupplierProduct[]
 
   @@index([status])
   @@index([responsibleId])
   @@index([lastContactAt])
   @@index([nextActionAt])
   @@map("suppliers")
+}
+
+model SupplierProduct {
+  id          String   @id @default(uuid())
+  supplierId  String
+  productId   String
+  isPreferred Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  supplier Supplier @relation(fields: [supplierId], references: [id], onDelete: Cascade)
+  product  Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([supplierId, productId])
+  @@index([productId])
+  @@map("supplier_products")
 }
 
 enum SalesOrderStatus {
@@ -432,6 +454,55 @@ model Payable {
   @@index([status])
   @@index([dueDate])
   @@map("payables")
+}
+
+enum PurchaseOrderStatus {
+  DRAFT
+  CONFIRMED
+  CLOSED
+  CANCELLED
+}
+
+model PurchaseOrder {
+  id                     String              @id @default(uuid())
+  orderNumber            String              @unique
+  supplierId             String
+  destinationWarehouseId String?
+  createdById            String
+  status                 PurchaseOrderStatus @default(DRAFT)
+  currency               String
+  orderDate              DateTime?
+  expectedArrivalDate    DateTime?
+  notes                  String?
+  createdAt              DateTime            @default(now())
+  updatedAt              DateTime            @updatedAt
+
+  supplier             Supplier            @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  destinationWarehouse Warehouse?          @relation(fields: [destinationWarehouseId], references: [id], onDelete: Restrict)
+  createdBy            User                @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  items                PurchaseOrderItem[]
+
+  @@index([supplierId])
+  @@index([status])
+  @@index([createdAt])
+  @@map("purchase_orders")
+}
+
+model PurchaseOrderItem {
+  id              String   @id @default(uuid())
+  purchaseOrderId String
+  productId       String
+  quantityKg      Decimal  @db.Decimal(14, 3)
+  pricePerKg      Decimal? @db.Decimal(14, 4)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  purchaseOrder PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
+  product       Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  @@index([purchaseOrderId])
+  @@index([productId])
+  @@map("purchase_order_items")
 }
 
 enum SupportTicketStatus {
