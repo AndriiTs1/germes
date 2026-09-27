@@ -104,8 +104,7 @@ export const uk: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупівлі",
-      subtitle: "Робочий простір закупівель",
-      createOrder: "Створити замовлення",
+      subtitle: "Ключова інформація щодо закупівель",
       kpi: {
         suppliers: "Усього постачальників",
         activeSuppliers: "Активні постачальники",
@@ -114,6 +113,37 @@ export const uk: Dictionary = {
         title: "Облік закупівель у системі ще не ведеться",
         description: "Замовлення постачальникам, товари в дорозі та приймання партій з'являться тут, коли облік закупівель буде підключено.",
       },
+    },
+    overview: {
+      metrics: {
+        title: "Ключові показники",
+        attention: "Потребує уваги",
+        drafts: "Чернетки",
+        confirmed: "Підтверджено",
+        ordered: "Замовлено",
+        orderedHint: "підтверджені замовлення",
+        planned: "Планується за 7 днів",
+        ordersUnit: {
+          one: "замовлення",
+          few: "замовлення",
+          many: "замовлень",
+          other: "замовлення",
+        },
+      },
+      attention: {
+        title: "Потребує уваги",
+        reasons: {
+          missingPrice: "Не вказано ціну",
+          missingWarehouse: "Не обрано склад",
+          missingExpectedArrival: "Не вказано планову дату надходження",
+        },
+        shownOf: "Показано {shown} з {total}",
+      },
+      arrivals: {
+        title: "Найближчі планові надходження",
+        noWarehouse: "Склад не вказано",
+      },
+      allOrders: "Усі замовлення",
     },
     suppliers: {
       title: "Постачальники",

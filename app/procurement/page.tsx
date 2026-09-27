@@ -1,18 +1,20 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { ProcurementWorkspaceOverview } from "@/components/procurement/procurement-workspace-overview";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
+import { getProcurementWorkspaceOverview } from "@/lib/services/procurement/get-procurement-workspace-overview";
 
 const PROCUREMENT_OVERVIEW_PERMISSION = "procurement.overview.read";
-const PROCUREMENT_ORDERS_CREATE_PERMISSION = "procurement.orders.create";
 
 /**
- * Procurement landing page. The Supplier Directory now lives only at
- * /procurement/suppliers and purchase orders at /procurement/orders; the
- * truthful operational content for this page is added in a later step.
+ * Procurement control overview — a report, not a work surface. It shows
+ * only what PurchaseOrder data proves (exceptions, current state, planned
+ * arrivals) and carries no operational controls, so every holder of
+ * procurement.overview.read sees the same facts. Creating orders happens
+ * on /procurement/orders; suppliers live at /procurement/suppliers.
  */
 export default async function ProcurementPage() {
   let user: Awaited<ReturnType<typeof requirePermission>>;
@@ -26,14 +28,12 @@ export default async function ProcurementPage() {
     redirect("/");
   }
 
-  const permissionCodes = await getPermissionCodesForUser(user.id);
-
-  const locale = await getCurrentLocale();
+  const [permissionCodes, locale, overview] = await Promise.all([
+    getPermissionCodesForUser(user.id),
+    getCurrentLocale(),
+    getProcurementWorkspaceOverview(),
+  ]);
   const dictionary = getDictionary(locale);
-
-  // Navigation only — opens the DRAFT create form, which (and whose
-  // action) independently re-checks this same permission.
-  const canCreatePurchaseOrder = permissionCodes.includes(PROCUREMENT_ORDERS_CREATE_PERMISSION);
 
   return (
     <DashboardShell
@@ -47,24 +47,13 @@ export default async function ProcurementPage() {
       showGlobalSearch={false}
     >
       <div className="pb-4">
-        <div className="flex items-center justify-between gap-3">
-          <div className="min-w-0">
-            <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-              {dictionary.procurement.workspace.title}
-            </h1>
-            <p className="mt-1 text-[13px] text-slate-500">{dictionary.procurement.workspace.subtitle}</p>
-          </div>
-
-          {canCreatePurchaseOrder ? (
-            <Link
-              href="/procurement/orders/new"
-              className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
-            >
-              {dictionary.procurement.workspace.createOrder}
-            </Link>
-          ) : null}
-        </div>
+        <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
+          {dictionary.procurement.workspace.title}
+        </h1>
+        <p className="mt-1 text-[13px] text-slate-500">{dictionary.procurement.workspace.subtitle}</p>
       </div>
+
+      <ProcurementWorkspaceOverview overview={overview} locale={locale} dictionary={dictionary} />
     </DashboardShell>
   );
 }

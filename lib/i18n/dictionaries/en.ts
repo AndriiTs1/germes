@@ -110,8 +110,7 @@ export const en = {
   procurement: {
     workspace: {
       title: "Procurement",
-      subtitle: "Procurement workspace",
-      createOrder: "Create purchase order",
+      subtitle: "Key procurement information",
       kpi: {
         suppliers: "Total suppliers",
         activeSuppliers: "Active suppliers",
@@ -120,6 +119,37 @@ export const en = {
         title: "Purchasing is not tracked in the system yet",
         description: "Purchase orders, goods in transit and batch receiving will appear here once purchasing is connected.",
       },
+    },
+    overview: {
+      metrics: {
+        title: "Key metrics",
+        attention: "Requires attention",
+        drafts: "Drafts",
+        confirmed: "Confirmed",
+        ordered: "Ordered",
+        orderedHint: "confirmed orders",
+        planned: "Planned in 7 days",
+        ordersUnit: {
+          one: "order",
+          few: "orders",
+          many: "orders",
+          other: "orders",
+        },
+      },
+      attention: {
+        title: "Requires attention",
+        reasons: {
+          missingPrice: "Price not specified",
+          missingWarehouse: "Warehouse not selected",
+          missingExpectedArrival: "Planned arrival date not specified",
+        },
+        shownOf: "Showing {shown} of {total}",
+      },
+      arrivals: {
+        title: "Upcoming planned arrivals",
+        noWarehouse: "Warehouse not specified",
+      },
+      allOrders: "All orders",
     },
     suppliers: {
       title: "Suppliers",

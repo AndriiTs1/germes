@@ -104,8 +104,7 @@ export const ru: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупки",
-      subtitle: "Рабочее пространство закупок",
-      createOrder: "Создать заказ",
+      subtitle: "Ключевая информация по закупкам",
       kpi: {
         suppliers: "Всего поставщиков",
         activeSuppliers: "Активные поставщики",
@@ -114,6 +113,37 @@ export const ru: Dictionary = {
         title: "Учёт закупок в системе пока не ведётся",
         description: "Заказы поставщикам, товары в пути и приёмка партий появятся здесь, когда учёт закупок будет подключён.",
       },
+    },
+    overview: {
+      metrics: {
+        title: "Ключевые показатели",
+        attention: "Требует внимания",
+        drafts: "Черновики",
+        confirmed: "Подтверждено",
+        ordered: "Заказано",
+        orderedHint: "подтверждённые заказы",
+        planned: "Планируется за 7 дней",
+        ordersUnit: {
+          one: "заказ",
+          few: "заказа",
+          many: "заказов",
+          other: "заказа",
+        },
+      },
+      attention: {
+        title: "Требует внимания",
+        reasons: {
+          missingPrice: "Не указана цена",
+          missingWarehouse: "Не выбран склад",
+          missingExpectedArrival: "Не указана плановая дата поступления",
+        },
+        shownOf: "Показано {shown} из {total}",
+      },
+      arrivals: {
+        title: "Ближайшие плановые поступления",
+        noWarehouse: "Склад не указан",
+      },
+      allOrders: "Все заказы",
     },
     suppliers: {
       title: "Поставщики",
