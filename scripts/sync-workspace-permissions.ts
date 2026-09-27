@@ -128,6 +128,26 @@ const SYNCED_PERMISSIONS: {
     // Matches prisma/seed.ts exactly.
     roleCodes: ["WAREHOUSE"],
   },
+  {
+    code: "procurement.orders.read",
+    description: "View purchase orders",
+    roleCodes: ["OWNER", "ADMIN", "PROCUREMENT"],
+  },
+  {
+    code: "procurement.orders.create",
+    description: "Create a purchase order",
+    // RBAC: OWNER and ADMIN excluded — routine procurement execution, not
+    // an owner-level control. Matches prisma/seed.ts exactly.
+    roleCodes: ["PROCUREMENT"],
+  },
+  {
+    code: "procurement.orders.update",
+    description: "Edit or transition a purchase order's status",
+    // RBAC: covers editing a DRAFT and confirm/cancel/close. OWNER and
+    // ADMIN excluded, same as sales.orders.update. Matches prisma/seed.ts
+    // exactly.
+    roleCodes: ["PROCUREMENT"],
+  },
 ];
 
 // Explicit, per-email allow-list — reconciles ONE named demo user's entire

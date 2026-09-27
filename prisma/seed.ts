@@ -243,6 +243,29 @@ async function main() {
       roles: ["OWNER", "ADMIN", "PROCUREMENT"],
     },
     {
+      code: "procurement.orders.read",
+      description: "View purchase orders",
+      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+    },
+    {
+      code: "procurement.orders.create",
+      description: "Create a purchase order",
+      // OWNER and ADMIN intentionally excluded: routine procurement
+      // execution, not an owner-level control — same reasoning as
+      // sales.orders.create. See scripts/sync-workspace-permissions.ts,
+      // which must be run against a real database to actually grant this —
+      // this seed file alone never reaches production.
+      roles: ["PROCUREMENT"],
+    },
+    {
+      code: "procurement.orders.update",
+      description: "Edit or transition a purchase order's status",
+      // Covers editing a DRAFT and confirm/cancel/close — no separate
+      // transition permissions. OWNER and ADMIN intentionally excluded,
+      // same reasoning as sales.orders.update.
+      roles: ["PROCUREMENT"],
+    },
+    {
       code: "inventory.stock.read",
       description: "View aggregate stock levels (actual, reserved, free)",
       roles: ["OWNER", "ADMIN", "SALES", "PROCUREMENT", "WAREHOUSE", "ACCOUNTING"],
