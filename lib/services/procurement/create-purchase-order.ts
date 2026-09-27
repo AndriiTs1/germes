@@ -1,19 +1,13 @@
-import { Prisma, PurchaseOrderStatus, SupplierStatus } from "@/lib/generated/prisma/client";
+import { Prisma, PurchaseOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { generatePurchaseOrderNumber } from "@/lib/services/procurement/generate-purchase-order-number";
+import {
+  assertPurchaseOrderReferences,
+  parseExpectedArrivalDate,
+  preparePurchaseOrderItems,
+  PurchaseOrderRuleError,
+} from "@/lib/services/procurement/purchase-order-rules";
 import { isPurchaseOrderCurrency, type CreatePurchaseOrderInput } from "@/lib/validation/purchase-order";
-
-/**
- * A DRAFT may be raised with an established supplier or one still being
- * onboarded. INACTIVE and BLOCKED suppliers are never eligible. Whether a
- * CONFIRMED order requires ACTIVE is a separate, still-open decision for
- * the status-transition service.
- */
-const DRAFT_ELIGIBLE_SUPPLIER_STATUSES: SupplierStatus[] = [
-  SupplierStatus.ACTIVE,
-  SupplierStatus.POTENTIAL,
-  SupplierStatus.IN_PROGRESS,
-];
 
 const MAX_ORDER_NUMBER_ATTEMPTS = 5;
 
@@ -30,32 +24,6 @@ export type CreatePurchaseOrderError =
 export type CreatePurchaseOrderResult =
   | { ok: true; purchaseOrderId: string }
   | { ok: false; error: CreatePurchaseOrderError };
-
-/** Thrown inside the transaction to trigger an automatic rollback; caught outside and translated to a safe, generic result — same pattern as createSalesOrder. */
-class SupplierUnavailableError extends Error {}
-class WarehouseUnavailableError extends Error {}
-class ProductUnavailableError extends Error {}
-class InvalidItemError extends Error {}
-
-function parseExpectedArrivalDate(value: string | undefined): Date | null {
-  if (!value) return null;
-  const [year, month, day] = value.split("-").map(Number);
-  return new Date(Date.UTC(year, month - 1, day));
-}
-
-/** Throws InvalidItemError instead of ever coercing: the Zod pass already guarantees this, but the write boundary never trusts that a caller validated correctly. */
-function toPositiveDecimal(value: string): Prisma.Decimal {
-  let decimal: Prisma.Decimal;
-  try {
-    decimal = new Prisma.Decimal(value);
-  } catch {
-    throw new InvalidItemError();
-  }
-  if (!decimal.isFinite() || !decimal.gt(0)) {
-    throw new InvalidItemError();
-  }
-  return decimal;
-}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -156,63 +124,21 @@ export async function createPurchaseOrder(
   for (let attempt = 1; attempt <= MAX_ORDER_NUMBER_ATTEMPTS; attempt++) {
     try {
       const purchaseOrderId = await prisma.$transaction(async (tx) => {
-        const supplier = await tx.supplier.findFirst({
-          where: {
-            id: input.supplierId,
-            isActive: true,
-            status: { in: DRAFT_ELIGIBLE_SUPPLIER_STATUSES },
-          },
-          select: { id: true },
+        await assertPurchaseOrderReferences(tx, {
+          supplierId: input.supplierId,
+          destinationWarehouseId,
+          productIds: input.items.map((item) => item.productId),
         });
-
-        if (!supplier) {
-          throw new SupplierUnavailableError();
-        }
-
-        if (destinationWarehouseId !== null) {
-          const warehouse = await tx.warehouse.findFirst({
-            where: { id: destinationWarehouseId, isActive: true },
-            select: { id: true },
-          });
-
-          if (!warehouse) {
-            throw new WarehouseUnavailableError();
-          }
-        }
-
-        const productIds = input.items.map((item) => item.productId);
-        const uniqueProductIds = Array.from(new Set(productIds));
-
-        // Zod already rejects this; a caller that bypassed it must not
-        // produce an order with duplicate lines.
-        if (uniqueProductIds.length !== productIds.length || productIds.length === 0) {
-          throw new InvalidItemError();
-        }
-
-        const products = await tx.product.findMany({
-          where: { id: { in: uniqueProductIds }, isActive: true },
-          select: { id: true },
-        });
-
-        // Fewer rows means at least one id was nonexistent or inactive —
-        // never reveals which one.
-        if (products.length !== uniqueProductIds.length) {
-          throw new ProductUnavailableError();
-        }
 
         // Prepared before any row is written.
-        const preparedItems = input.items.map((item) => ({
-          productId: item.productId,
-          quantityKg: toPositiveDecimal(item.quantityKg),
-          pricePerKg: item.pricePerKg === undefined ? null : toPositiveDecimal(item.pricePerKg),
-        }));
+        const preparedItems = preparePurchaseOrderItems(input.items);
 
         const orderNumber = await generatePurchaseOrderNumber(tx, year);
 
         const order = await tx.purchaseOrder.create({
           data: {
             orderNumber,
-            supplierId: supplier.id,
+            supplierId: input.supplierId,
             destinationWarehouseId,
             createdById: currentUserId,
             status: PurchaseOrderStatus.DRAFT,
@@ -251,17 +177,8 @@ export async function createPurchaseOrder(
 
       return { ok: true, purchaseOrderId };
     } catch (error) {
-      if (error instanceof SupplierUnavailableError) {
-        return { ok: false, error: "SUPPLIER_UNAVAILABLE" };
-      }
-      if (error instanceof WarehouseUnavailableError) {
-        return { ok: false, error: "WAREHOUSE_UNAVAILABLE" };
-      }
-      if (error instanceof ProductUnavailableError) {
-        return { ok: false, error: "PRODUCT_UNAVAILABLE" };
-      }
-      if (error instanceof InvalidItemError) {
-        return { ok: false, error: "CREATE_FAILED" };
+      if (error instanceof PurchaseOrderRuleError) {
+        return { ok: false, error: error.code === "INVALID_ITEM" ? "CREATE_FAILED" : error.code };
       }
       if (isOrderNumberConflict(error) && attempt < MAX_ORDER_NUMBER_ATTEMPTS) {
         continue;

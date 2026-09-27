@@ -2,6 +2,7 @@ import { ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
+import { PurchaseOrderDetailActions } from "@/components/procurement/purchase-order-detail-actions";
 import { PurchaseOrderDetailItems } from "@/components/procurement/purchase-order-detail-items";
 import { PurchaseOrderDetailOverview } from "@/components/procurement/purchase-order-detail-overview";
 import {
@@ -18,6 +19,7 @@ import { getPurchaseOrderDetail } from "@/lib/services/procurement/get-purchase-
 import { cn } from "@/lib/utils";
 
 const PROCUREMENT_ORDERS_READ_PERMISSION = "procurement.orders.read";
+const PROCUREMENT_ORDERS_UPDATE_PERMISSION = "procurement.orders.update";
 
 /**
  * Read-only PurchaseOrder detail. Every holder of procurement.orders.read
@@ -36,9 +38,9 @@ export default async function PurchaseOrderDetailPage(props: PageProps<"/procure
     redirect("/");
   }
 
-  // Needed only by DashboardShell for the sidebar; nothing on this page is
-  // gated on an additional permission yet.
   const permissionCodes = await getPermissionCodesForUser(user.id);
+  // Only decides which lifecycle buttons render; every action re-checks it.
+  const canUpdate = permissionCodes.includes(PROCUREMENT_ORDERS_UPDATE_PERMISSION);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -70,18 +72,27 @@ export default async function PurchaseOrderDetailPage(props: PageProps<"/procure
           {t.backToProcurement}
         </Link>
 
-        <div className="mt-3 flex min-w-0 items-center gap-3">
-          <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
-            {order.orderNumber}
-          </h1>
-          <span
-            className={cn(
-              "shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold whitespace-nowrap",
-              PURCHASE_ORDER_STATUS_STYLES[order.status] ?? "bg-slate-100 text-slate-600",
-            )}
-          >
-            {getPurchaseOrderStatusLabel(dictionary.status.purchaseOrder, order.status)}
-          </span>
+        <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+          <div className="flex min-w-0 items-center gap-3">
+            <h1 className="truncate text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
+              {order.orderNumber}
+            </h1>
+            <span
+              className={cn(
+                "shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold whitespace-nowrap",
+                PURCHASE_ORDER_STATUS_STYLES[order.status] ?? "bg-slate-100 text-slate-600",
+              )}
+            >
+              {getPurchaseOrderStatusLabel(dictionary.status.purchaseOrder, order.status)}
+            </span>
+          </div>
+
+          <PurchaseOrderDetailActions
+            purchaseOrderId={order.id}
+            status={order.status}
+            canUpdate={canUpdate}
+            dictionary={t.actions}
+          />
         </div>
         <p className="mt-1 truncate text-[13px] text-slate-500">
           {t.title} · {order.supplier.name} ·{" "}

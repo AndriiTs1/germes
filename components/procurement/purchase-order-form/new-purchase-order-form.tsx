@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Controller, FormProvider, useFieldArray, useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 import { createPurchaseOrderAction } from "@/app/procurement/orders/new/actions";
+import { updatePurchaseOrderAction } from "@/app/procurement/orders/[id]/edit/actions";
 import { PurchaseOrderItemRow } from "@/components/procurement/purchase-order-form/purchase-order-item-row";
 import { SearchableSelect } from "@/components/sales/order-form/searchable-select";
 import { DateInput } from "@/components/ui/date-input";
@@ -32,6 +33,16 @@ type NewPurchaseOrderFormProps = {
   products: NewPurchaseOrderFormProduct[];
   locale: Locale;
   dictionary: Dictionary["procurement"]["orderForm"];
+  /**
+   * Omitted = create a new DRAFT. Set = edit that existing DRAFT: the form
+   * starts from its values and submits through updatePurchaseOrderAction
+   * with the updatedAt it was loaded with (optimistic concurrency).
+   */
+  edit?: {
+    purchaseOrderId: string;
+    loadedUpdatedAt: string;
+    initialValues: CreatePurchaseOrderFormValues;
+  };
 };
 
 const EMPTY_ITEM: PurchaseOrderItemFormValues = { productId: "", quantityKg: "", pricePerKg: "" };
@@ -66,10 +77,11 @@ export function NewPurchaseOrderForm({
   products,
   locale,
   dictionary,
+  edit,
 }: NewPurchaseOrderFormProps) {
   const methods = useForm<CreatePurchaseOrderFormValues>({
     resolver: zodResolver(createPurchaseOrderSchema),
-    defaultValues: {
+    defaultValues: edit?.initialValues ?? {
       supplierId: "",
       destinationWarehouseId: "",
       currency: "",
@@ -127,7 +139,9 @@ export function NewPurchaseOrderForm({
   );
 
   async function onSubmit(data: CreatePurchaseOrderFormValues) {
-    const result = await createPurchaseOrderAction(data);
+    const result = edit
+      ? await updatePurchaseOrderAction(edit.purchaseOrderId, edit.loadedUpdatedAt, data)
+      : await createPurchaseOrderAction(data);
     if (result?.error) {
       toast.error(result.error);
     }
@@ -304,7 +318,7 @@ export function NewPurchaseOrderForm({
 
         <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-end">
           <Link
-            href="/procurement/orders"
+            href={edit ? `/procurement/orders/${edit.purchaseOrderId}` : "/procurement/orders"}
             className="rounded-full border border-slate-200/70 bg-white px-4 py-2 text-center text-[13px] font-medium text-slate-600 transition-colors hover:bg-slate-50"
           >
             {dictionary.cancel}
@@ -314,7 +328,13 @@ export function NewPurchaseOrderForm({
             disabled={isSubmitting}
             className="rounded-full bg-slate-900 px-5 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800 disabled:pointer-events-none disabled:opacity-50"
           >
-            {isSubmitting ? dictionary.creating : dictionary.createDraft}
+            {edit
+              ? isSubmitting
+                ? dictionary.saving
+                : dictionary.saveChanges
+              : isSubmitting
+                ? dictionary.creating
+                : dictionary.createDraft}
           </button>
         </div>
       </form>
