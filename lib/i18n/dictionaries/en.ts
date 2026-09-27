@@ -183,6 +183,12 @@ export const en = {
         title: "Notes",
       },
     },
+    orderActions: {
+      supplierUnavailable: "Selected supplier is unavailable.",
+      warehouseUnavailable: "Selected warehouse is unavailable.",
+      productUnavailable: "One or more selected products are unavailable.",
+      createGenericError: "Could not create the order. Please try again.",
+    },
   },
 
   finance: {

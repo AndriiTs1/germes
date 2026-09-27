@@ -177,6 +177,12 @@ export const uk: Dictionary = {
         title: "Примітки",
       },
     },
+    orderActions: {
+      supplierUnavailable: "Обраний постачальник недоступний.",
+      warehouseUnavailable: "Обраний склад недоступний.",
+      productUnavailable: "Один або кілька товарів недоступні.",
+      createGenericError: "Не вдалося створити замовлення. Спробуйте ще раз.",
+    },
   },
 
   finance: {

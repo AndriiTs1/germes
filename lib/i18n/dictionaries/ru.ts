@@ -177,6 +177,12 @@ export const ru: Dictionary = {
         title: "Примечания",
       },
     },
+    orderActions: {
+      supplierUnavailable: "Выбранный поставщик недоступен.",
+      warehouseUnavailable: "Выбранный склад недоступен.",
+      productUnavailable: "Один или несколько товаров недоступны.",
+      createGenericError: "Не удалось создать заказ. Попробуйте ещё раз.",
+    },
   },
 
   finance: {
