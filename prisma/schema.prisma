@@ -8,22 +8,23 @@ datasource db {
 }
 
 model User {
-  id                     String           @id @default(uuid())
-  email                  String           @unique
-  name                   String?
-  isActive               Boolean          @default(true)
-  authUserId             String?          @unique
-  roles                  UserRole[]
-  customers              Customer[]
-  suppliers              Supplier[]
-  salesOrders            SalesOrder[]
-  purchaseOrdersCreated  PurchaseOrder[]
-  auditLogs              AuditLog[]
-  supportTicketsCreated  SupportTicket[]  @relation("SupportTicketCreatedBy")
-  supportTicketsAssigned SupportTicket[]  @relation("SupportTicketAssignedTo")
-  supportMessages        SupportMessage[]
-  createdAt              DateTime         @default(now())
-  updatedAt              DateTime         @updatedAt
+  id                        String              @id @default(uuid())
+  email                     String              @unique
+  name                      String?
+  isActive                  Boolean             @default(true)
+  authUserId                String?             @unique
+  roles                     UserRole[]
+  customers                 Customer[]
+  suppliers                 Supplier[]
+  salesOrders               SalesOrder[]
+  purchaseOrdersCreated     PurchaseOrder[]
+  supplierAgreementsCreated SupplierAgreement[]
+  auditLogs                 AuditLog[]
+  supportTicketsCreated     SupportTicket[]     @relation("SupportTicketCreatedBy")
+  supportTicketsAssigned    SupportTicket[]     @relation("SupportTicketAssignedTo")
+  supportMessages           SupportMessage[]
+  createdAt                 DateTime            @default(now())
+  updatedAt                 DateTime            @updatedAt
 
   @@map("users")
 }
@@ -100,20 +101,21 @@ model AuditLog {
 }
 
 model Product {
-  id                 String              @id @default(uuid())
-  sku                String              @unique
-  name               String
-  category           String?
-  brand              String?
-  unit               String              @default("kg")
-  isActive           Boolean             @default(true)
-  batches            Batch[]
-  reservations       StockReservation[]
-  salesOrderItems    SalesOrderItem[]
-  purchaseOrderItems PurchaseOrderItem[]
-  productSuppliers   SupplierProduct[]
-  createdAt          DateTime            @default(now())
-  updatedAt          DateTime            @updatedAt
+  id                     String                  @id @default(uuid())
+  sku                    String                  @unique
+  name                   String
+  category               String?
+  brand                  String?
+  unit                   String                  @default("kg")
+  isActive               Boolean                 @default(true)
+  batches                Batch[]
+  reservations           StockReservation[]
+  salesOrderItems        SalesOrderItem[]
+  purchaseOrderItems     PurchaseOrderItem[]
+  productSuppliers       SupplierProduct[]
+  supplierAgreementItems SupplierAgreementItem[]
+  createdAt              DateTime                @default(now())
+  updatedAt              DateTime                @updatedAt
 
   @@map("products")
 }
@@ -315,10 +317,11 @@ model Supplier {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  responsible      User?             @relation(fields: [responsibleId], references: [id])
+  responsible      User?               @relation(fields: [responsibleId], references: [id])
   payables         Payable[]
   purchaseOrders   PurchaseOrder[]
   suppliedProducts SupplierProduct[]
+  agreements       SupplierAgreement[]
 
   @@index([status])
   @@index([responsibleId])
@@ -341,6 +344,100 @@ model SupplierProduct {
   @@unique([supplierId, productId])
   @@index([productId])
   @@map("supplier_products")
+}
+
+enum SupplierAgreementStatus {
+  DRAFT
+  ACTIVE
+  CLOSED
+}
+
+enum PaymentDueBasis {
+  ORDER_DATE
+  INVOICE_DATE
+  RECEIPT_DATE
+}
+
+/// Incoterms codes; the edition applied is stored separately (incotermVersion).
+enum Incoterm {
+  EXW
+  FCA
+  CPT
+  CIP
+  DAP
+  DPU
+  DDP
+  FAS
+  FOB
+  CFR
+  CIF
+}
+
+/// A supplier's commercial agreement. Invariants (currency, validity,
+/// payment terms, Incoterm) are enforced in lib/validation/supplier-agreement.ts.
+model SupplierAgreement {
+  id              String                  @id @default(uuid())
+  supplierId      String
+  agreementNumber String
+  status          SupplierAgreementStatus @default(DRAFT)
+  validFrom       DateTime
+  validTo         DateTime?
+  currency        String
+
+  prepaymentPercent Int?
+  balanceDueDays    Int?
+  balanceDueBasis   PaymentDueBasis?
+  paymentTermsNote  String?
+
+  incoterm        Incoterm?
+  incotermVersion Int?
+  incotermPlace   String?
+
+  defaultLeadTimeDays Int?
+  notes               String?
+
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  supplier  Supplier                @relation(fields: [supplierId], references: [id], onDelete: Restrict)
+  createdBy User                    @relation(fields: [createdById], references: [id], onDelete: Restrict)
+  items     SupplierAgreementItem[]
+
+  @@unique([supplierId, agreementNumber])
+  @@index([supplierId, status])
+  @@map("supplier_agreements")
+}
+
+model SupplierAgreementItem {
+  id           String   @id @default(uuid())
+  agreementId  String
+  productId    String
+  leadTimeDays Int?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  agreement  SupplierAgreement            @relation(fields: [agreementId], references: [id], onDelete: Cascade)
+  product    Product                      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  priceTiers SupplierAgreementPriceTier[]
+
+  @@unique([agreementId, productId])
+  @@index([productId])
+  @@map("supplier_agreement_items")
+}
+
+model SupplierAgreementPriceTier {
+  id              String   @id @default(uuid())
+  agreementItemId String
+  minQuantityKg   Decimal  @db.Decimal(14, 3)
+  pricePerKg      Decimal  @db.Decimal(14, 4)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  agreementItem SupplierAgreementItem @relation(fields: [agreementItemId], references: [id], onDelete: Cascade)
+
+  @@unique([agreementItemId, minQuantityKg])
+  @@map("supplier_agreement_price_tiers")
 }
 
 enum SalesOrderStatus {
