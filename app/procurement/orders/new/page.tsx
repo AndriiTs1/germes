@@ -54,7 +54,7 @@ export default async function NewPurchaseOrderPage() {
     >
       <div className="pb-4">
         <Link
-          href="/procurement"
+          href="/procurement/orders"
           className="inline-flex items-center gap-1.5 text-[13px] font-medium text-slate-500 transition-colors hover:text-slate-700"
         >
           <ArrowLeft className="h-3.5 w-3.5" strokeWidth={1.75} />

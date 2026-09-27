@@ -229,6 +229,52 @@ export const uk: Dictionary = {
         pricePositive: "Ціна має бути більшою за 0",
       },
     },
+    ordersList: {
+      title: "Замовлення постачальникам",
+      subtitle: "Усі замовлення постачальникам",
+      createOrder: "Створити замовлення",
+      search: {
+        placeholder: "Номер замовлення або постачальник",
+        ariaLabel: "Пошук замовлень постачальникам",
+      },
+      filters: {
+        all: "Усі",
+        ariaLabel: "Фільтр за статусом",
+      },
+      columns: {
+        order: "Замовлення",
+        supplier: "Постачальник",
+        status: "Статус",
+        items: "Позиції",
+        delivery: "Доставка",
+        amount: "Сума",
+        attention: "Увага",
+      },
+      createdOn: "створено {date}",
+      itemsCount: {
+        one: "{count} позиція",
+        few: "{count} позиції",
+        many: "{count} позицій",
+        other: "{count} позиції",
+      },
+      noWarehouse: "Склад не вказано",
+      noExpectedArrival: "Без дати",
+      expectedBy: "до {date}",
+      amountIncomplete: "Неповна",
+      missingPrices: "{count} без ціни",
+      flags: {
+        missingPrice: "Без ціни",
+        missingWarehouse: "Без складу",
+        missingExpectedArrival: "Без дати",
+      },
+      empty: {
+        noOrdersTitle: "Замовлень ще немає",
+        noOrdersDescription: "Створіть чернетку замовлення постачальнику — вона з'явиться тут.",
+        noResults: "За цими фільтрами замовлень не знайдено",
+        clearFilters: "Скинути фільтри",
+      },
+      paginationAriaLabel: "Сторінки списку замовлень постачальникам",
+    },
   },
 
   finance: {

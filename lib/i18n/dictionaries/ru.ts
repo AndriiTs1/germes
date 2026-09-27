@@ -229,6 +229,52 @@ export const ru: Dictionary = {
         pricePositive: "Цена должна быть больше 0",
       },
     },
+    ordersList: {
+      title: "Заказы поставщикам",
+      subtitle: "Все заказы поставщикам",
+      createOrder: "Создать заказ",
+      search: {
+        placeholder: "Номер заказа или поставщик",
+        ariaLabel: "Поиск заказов поставщикам",
+      },
+      filters: {
+        all: "Все",
+        ariaLabel: "Фильтр по статусу",
+      },
+      columns: {
+        order: "Заказ",
+        supplier: "Поставщик",
+        status: "Статус",
+        items: "Позиции",
+        delivery: "Доставка",
+        amount: "Сумма",
+        attention: "Внимание",
+      },
+      createdOn: "создан {date}",
+      itemsCount: {
+        one: "{count} позиция",
+        few: "{count} позиции",
+        many: "{count} позиций",
+        other: "{count} позиции",
+      },
+      noWarehouse: "Склад не указан",
+      noExpectedArrival: "Без даты",
+      expectedBy: "до {date}",
+      amountIncomplete: "Неполная",
+      missingPrices: "{count} без цены",
+      flags: {
+        missingPrice: "Без цены",
+        missingWarehouse: "Без склада",
+        missingExpectedArrival: "Без даты",
+      },
+      empty: {
+        noOrdersTitle: "Заказов пока нет",
+        noOrdersDescription: "Создайте черновик заказа поставщику — он появится здесь.",
+        noResults: "По этим фильтрам заказы не найдены",
+        clearFilters: "Сбросить фильтры",
+      },
+      paginationAriaLabel: "Страницы списка заказов поставщикам",
+    },
   },
 
   finance: {

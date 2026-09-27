@@ -235,6 +235,52 @@ export const en = {
         pricePositive: "Price must be greater than 0",
       },
     },
+    ordersList: {
+      title: "Purchase orders",
+      subtitle: "All orders to suppliers",
+      createOrder: "Create purchase order",
+      search: {
+        placeholder: "Order number or supplier",
+        ariaLabel: "Search purchase orders",
+      },
+      filters: {
+        all: "All",
+        ariaLabel: "Filter by status",
+      },
+      columns: {
+        order: "Order",
+        supplier: "Supplier",
+        status: "Status",
+        items: "Items",
+        delivery: "Delivery",
+        amount: "Amount",
+        attention: "Attention",
+      },
+      createdOn: "created {date}",
+      itemsCount: {
+        one: "{count} item",
+        few: "{count} items",
+        many: "{count} items",
+        other: "{count} items",
+      },
+      noWarehouse: "No warehouse",
+      noExpectedArrival: "No date",
+      expectedBy: "by {date}",
+      amountIncomplete: "Incomplete",
+      missingPrices: "{count} without price",
+      flags: {
+        missingPrice: "No price",
+        missingWarehouse: "No warehouse",
+        missingExpectedArrival: "No date",
+      },
+      empty: {
+        noOrdersTitle: "No purchase orders yet",
+        noOrdersDescription: "Create a draft order to a supplier — it will appear here.",
+        noResults: "No orders found for these filters",
+        clearFilters: "Clear filters",
+      },
+      paginationAriaLabel: "Purchase order list pages",
+    },
   },
 
   finance: {
