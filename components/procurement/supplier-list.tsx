@@ -23,8 +23,10 @@ function StatusBadge({ status, labels }: { status: string; labels: Dictionary["s
 }
 
 /**
- * Read-only supplier list. >=768px: table (Постачальник | Країна | Статус);
- * <768px: one card per supplier. Only fields that hold real data are shown —
+ * Read-only supplier list. >=768px: table (Постачальник | Країна | Статус),
+ * the whole row opens /procurement/suppliers/[id] — the name cell holds the
+ * row's single Link, stretched over the <tr> (no client JS, one tab stop
+ * per row). <768px: one card per supplier, the whole card is that Link. Only fields that hold real data are shown —
  * empty contact/responsible/payment-term fields are deliberately omitted.
  * Two distinct empty states: no suppliers at all vs. no filter matches.
  */
@@ -86,9 +88,17 @@ export function SupplierList({
           </thead>
           <tbody className="divide-y divide-slate-100">
             {suppliers.map((supplier) => (
-              <tr key={supplier.id} className="text-[13px]">
+              <tr
+                key={supplier.id}
+                className="relative cursor-pointer text-[13px] transition-colors focus-within:bg-slate-50 hover:bg-slate-50"
+              >
                 <td className="max-w-[320px] px-4 py-3">
-                  <p className="truncate font-medium text-slate-900">{supplier.name}</p>
+                  <Link
+                    href={`/procurement/suppliers/${supplier.id}`}
+                    className="block truncate rounded-sm font-medium text-slate-900 underline-offset-2 after:absolute after:inset-0 hover:underline focus-visible:underline focus-visible:outline-none"
+                  >
+                    {supplier.name}
+                  </Link>
                   <p className="truncate text-[11.5px] text-slate-400">{supplier.code}</p>
                 </td>
                 <td className="px-4 py-3 whitespace-nowrap">
@@ -109,14 +119,22 @@ export function SupplierList({
 
       <ul className="flex flex-col gap-2 md:hidden">
         {suppliers.map((supplier) => (
-          <li key={supplier.id} className={cn(CARD, "p-3")}>
-            <div className="flex items-center justify-between gap-2">
-              <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900">{supplier.name}</span>
-              <StatusBadge status={supplier.status} labels={statusLabels} />
-            </div>
-            <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
-              {supplier.code} · {supplier.country ?? t.table.countryNone}
-            </p>
+          <li key={supplier.id}>
+            <Link
+              href={`/procurement/suppliers/${supplier.id}`}
+              className={cn(
+                CARD,
+                "block p-3 transition-colors hover:bg-slate-50 focus-visible:ring-2 focus-visible:ring-blue-500/40 focus-visible:outline-none",
+              )}
+            >
+              <div className="flex items-center justify-between gap-2">
+                <span className="min-w-0 truncate text-[13px] font-semibold text-slate-900">{supplier.name}</span>
+                <StatusBadge status={supplier.status} labels={statusLabels} />
+              </div>
+              <p className="mt-0.5 truncate text-[11.5px] text-slate-400">
+                {supplier.code} · {supplier.country ?? t.table.countryNone}
+              </p>
+            </Link>
           </li>
         ))}
       </ul>

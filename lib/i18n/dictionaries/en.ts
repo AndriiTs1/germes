@@ -189,6 +189,26 @@ export const en = {
       },
       paginationAriaLabel: "Supplier list pages",
     },
+    supplierDetail: {
+      backToSuppliers: "Back to Suppliers",
+      sections: {
+        main: "General information",
+        contacts: "Contacts",
+        responsible: "Responsible",
+        notes: "Notes",
+      },
+      fields: {
+        code: "Supplier code",
+        legalName: "Legal name",
+        taxId: "Tax ID",
+        country: "Country",
+        contactPerson: "Contact person",
+        phone: "Phone",
+        email: "Email",
+        address: "Address",
+        responsible: "Responsible manager",
+      },
+    },
     orderDetail: {
       title: "Purchase order",
       backToProcurement: "Back to Procurement",

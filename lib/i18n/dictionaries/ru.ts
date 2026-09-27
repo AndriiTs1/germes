@@ -183,6 +183,26 @@ export const ru: Dictionary = {
       },
       paginationAriaLabel: "Страницы списка поставщиков",
     },
+    supplierDetail: {
+      backToSuppliers: "Назад к поставщикам",
+      sections: {
+        main: "Основная информация",
+        contacts: "Контакты",
+        responsible: "Ответственный",
+        notes: "Примечания",
+      },
+      fields: {
+        code: "Код поставщика",
+        legalName: "Юридическое название",
+        taxId: "ИНН",
+        country: "Страна",
+        contactPerson: "Контактное лицо",
+        phone: "Телефон",
+        email: "Email",
+        address: "Адрес",
+        responsible: "Ответственный менеджер",
+      },
+    },
     orderDetail: {
       title: "Заказ поставщику",
       backToProcurement: "Назад к закупкам",

@@ -183,6 +183,26 @@ export const uk: Dictionary = {
       },
       paginationAriaLabel: "Сторінки списку постачальників",
     },
+    supplierDetail: {
+      backToSuppliers: "Назад до постачальників",
+      sections: {
+        main: "Основна інформація",
+        contacts: "Контакти",
+        responsible: "Відповідальний",
+        notes: "Примітки",
+      },
+      fields: {
+        code: "Код постачальника",
+        legalName: "Юридична назва",
+        taxId: "ІПН",
+        country: "Країна",
+        contactPerson: "Контактна особа",
+        phone: "Телефон",
+        email: "Email",
+        address: "Адреса",
+        responsible: "Відповідальний менеджер",
+      },
+    },
     orderDetail: {
       title: "Замовлення постачальнику",
       backToProcurement: "Назад до закупівель",
