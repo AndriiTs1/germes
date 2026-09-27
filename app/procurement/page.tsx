@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import type { ReactNode } from "react";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
@@ -28,6 +29,7 @@ import {
 
 const PROCUREMENT_OVERVIEW_PERMISSION = "procurement.overview.read";
 const SUPPLIERS_READ_PERMISSION = "suppliers.read";
+const PROCUREMENT_ORDERS_CREATE_PERMISSION = "procurement.orders.create";
 
 /** Only exact SupplierStatus enum values are accepted from the URL; anything else = all. */
 function parseStatusFilter(value: string | undefined): SupplierStatusFilter {
@@ -56,6 +58,10 @@ export default async function ProcurementPage(props: PageProps<"/procurement">) 
   // Per-widget check before any query, as in SalesWorkspace: supplier counts
   // and the supplier list are supplier data, fetched only with suppliers.read.
   const canReadSuppliers = permissionCodes.includes(SUPPLIERS_READ_PERMISSION);
+
+  // Navigation only — opens the DRAFT create form, which (and whose
+  // action) independently re-checks this same permission.
+  const canCreatePurchaseOrder = permissionCodes.includes(PROCUREMENT_ORDERS_CREATE_PERMISSION);
 
   let supplierSection: ReactNode = null;
   let overview: ProcurementOverviewData | null = null;
@@ -138,10 +144,23 @@ export default async function ProcurementPage(props: PageProps<"/procurement">) 
       showGlobalSearch={false}
     >
       <div className="pb-4">
-        <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
-          {dictionary.procurement.workspace.title}
-        </h1>
-        <p className="mt-1 text-[13px] text-slate-500">{dictionary.procurement.workspace.subtitle}</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0">
+            <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
+              {dictionary.procurement.workspace.title}
+            </h1>
+            <p className="mt-1 text-[13px] text-slate-500">{dictionary.procurement.workspace.subtitle}</p>
+          </div>
+
+          {canCreatePurchaseOrder ? (
+            <Link
+              href="/procurement/orders/new"
+              className="shrink-0 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+            >
+              {dictionary.procurement.workspace.createOrder}
+            </Link>
+          ) : null}
+        </div>
       </div>
 
       <ProcurementOverview overview={overview} dictionary={dictionary}>
