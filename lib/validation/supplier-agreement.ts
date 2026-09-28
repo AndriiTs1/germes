@@ -34,6 +34,9 @@ export const SUPPLIER_AGREEMENT_ERROR_CODES = [
   "invalidPrice",
   "pricePositive",
   "duplicateTier",
+  "invalidIncoterm",
+  "invalidBalanceDueBasis",
+  "invalidPaymentTermsMode",
 ] as const;
 export type SupplierAgreementErrorCode = (typeof SUPPLIER_AGREEMENT_ERROR_CODES)[number];
 
@@ -276,3 +279,112 @@ export const supplierAgreementItemSchema = z
 export type SupplierAgreementTermsInput = z.infer<typeof supplierAgreementTermsSchema>;
 export type SupplierAgreementItemInput = z.infer<typeof supplierAgreementItemSchema>;
 export type SupplierAgreementPriceTierInput = z.infer<typeof supplierAgreementPriceTierSchema>;
+
+/**
+ * How the create form expresses payment terms: "none" (no structured
+ * terms — a note may still describe them) or "structured".
+ */
+export const PAYMENT_TERMS_MODES = ["none", "structured"] as const;
+export type PaymentTermsMode = (typeof PAYMENT_TERMS_MODES)[number];
+
+/** Whole non-negative day counts / percents as typed into a text field (no sign, no decimals). */
+const DAYS_PATTERN = /^\d{1,5}$/;
+const PERCENT_PATTERN = /^\d{1,3}$/;
+
+function intOrNull(value: string): number | null {
+  const trimmed = value.trim();
+  return trimmed === "" ? null : Number(trimmed);
+}
+
+/**
+ * Raw create-form values: every field is a string (or the payment-terms
+ * mode), exactly as the form holds them. Only these keys are read — any
+ * other key a client sends (status, supplierId, createdById,
+ * incotermVersion…) is stripped by z.object and never reaches the service.
+ */
+const supplierAgreementFormObject = z.object({
+  agreementNumber: z.string(),
+  validFrom: z.string(),
+  validTo: z.string(),
+  currency: z.string(),
+  paymentTermsMode: z.enum(PAYMENT_TERMS_MODES, "invalidPaymentTermsMode" satisfies SupplierAgreementErrorCode),
+  prepaymentPercent: z.string(),
+  balanceDueDays: z.string(),
+  balanceDueBasis: z.union([z.literal(""), z.enum(PaymentDueBasis)], {
+    error: "invalidBalanceDueBasis" satisfies SupplierAgreementErrorCode,
+  }),
+  paymentTermsNote: z.string(),
+  incoterm: z.union([z.literal(""), z.enum(Incoterm)], {
+    error: "invalidIncoterm" satisfies SupplierAgreementErrorCode,
+  }),
+  incotermPlace: z.string(),
+  defaultLeadTimeDays: z.string(),
+  notes: z.string(),
+});
+
+/**
+ * Create-form parser: checks the text formats, then maps the form onto
+ * the agreement's terms and runs supplierAgreementTermsSchema — the one
+ * source of the business invariants. The mapping is where the controlling
+ * choices win over stale inputs:
+ * - mode "none" ⇒ no structured payment terms (the note is kept);
+ * - 100% prepayment ⇒ no balance days/basis, whatever was typed before;
+ * - no Incoterm ⇒ no version/place; an Incoterm ⇒ version is always the
+ *   supported one (server-owned, never taken from the client).
+ */
+export const supplierAgreementFormSchema = supplierAgreementFormObject
+  .superRefine((data, ctx) => {
+    const structured = data.paymentTermsMode === "structured";
+    const prepayment = data.prepaymentPercent.trim();
+
+    if (structured && !PERCENT_PATTERN.test(prepayment)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["prepaymentPercent"],
+        message: "invalidPrepaymentPercent" satisfies SupplierAgreementErrorCode,
+      });
+    }
+
+    const balanceApplies = structured && prepayment !== "100";
+    const balanceDays = data.balanceDueDays.trim();
+    if (balanceApplies && balanceDays !== "" && !DAYS_PATTERN.test(balanceDays)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["balanceDueDays"],
+        message: "invalidDays" satisfies SupplierAgreementErrorCode,
+      });
+    }
+
+    const leadTime = data.defaultLeadTimeDays.trim();
+    if (leadTime !== "" && !DAYS_PATTERN.test(leadTime)) {
+      ctx.addIssue({
+        code: "custom",
+        path: ["defaultLeadTimeDays"],
+        message: "invalidDays" satisfies SupplierAgreementErrorCode,
+      });
+    }
+  })
+  .transform((data): z.input<typeof supplierAgreementTermsSchema> => {
+    const prepaymentPercent = data.paymentTermsMode === "structured" ? intOrNull(data.prepaymentPercent) : null;
+    const balanceApplies = prepaymentPercent !== null && prepaymentPercent !== 100;
+    const incoterm = data.incoterm === "" ? null : data.incoterm;
+
+    return {
+      agreementNumber: data.agreementNumber,
+      validFrom: data.validFrom.trim(),
+      validTo: data.validTo.trim() === "" ? null : data.validTo.trim(),
+      currency: data.currency,
+      prepaymentPercent,
+      balanceDueDays: balanceApplies ? intOrNull(data.balanceDueDays) : null,
+      balanceDueBasis: balanceApplies && data.balanceDueBasis !== "" ? data.balanceDueBasis : null,
+      paymentTermsNote: data.paymentTermsNote,
+      incoterm,
+      incotermVersion: incoterm === null ? null : SUPPORTED_INCOTERM_VERSION,
+      incotermPlace: incoterm === null ? null : data.incotermPlace,
+      defaultLeadTimeDays: intOrNull(data.defaultLeadTimeDays),
+      notes: data.notes,
+    };
+  })
+  .pipe(supplierAgreementTermsSchema);
+
+export type SupplierAgreementFormValues = z.input<typeof supplierAgreementFormSchema>;

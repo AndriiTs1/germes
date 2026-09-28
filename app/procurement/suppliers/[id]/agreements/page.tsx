@@ -1,3 +1,5 @@
+import { Plus } from "lucide-react";
+import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { SupplierAgreementsList } from "@/components/procurement/supplier-agreements-list";
@@ -12,6 +14,7 @@ import { getBusinessDate } from "@/lib/services/procurement/supplier-agreement-d
 
 const PROCUREMENT_OVERVIEW_PERMISSION = "procurement.overview.read";
 const SUPPLIERS_READ_PERMISSION = "suppliers.read";
+const SUPPLIERS_UPDATE_PERMISSION = "suppliers.update";
 
 /**
  * Read-only "Agreements" tab of the supplier card. Same access as the
@@ -34,6 +37,10 @@ export default async function SupplierAgreementsPage(props: PageProps<"/procurem
   if (!permissionCodes.includes(SUPPLIERS_READ_PERMISSION)) {
     redirect("/");
   }
+
+  // Only decides whether "New agreement" renders; the create page and its
+  // Action each re-check suppliers.update.
+  const canCreate = permissionCodes.includes(SUPPLIERS_UPDATE_PERMISSION);
 
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
@@ -58,6 +65,18 @@ export default async function SupplierAgreementsPage(props: PageProps<"/procurem
       showGlobalSearch={false}
     >
       <SupplierDetailHeader supplier={supplier} activeTab="agreements" dictionary={dictionary} />
+
+      {canCreate ? (
+        <div className="mb-3 flex justify-end">
+          <Link
+            href={`/procurement/suppliers/${supplier.id}/agreements/new`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-slate-900 px-4 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-slate-800"
+          >
+            <Plus className="h-3.5 w-3.5" strokeWidth={2} />
+            {dictionary.procurement.supplierDetail.agreementForm.newAgreement}
+          </Link>
+        </div>
+      ) : null}
 
       <SupplierAgreementsList supplierId={supplier.id} agreements={agreements} locale={locale} dictionary={dictionary} />
     </DashboardShell>
