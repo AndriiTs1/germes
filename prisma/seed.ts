@@ -470,7 +470,7 @@ async function main() {
   // exactly as people edited it. The create payloads seed a fresh database.
   // --------------------------------------------------
 
-  const warehouseKyiv = await prisma.warehouse.upsert({
+  await prisma.warehouse.upsert({
     where: { code: "WH-KYIV" },
     update: {},
     create: {
@@ -480,7 +480,7 @@ async function main() {
     },
   });
 
-  const warehouseLutsk = await prisma.warehouse.upsert({
+  await prisma.warehouse.upsert({
     where: { code: "WH-LUTSK" },
     update: {},
     create: {
