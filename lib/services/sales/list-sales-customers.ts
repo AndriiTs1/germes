@@ -132,7 +132,8 @@ export async function listSalesCustomers(
           },
         },
       },
-      orderBy: { name: "asc" },
+      // id breaks name ties (names aren't unique) so skip/take pages never overlap or drop rows.
+      orderBy: [{ name: "asc" }, { id: "asc" }],
       skip: (page - 1) * limit,
       take: limit,
     }),
