@@ -1144,11 +1144,10 @@ export const uk: Dictionary = {
       },
     },
     procurementNeeds: {
-      title: "Потреби в закупівлях",
-      itemsToReorder: "Позицій до замовлення",
+      title: "Найнижчі залишки",
+      lowestStockProducts: "Товари з найменшим залишком",
       stockLabel: "Залишок:",
-      critical: "Критично",
-      warning: "Увага",
+      outOfStock: "Немає в наявності",
     },
     needsAttention: {
       title: "Потребує уваги",

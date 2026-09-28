@@ -1144,11 +1144,10 @@ export const ru: Dictionary = {
       },
     },
     procurementNeeds: {
-      title: "Потребности в закупках",
-      itemsToReorder: "Позиций к заказу",
+      title: "Минимальные остатки",
+      lowestStockProducts: "Товары с наименьшим остатком",
       stockLabel: "Остаток:",
-      critical: "Критично",
-      warning: "Внимание",
+      outOfStock: "Нет в наличии",
     },
     needsAttention: {
       title: "Требует внимания",

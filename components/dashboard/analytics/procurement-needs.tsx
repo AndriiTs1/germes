@@ -26,14 +26,13 @@ export async function ProcurementNeeds({ dictionary }: { dictionary: Dictionary 
           {value}
         </span>
       </div>
-      <p className="mt-1 text-[11.5px] text-slate-400">{t.itemsToReorder}</p>
+      <p className="mt-1 text-[11.5px] text-slate-400">{t.lowestStockProducts}</p>
 
       <ul className="mt-auto space-y-0.5">
         {items.map((item) => {
-          const isCritical = item.urgency === "critical";
           const Icon = productIcons[item.name] ?? Beef;
           return (
-            <li key={item.name}>
+            <li key={item.sku}>
               <button
                 type="button"
                 className="flex w-full items-center justify-between gap-2 rounded-xl px-1.5 py-0.5 text-left transition-colors hover:bg-slate-50"
@@ -42,7 +41,7 @@ export async function ProcurementNeeds({ dictionary }: { dictionary: Dictionary 
                   <span
                     className={cn(
                       "flex h-6 w-6 shrink-0 items-center justify-center rounded-[8px]",
-                      isCritical ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600",
+                      item.outOfStock ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500",
                     )}
                   >
                     <Icon className="h-3.5 w-3.5" strokeWidth={1.75} />
@@ -52,18 +51,16 @@ export async function ProcurementNeeds({ dictionary }: { dictionary: Dictionary 
                       {item.name}
                     </span>
                     <span className="block text-[11px] leading-tight text-slate-400">
-                      {t.stockLabel} {item.stockKg} {dictionary.common.kgUnit}
+                      {t.stockLabel} {item.belowOneKg ? "<1" : item.stockKg} {dictionary.common.kgUnit}
                     </span>
                   </span>
                 </span>
-                <span
-                  className={cn(
-                    "shrink-0 rounded-full px-2 py-0.5 text-[10px] font-medium",
-                    isCritical ? "bg-rose-50 text-rose-600" : "bg-amber-50 text-amber-600",
-                  )}
-                >
-                  {isCritical ? t.critical : t.warning}
-                </span>
+                {/* Only a real fact gets a badge: zero stock. There is no threshold for "low". */}
+                {item.outOfStock ? (
+                  <span className="shrink-0 rounded-full bg-rose-50 px-2 py-0.5 text-[10px] font-medium text-rose-600">
+                    {t.outOfStock}
+                  </span>
+                ) : null}
               </button>
             </li>
           );

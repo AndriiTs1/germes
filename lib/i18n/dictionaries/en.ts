@@ -1150,11 +1150,10 @@ export const en = {
       },
     },
     procurementNeeds: {
-      title: "Procurement Needs",
-      itemsToReorder: "Items to reorder",
+      title: "Lowest stock",
+      lowestStockProducts: "Products with the lowest stock",
       stockLabel: "Stock:",
-      critical: "Critical",
-      warning: "Warning",
+      outOfStock: "Out of stock",
     },
     needsAttention: {
       title: "Needs Attention",
