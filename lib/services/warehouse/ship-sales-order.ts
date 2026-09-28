@@ -64,9 +64,10 @@ type ValidatedReservation = {
  *     malformed/legacy reservation fails the whole operation closed —
  *     nothing is ever guessed.
  *  4. Like markSalesOrderReady, this service does NOT perform expiration
- *     housekeeping — it never transitions a reservation ACTIVE -> EXPIRED.
- *     An ACTIVE reservation whose expiresAt <= now simply fails fulfillment
- *     validation closed.
+ *     housekeeping — it never transitions a reservation ACTIVE -> EXPIRED —
+ *     and expiresAt does not block shipment: once Warehouse accepted the
+ *     order (PROCESSING), the 24h TTL is historical. Only ACTIVE
+ *     reservations are shipped (never RELEASED/EXPIRED/CONSUMED).
  *  5. For every item independently, SUM(ACTIVE reservation.quantityKg) must
  *     equal item.quantityKg exactly (Prisma.Decimal comparison) — not less,
  *     not more.
@@ -85,8 +86,8 @@ type ValidatedReservation = {
  *     aggregate — never per individual reservation, so two reservations
  *     sharing the same batch+warehouse produce one movement, not two.
  *  b. Every validated reservation is consumed via a guarded updateMany
- *     re-asserting id + salesOrderId + status:ACTIVE + the same
- *     not-elapsed boundary, requiring count === 1 — if any reservation
+ *     re-asserting id + salesOrderId + status:ACTIVE, requiring
+ *     count === 1 — if any reservation
  *     cannot be consumed exactly once (e.g. a concurrent change since
  *     validation), the whole transaction rolls back, so a shipment is
  *     never partially consumed.
@@ -152,7 +153,7 @@ export async function shipSalesOrder(
 
           const itemById = new Map(items.map((item) => [item.id, item]));
 
-          // One shared timestamp for expiration validation, shippedAt, and
+          // One shared timestamp for shippedAt, the receivable due date and
           // every AuditLog entry created below.
           const now = new Date();
 
@@ -168,26 +169,18 @@ export async function shipSalesOrder(
               batchId: true,
               warehouseId: true,
               quantityKg: true,
-              expiresAt: true,
             },
           });
 
-          // Structural + expiration validation: any malformed/legacy/
-          // elapsed ACTIVE reservation fails the whole operation closed.
-          // No reservation is mutated here and no expiration housekeeping
-          // is performed — an elapsed reservation is just an invariant
-          // violation, exactly like markSalesOrderReady.
+          // Structural validation: any malformed/legacy ACTIVE reservation
+          // fails the whole operation closed. expiresAt is not checked (see
+          // the doc comment) and no reservation is mutated here.
           const validatedReservations: ValidatedReservation[] = [];
 
           for (const reservation of activeReservations) {
-            const { id, salesOrderItemId, batchId, warehouseId, productId, quantityKg, expiresAt } =
-              reservation;
+            const { id, salesOrderItemId, batchId, warehouseId, productId, quantityKg } = reservation;
 
             if (!salesOrderItemId || !batchId || !warehouseId || !quantityKg.gt(0)) {
-              throw new FulfillmentNotReadyError();
-            }
-
-            if (expiresAt !== null && expiresAt <= now) {
               throw new FulfillmentNotReadyError();
             }
 
@@ -338,9 +331,9 @@ export async function shipSalesOrder(
             shipmentMovementCount += 1;
           }
 
-          // Consume every validated reservation. The guard re-asserts the
-          // same not-elapsed boundary evaluated against `now` above — if
-          // any reservation can no longer be consumed exactly once, the
+          // Consume every validated reservation. The guard re-asserts
+          // ACTIVE + this order — if any reservation can no longer be
+          // consumed exactly once (released/consumed concurrently), the
           // whole transaction (including the shipment movements just
           // created) rolls back.
           for (const reservation of validatedReservations) {
@@ -349,7 +342,6 @@ export async function shipSalesOrder(
                 id: reservation.id,
                 salesOrderId: order.id,
                 status: ReservationStatus.ACTIVE,
-                OR: [{ expiresAt: null }, { expiresAt: { gt: now } }],
               },
               data: { status: ReservationStatus.CONSUMED },
             });

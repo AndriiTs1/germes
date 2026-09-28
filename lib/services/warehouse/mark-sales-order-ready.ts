@@ -45,20 +45,22 @@ type ValidatedReservation = {
  * that snapshot is still fully backed and structurally valid right before
  * declaring the order ready for physical shipment. PROCESSING -> READY does
  * NOT perform expiration housekeeping — it never transitions a reservation
- * ACTIVE -> EXPIRED and never writes an expiration AuditLog — but an ACTIVE
- * reservation whose expiresAt <= now fails fulfillment validation closed
- * and cannot count toward READY, exactly like any other invariant
- * violation. An ACTIVE reservation with expiresAt = null remains valid with
- * respect to expiration.
+ * ACTIVE -> EXPIRED and never writes an expiration AuditLog. The 24h TTL
+ * only guards reservations until Warehouse accepts the order
+ * (startSalesOrderProcessing refuses elapsed ones, and
+ * expireStockReservations only expires CONFIRMED orders' reservations);
+ * after that an ACTIVE reservation's expiresAt is historical and never
+ * blocks PROCESSING -> READY — otherwise an order not finished within 24h
+ * would be stuck for good, with no way back to CONFIRMED to re-reserve.
  *
  *  1. The order must exist and currently be exactly PROCESSING.
  *  2. The order must have at least one SalesOrderItem.
  *  3. Every ACTIVE reservation for this order is validated for structural
  *     integrity (non-null salesOrderItemId/batchId/warehouseId,
- *     quantityKg > 0, not elapsed (expiresAt is null or > now), references
- *     an item that actually belongs to this order, and its productId
- *     matches that item's productId). Any malformed/legacy/elapsed
- *     reservation fails the whole operation closed — nothing is ever
+ *     quantityKg > 0, references an item that actually belongs to this
+ *     order, and its productId matches that item's productId). Only ACTIVE
+ *     reservations count (never RELEASED/EXPIRED/CONSUMED). Any
+ *     malformed/legacy reservation fails the whole operation closed — nothing is ever
  *     guessed, and no reservation is ever mutated as a result.
  *  4. For every item independently, SUM(ACTIVE reservation.quantityKg) must
  *     equal item.quantityKg exactly (Prisma.Decimal comparison) — not less,
@@ -117,14 +119,9 @@ export async function markSalesOrderReady(
 
           const itemById = new Map(items.map((item) => [item.id, item]));
 
-          // No expiration housekeeping here — PROCESSING already means
-          // Warehouse accepted the fulfillment snapshot, and this service
-          // never mutates reservation state. But an ACTIVE reservation whose
-          // expiresAt <= now must not silently count toward READY, so its
-          // expiresAt is loaded and checked during validation below using
-          // this one shared `now`.
-          const now = new Date();
-
+          // No expiration handling here — PROCESSING already means
+          // Warehouse accepted the fulfillment snapshot; expiresAt no longer
+          // matters (see the doc comment) and is neither checked nor mutated.
           const activeReservations = await tx.stockReservation.findMany({
             where: {
               salesOrderId: order.id,
@@ -137,27 +134,17 @@ export async function markSalesOrderReady(
               batchId: true,
               warehouseId: true,
               quantityKg: true,
-              expiresAt: true,
             },
           });
 
           // Structural validation: any malformed/legacy ACTIVE reservation
-          // fails the whole operation closed. Nothing here is guessed. An
-          // elapsed reservation (expiresAt <= now) fails fulfillment
-          // validation closed too — it is never mutated (no ACTIVE ->
-          // EXPIRED transition, no EXPIRE AuditLog); expiresAt = null
-          // remains valid with respect to expiration.
+          // fails the whole operation closed. Nothing here is guessed.
           const validatedReservations: ValidatedReservation[] = [];
 
           for (const reservation of activeReservations) {
-            const { id, salesOrderItemId, batchId, warehouseId, productId, quantityKg, expiresAt } =
-              reservation;
+            const { id, salesOrderItemId, batchId, warehouseId, productId, quantityKg } = reservation;
 
             if (!salesOrderItemId || !batchId || !warehouseId || !quantityKg.gt(0)) {
-              throw new FulfillmentNotReadyError();
-            }
-
-            if (expiresAt !== null && expiresAt <= now) {
               throw new FulfillmentNotReadyError();
             }
 
