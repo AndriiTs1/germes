@@ -10,6 +10,7 @@ import { OrderFormItemRow } from "@/components/sales/order-form/order-form-item-
 import { SearchableSelect } from "@/components/sales/order-form/searchable-select";
 import { formatPreviewNumber } from "@/components/sales/format";
 import { DateInput } from "@/components/ui/date-input";
+import { displayNotes } from "@/lib/display-notes";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { resolveFieldError } from "@/lib/i18n/resolve-field-error";
@@ -65,7 +66,7 @@ export function EditOrderForm({ order, customers, products, locale, dictionary }
     defaultValues: {
       customerId: order.customerId,
       requestedDate: order.requestedDate ? order.requestedDate.slice(0, 10) : "",
-      notes: order.notes ?? "",
+      notes: displayNotes(order.notes) ?? "", // internal markers are not shown to the user
       items: order.items.map(({ productId, quantityKg, pricePerKg }) => ({
         productId,
         quantityKg,

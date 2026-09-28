@@ -1,4 +1,5 @@
 import { DetailSection } from "@/components/sales/detail-section";
+import { displayNotes } from "@/lib/display-notes";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { SupplierDetail } from "@/lib/services/procurement/get-supplier-detail";
 
@@ -73,10 +74,10 @@ export function SupplierDetailOverview({
       </DetailSection>
 
       <DetailSection title={t.sections.notes}>
-        {supplier.notes === null ? (
+        {displayNotes(supplier.notes) === null ? (
           <p className="text-[13px] font-medium text-slate-400">{EMPTY_VALUE}</p>
         ) : (
-          <p className="text-[13px] whitespace-pre-line text-slate-700">{supplier.notes}</p>
+          <p className="text-[13px] whitespace-pre-line text-slate-700">{displayNotes(supplier.notes)}</p>
         )}
       </DetailSection>
     </div>

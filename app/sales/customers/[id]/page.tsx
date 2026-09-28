@@ -8,6 +8,7 @@ import { CustomerDetailOrders } from "@/components/sales/customer-detail-orders"
 import { CustomerDetailOverview } from "@/components/sales/customer-detail-overview";
 import { CustomerDetailReceivable } from "@/components/sales/customer-detail-receivable";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { displayNotes } from "@/lib/display-notes";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
@@ -54,7 +55,8 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
     notFound();
   }
 
-  const hasNotes = customer.notes !== null && customer.notes.trim() !== "";
+  // Internal markers (e.g. the demo dataset tag) are never shown.
+  const hasNotes = displayNotes(customer.notes) !== null;
 
   return (
     <DashboardShell

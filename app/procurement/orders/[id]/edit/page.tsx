@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { NewPurchaseOrderForm } from "@/components/procurement/purchase-order-form/new-purchase-order-form";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { displayNotes } from "@/lib/display-notes";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
@@ -87,7 +88,7 @@ export default async function EditPurchaseOrderPage(props: PageProps<"/procureme
             currency: isPurchaseOrderCurrency(order.currency) ? order.currency : "",
             // Stored as UTC midnight of the chosen day → the same "YYYY-MM-DD".
             expectedArrivalDate: order.expectedArrivalDate ? order.expectedArrivalDate.slice(0, 10) : "",
-            notes: order.notes ?? "",
+            notes: displayNotes(order.notes) ?? "", // internal markers are not shown to the user
             items: order.items.map((item) => ({
               productId: item.productId,
               quantityKg: item.quantityKg,

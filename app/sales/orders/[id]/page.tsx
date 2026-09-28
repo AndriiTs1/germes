@@ -11,6 +11,7 @@ import { OrderDetailOverview } from "@/components/sales/order-detail-overview";
 import { OrderDetailReceivable } from "@/components/sales/order-detail-receivable";
 import { OrderDetailReservations } from "@/components/sales/order-detail-reservations";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { displayNotes } from "@/lib/display-notes";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
@@ -93,7 +94,8 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   const hasSecondaryRow =
     showReservations || order.receivable !== null;
 
-  const hasNotes = order.notes !== null && order.notes.trim() !== "";
+  // Internal markers (e.g. the demo dataset tag) are never shown.
+  const hasNotes = displayNotes(order.notes) !== null;
 
   return (
     <DashboardShell

@@ -12,6 +12,7 @@ import {
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatShortDate } from "@/components/sales/format";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
+import { displayNotes } from "@/lib/display-notes";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
@@ -53,7 +54,9 @@ export default async function PurchaseOrderDetailPage(props: PageProps<"/procure
     notFound();
   }
 
-  const hasNotes = order.notes !== null && order.notes.trim() !== "";
+  // Internal markers (e.g. the demo dataset tag) are never shown.
+  const visibleNotes = displayNotes(order.notes);
+  const hasNotes = visibleNotes !== null;
 
   return (
     <DashboardShell
@@ -111,7 +114,7 @@ export default async function PurchaseOrderDetailPage(props: PageProps<"/procure
 
         {hasNotes ? (
           <DetailSection title={t.notes.title}>
-            <p className="text-[13px] whitespace-pre-line text-slate-700">{order.notes}</p>
+            <p className="text-[13px] whitespace-pre-line text-slate-700">{visibleNotes}</p>
           </DetailSection>
         ) : null}
       </div>
