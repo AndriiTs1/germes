@@ -1,5 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 
 /**
  * Physical stock split into its two real parts. There is no receiving
@@ -23,7 +24,7 @@ export type InventoryStatusData = {
   }[];
 };
 
-export async function getInventoryStatus(): Promise<InventoryStatusData> {
+export async function getInventoryStatus(now: Date = new Date()): Promise<InventoryStatusData> {
   const movements = await prisma.stockMovement.findMany({
     select: {
       type: true,
@@ -31,10 +32,9 @@ export async function getInventoryStatus(): Promise<InventoryStatusData> {
     },
   });
 
+  // Same reserved rule as /sales and Warehouse (reservation-ttl.ts).
   const reservations = await prisma.stockReservation.findMany({
-    where: {
-      status: "ACTIVE",
-    },
+    where: effectiveActiveReservationWhere(now),
     select: {
       quantityKg: true,
     },

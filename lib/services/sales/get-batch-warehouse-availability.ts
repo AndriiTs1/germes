@@ -1,5 +1,6 @@
-import { BatchStatus, Prisma, ReservationStatus } from "@/lib/generated/prisma/client";
+import { BatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 import { decimalToString } from "@/lib/services/sales/decimal";
 
 export type BatchWarehouseAvailability = {
@@ -30,6 +31,7 @@ export type BatchWarehouseAvailability = {
  */
 export async function getBatchWarehouseAvailability(
   productId: string,
+  now: Date = new Date(),
 ): Promise<BatchWarehouseAvailability[]> {
   const [movements, reservations] = await Promise.all([
     prisma.stockMovement.findMany({
@@ -69,8 +71,8 @@ export async function getBatchWarehouseAvailability(
     }),
     prisma.stockReservation.findMany({
       where: {
+        ...effectiveActiveReservationWhere(now),
         productId,
-        status: ReservationStatus.ACTIVE,
         warehouseId: { not: null },
         batchId: { not: null },
       },

@@ -1,7 +1,7 @@
 import { FinanceStatus, Prisma, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { attentionCustomerWhere, getAttentionCutoffs } from "@/lib/services/sales/attention-rules";
-import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
+import { ACTIVE_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
 import { decimalToString } from "@/lib/services/sales/decimal";
 
 export type SalesTeamTurnover = {
@@ -123,7 +123,7 @@ function toMetrics(bucket: Bucket): SalesTeamMetrics {
  * Metric rules mirror the existing services:
  *   - customers: isActive only (as listSalesCustomers)
  *   - attention: attention-rules.ts (shared with getAttentionCustomers)
- *   - active orders: status not in TERMINAL_SALES_ORDER_STATUSES
+ *   - active orders: ACTIVE_SALES_ORDER_STATUSES (CONFIRMED / PROCESSING / READY — DRAFT excluded)
  *   - turnover: all-time sum of quantityKg * pricePerKg, excluding CANCELLED
  *   - receivables: excludes PAID/CANCELLED, outstanding = amount - paidAmount,
  *     non-positive outstanding skipped, overdue = dueDate < now
@@ -184,7 +184,7 @@ export async function getSalesTeamSummary(): Promise<SalesTeamSummary> {
 
   for (const order of orders) {
     const bucket = bucketFor(order.responsibleId);
-    if (!TERMINAL_SALES_ORDER_STATUSES.includes(order.status)) {
+    if (ACTIVE_SALES_ORDER_STATUSES.includes(order.status)) {
       bucket.activeOrderCount += 1;
     }
     const orderTotal = order.items.reduce(

@@ -1,5 +1,6 @@
-import { BatchStatus, Prisma, ReservationStatus } from "@/lib/generated/prisma/client";
+import { BatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 import { decimalToString } from "@/lib/services/sales/decimal";
 
 export type StockCell = {
@@ -164,7 +165,7 @@ export function aggregateStockByWarehouse(input: StockByWarehouseInput): StockBy
  * warehouse read service. Warehouses come from the database (active,
  * ordered by code), never a hardcoded list.
  */
-export async function getStockByWarehouse(): Promise<StockByWarehouse> {
+export async function getStockByWarehouse(now: Date = new Date()): Promise<StockByWarehouse> {
   const [products, warehouses, movements, reservations] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
@@ -184,7 +185,7 @@ export async function getStockByWarehouse(): Promise<StockByWarehouse> {
       },
     }),
     prisma.stockReservation.findMany({
-      where: { status: ReservationStatus.ACTIVE },
+      where: effectiveActiveReservationWhere(now),
       select: {
         productId: true,
         warehouseId: true,

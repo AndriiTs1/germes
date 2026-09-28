@@ -17,6 +17,17 @@ export const RECEIVABLE_DUE_SOON_DAYS = 7;
 /** An active reservation expiring within this many hours is "expiring soon". */
 export const RESERVATION_EXPIRING_SOON_HOURS = 24;
 
+/**
+ * "Active orders" as a business metric (same definition as the Owner
+ * Dashboard): orders in work — confirmed and not yet shipped. DRAFT is not
+ * active (nothing has been committed to the customer yet).
+ */
+export const ACTIVE_SALES_ORDER_STATUSES: SalesOrderStatus[] = [
+  SalesOrderStatus.CONFIRMED,
+  SalesOrderStatus.PROCESSING,
+  SalesOrderStatus.READY,
+];
+
 /** SalesOrder statuses considered finished — excluded from "active" order views. */
 export const TERMINAL_SALES_ORDER_STATUSES: SalesOrderStatus[] = [
   SalesOrderStatus.SHIPPED,

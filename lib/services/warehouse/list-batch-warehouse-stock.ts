@@ -1,5 +1,6 @@
-import { BatchStatus, Prisma, ReservationStatus } from "@/lib/generated/prisma/client";
+import { BatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 import { decimalToString } from "@/lib/services/sales/decimal";
 
 export type WarehouseBatchStockRow = {
@@ -27,7 +28,7 @@ export type WarehouseBatchStockRow = {
  * ACTIVE reservations are attributed only when both batchId and warehouseId
  * are present. Legacy unallocated reservations are deliberately not guessed.
  */
-export async function listBatchWarehouseStock(): Promise<WarehouseBatchStockRow[]> {
+export async function listBatchWarehouseStock(now: Date = new Date()): Promise<WarehouseBatchStockRow[]> {
   const [movements, reservations] = await Promise.all([
     prisma.stockMovement.findMany({
       where: {
@@ -72,7 +73,7 @@ export async function listBatchWarehouseStock(): Promise<WarehouseBatchStockRow[
     }),
     prisma.stockReservation.findMany({
       where: {
-        status: ReservationStatus.ACTIVE,
+        ...effectiveActiveReservationWhere(now),
         warehouseId: { not: null },
         batchId: { not: null },
         batch: {

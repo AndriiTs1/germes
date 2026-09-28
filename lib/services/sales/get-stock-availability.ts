@@ -1,5 +1,6 @@
-import { BatchStatus, Prisma, ReservationStatus } from "@/lib/generated/prisma/client";
+import { BatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 import { decimalToString } from "@/lib/services/sales/decimal";
 
 /**
@@ -71,7 +72,7 @@ export type ProductStockAvailability = {
  * availableKg is not clamped at zero: a negative value indicates bad data
  * (over-reservation) and should stay visible, not hidden.
  */
-export async function getStockAvailability(): Promise<ProductStockAvailability[]> {
+export async function getStockAvailability(now: Date = new Date()): Promise<ProductStockAvailability[]> {
   const [products, movements, reservations] = await Promise.all([
     prisma.product.findMany({
       where: { isActive: true },
@@ -86,7 +87,7 @@ export async function getStockAvailability(): Promise<ProductStockAvailability[]
       },
     }),
     prisma.stockReservation.findMany({
-      where: { status: ReservationStatus.ACTIVE },
+      where: effectiveActiveReservationWhere(now),
       select: {
         productId: true,
         quantityKg: true,

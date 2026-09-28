@@ -15,7 +15,6 @@ import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
-import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getBatchWarehouseAvailability } from "@/lib/services/sales/get-batch-warehouse-availability";
 import { getSalesOrderDetail } from "@/lib/services/sales/get-sales-order-detail";
 import { getSalesOrderHistory } from "@/lib/services/sales/get-sales-order-history";
@@ -57,9 +56,9 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
   const locale = await getCurrentLocale();
   const dictionary = getDictionary(locale);
 
-  if (canReadReservations || canCreateReservations) {
-    await expireStockReservations();
-  }
+  // Read only: opening an order never expires reservations (no writes on
+  // render). createStockReservation / startSalesOrderProcessing expire
+  // elapsed ones inside their own write transactions.
 
   const { id } = await props.params;
   const order = await getSalesOrderDetail(user.id, id, readScope);

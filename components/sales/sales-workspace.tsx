@@ -3,10 +3,10 @@ import { CircleDollarSign, ClipboardList, PackageSearch, UserRoundCheck } from "
 import { Prisma } from "@/lib/generated/prisma/client";
 import { getAttentionCustomers } from "@/lib/services/sales/get-attention-customers";
 import { getReceivableExposure } from "@/lib/services/sales/get-receivable-exposure";
-import { expireStockReservations } from "@/lib/services/sales/expire-stock-reservations";
 import { getReservationsRequiringAttention } from "@/lib/services/sales/get-reservations-requiring-attention";
 import { getStockAvailability } from "@/lib/services/sales/get-stock-availability";
 import { getSalesTeamSummary } from "@/lib/services/sales/get-sales-team-summary";
+import { ACTIVE_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
 import { listSalesOrders } from "@/lib/services/sales/list-sales-orders";
 import { ActiveOrdersCard } from "@/components/sales/active-orders-card";
 import { AvailableStockCard } from "@/components/sales/available-stock-card";
@@ -54,14 +54,13 @@ export async function SalesWorkspace({
   // scope; the "own" (SALES) path never calls getSalesTeamSummary.
   const showTeam = readScope === "all" && canReadCustomers && canReadOrders;
 
-  if (canReadStock || canReadReservations) {
-    await expireStockReservations();
-  }
-
+  // Read only: no ACTIVE → EXPIRED writes here. Elapsed CONFIRMED
+  // reservations are simply not counted (effectiveActiveReservationWhere).
   const [attentionCustomers, ordersResult, stock, reservations, receivables, teamSummary] = await Promise.all([
     canReadCustomers ? getAttentionCustomers(userId, readScope) : Promise.resolve(null),
     canReadOrders
-      ? listSalesOrders(userId, { scope: readScope, onlyActive: true, limit: RECENT_ORDERS_LIMIT })
+      ? // "Active orders" = CONFIRMED / PROCESSING / READY (as on the Owner Dashboard); drafts stay on /sales/orders.
+        listSalesOrders(userId, { scope: readScope, statuses: ACTIVE_SALES_ORDER_STATUSES, limit: RECENT_ORDERS_LIMIT })
       : Promise.resolve(null),
     canReadStock ? getStockAvailability() : Promise.resolve(null),
     canReadReservations ? getReservationsRequiringAttention(userId, readScope) : Promise.resolve(null),
