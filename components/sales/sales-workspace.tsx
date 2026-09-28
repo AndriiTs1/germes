@@ -14,6 +14,7 @@ import { NeedsAttentionCard } from "@/components/sales/needs-attention-card";
 import { ReceivablesCard } from "@/components/sales/receivables-card";
 import { ReservationsCard } from "@/components/sales/reservations-card";
 import { formatKg } from "@/components/sales/format";
+import { pluralize } from "@/lib/i18n/pluralize";
 import { SalesKpiSummary, type SalesKpiCardProps } from "@/components/sales/sales-kpi-row";
 import { SalesTeamSummary } from "@/components/sales/sales-team-summary";
 import type { Locale } from "@/lib/i18n/config";
@@ -105,7 +106,7 @@ export async function SalesWorkspace({
       // currency-safe count instead. Individual values remain available
       // in the Receivables card itself.
       value = String(withOverdue.length);
-      unit = kpi.currenciesUnit;
+      unit = pluralize(locale, withOverdue.length, kpi.currenciesUnit);
     }
 
     kpis.push({ label: kpi.overdueAr, value, unit, icon: CircleDollarSign, accent: "amber" });

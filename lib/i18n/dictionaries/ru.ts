@@ -716,7 +716,12 @@ export const ru: Dictionary = {
         activeOrders: "Активные заказы",
         overdueAr: "Просроченная ДЗ",
         reserved: "Зарезервировано",
-        currenciesUnit: "валют",
+        currenciesUnit: {
+          one: "валюта",
+          few: "валюты",
+          many: "валют",
+          other: "валюты",
+        },
         reservationsNeedReview: "Некоторые резервирования требуют проверки",
       },
       activeOrdersEmpty: "Сейчас нет активных заказов",
@@ -755,7 +760,7 @@ export const ru: Dictionary = {
     },
     reservationsCard: {
       title: "Резервирования",
-      empty: "Нет резервирований, требующих внимания",
+      empty: "Нет активных резервирований",
       expiredLabel: "Истекло",
       expiringSoonLabel: "Скоро истекает",
       activeLabel: "Активно",

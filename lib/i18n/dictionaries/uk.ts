@@ -716,7 +716,12 @@ export const uk: Dictionary = {
         activeOrders: "Активні замовлення",
         overdueAr: "Прострочена ДЗ",
         reserved: "Зарезервовано",
-        currenciesUnit: "валют",
+        currenciesUnit: {
+          one: "валюта",
+          few: "валюти",
+          many: "валют",
+          other: "валюти",
+        },
         reservationsNeedReview: "Деякі резервування потребують перевірки",
       },
       activeOrdersEmpty: "Наразі немає активних замовлень",
@@ -755,7 +760,7 @@ export const uk: Dictionary = {
     },
     reservationsCard: {
       title: "Резервування",
-      empty: "Немає резервувань, що потребують уваги",
+      empty: "Немає активних резервувань",
       expiredLabel: "Прострочено",
       expiringSoonLabel: "Скоро закінчується",
       activeLabel: "Активне",

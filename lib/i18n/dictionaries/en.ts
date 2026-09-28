@@ -722,7 +722,12 @@ export const en = {
         activeOrders: "Active Orders",
         overdueAr: "Overdue AR",
         reserved: "Reserved",
-        currenciesUnit: "currencies",
+        currenciesUnit: {
+          one: "currency",
+          few: "currencies",
+          many: "currencies",
+          other: "currencies",
+        },
         reservationsNeedReview: "Some reservations need review",
       },
       activeOrdersEmpty: "No active orders right now",
@@ -761,7 +766,7 @@ export const en = {
     },
     reservationsCard: {
       title: "Reservations",
-      empty: "No reservations need attention",
+      empty: "No active reservations",
       expiredLabel: "Expired",
       expiringSoonLabel: "Expiring soon",
       activeLabel: "Active",

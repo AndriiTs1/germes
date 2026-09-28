@@ -30,8 +30,17 @@ export function formatMoney(value: string, currency: string, locale: Locale = DE
   return `${formatNumber(value, locale)} ${currency}`;
 }
 
+/**
+ * Calendar day in the business timezone (Europe/Kyiv), never the server's:
+ * real timestamps (orderDate, expiresAt, shippedAt…) show the Kyiv day they
+ * happened on, and date-only values stored as UTC midnight stay on the same
+ * day because Kyiv is always ahead of UTC.
+ */
+const BUSINESS_TIME_ZONE = "Europe/Kyiv";
+
 export function formatShortDate(iso: string, locale: Locale = DEFAULT_LOCALE): string {
   return new Date(iso).toLocaleDateString(INTL_LOCALE_MAP[locale], {
+    timeZone: BUSINESS_TIME_ZONE,
     day: "numeric",
     month: "short",
   });
