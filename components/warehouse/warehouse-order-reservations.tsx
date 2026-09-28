@@ -19,17 +19,16 @@ type WarehouseOrderReservationsProps = {
  * READ-ONLY: no Create/Release controls — Warehouse must never receive
  * Sales reservation mutation controls. A reservation's real, literal status
  * is always shown (never relabeled) via the same status.reservation
- * dictionary map used on the Sales detail page. For CONFIRMED/PROCESSING/
- * READY orders, an ACTIVE reservation whose expiresAt has already passed is
- * still shown as "Active" (that IS its real status — this route never
- * mutates it) but flagged with a plain-language note that it no longer
- * counts as usable fulfillment, matching the "evaluate, never mutate" truth
- * already enforced by getWarehouseOrderDetail. For SHIPPED orders,
+ * dictionary map used on the Sales detail page. For a CONFIRMED order, an
+ * ACTIVE reservation whose expiresAt has already passed is still shown as
+ * "Active" (that IS its real status — this route never mutates it) but
+ * flagged with a plain-language note that it no longer counts as usable
+ * fulfillment, exactly as getWarehouseOrderDetail decides (isTtlElapsed).
+ * For PROCESSING/READY the TTL no longer applies, so no note is shown. For SHIPPED orders,
  * CONSUMED rows are expected historical fulfillment, not a failure — they
  * render with their own (positive) status color, no elapsed note.
  */
 export function WarehouseOrderReservations({ reservations, locale, dictionary }: WarehouseOrderReservationsProps) {
-  const now = new Date();
   const t = dictionary.warehouse.orderDetail.reservations;
   const common = dictionary.common;
 
@@ -43,11 +42,6 @@ export function WarehouseOrderReservations({ reservations, locale, dictionary }:
       ) : (
         <ul className="flex flex-col gap-2">
           {reservations.map((reservation) => {
-            const isElapsedActive =
-              reservation.status === "ACTIVE" &&
-              reservation.expiresAt !== null &&
-              new Date(reservation.expiresAt) <= now;
-
             return (
               <li
                 key={reservation.id}
@@ -79,7 +73,7 @@ export function WarehouseOrderReservations({ reservations, locale, dictionary }:
                     </p>
                   ) : null}
 
-                  {isElapsedActive ? (
+                  {reservation.isTtlElapsed ? (
                     <p className="mt-1 text-[11px] font-medium text-rose-600">{t.elapsedNote}</p>
                   ) : null}
                 </div>

@@ -2,6 +2,7 @@ import { ReservationStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
 import { RESERVATION_EXPIRING_SOON_HOURS } from "@/lib/services/sales/config";
+import { reservationTtlApplies } from "@/lib/services/sales/reservation-ttl";
 import type { SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type ReservationAttentionState = "EXPIRED_ACTIVE" | "EXPIRING_SOON" | "ACTIVE";
@@ -32,7 +33,10 @@ export type ReservationAttentionItem = {
  * still ACTIVE (see getStockAvailability's doc comment: no expiration job
  * exists yet, so this state is a real, currently-occurring condition, not
  * a hypothetical one) — surfaced for manual review rather than silently
- * excluded or silently still trusted.
+ * excluded or silently still trusted. The TTL states (EXPIRED_ACTIVE /
+ * EXPIRING_SOON) apply only while the TTL governs the reservation: for a
+ * PROCESSING/READY order Warehouse has accepted it and expiresAt no longer
+ * matters (see reservation-ttl.ts), so those rows stay plain ACTIVE.
  */
 export async function getReservationsRequiringAttention(
   currentUserId: string,
@@ -56,7 +60,7 @@ export async function getReservationsRequiringAttention(
       status: true,
       expiresAt: true,
       salesOrder: {
-        select: { id: true, orderNumber: true, customer: { select: { id: true, name: true } } },
+        select: { id: true, orderNumber: true, status: true, customer: { select: { id: true, name: true } } },
       },
       product: { select: { id: true, name: true } },
     },
@@ -68,7 +72,9 @@ export async function getReservationsRequiringAttention(
     if (!reservation.salesOrder) continue;
 
     let attentionState: ReservationAttentionState = "ACTIVE";
-    if (reservation.expiresAt && reservation.expiresAt < now) {
+    if (!reservationTtlApplies(reservation.salesOrder.status)) {
+      // TTL no longer governs this reservation — neither expired nor expiring.
+    } else if (reservation.expiresAt && reservation.expiresAt < now) {
       attentionState = "EXPIRED_ACTIVE";
     } else if (reservation.expiresAt && reservation.expiresAt <= expiringSoonBefore) {
       attentionState = "EXPIRING_SOON";

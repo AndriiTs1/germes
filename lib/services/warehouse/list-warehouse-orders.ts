@@ -1,6 +1,7 @@
 import { Prisma, ReservationStatus, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
+import { isReservationTtlElapsed } from "@/lib/services/sales/reservation-ttl";
 
 export type WarehouseOrderQueueItem = {
   id: string;
@@ -109,10 +110,10 @@ export async function listWarehouseOrders(): Promise<WarehouseOrderQueueItem[]> 
       let itemReservedKg = new Prisma.Decimal(0);
 
       for (const reservation of item.reservations) {
-        // An elapsed ACTIVE reservation must not count as usable
-        // fulfillment in this read model, even though it is never mutated
-        // here.
-        if (reservation.expiresAt !== null && reservation.expiresAt <= now) {
+        // An elapsed ACTIVE reservation of a CONFIRMED order must not count
+        // as usable fulfillment, even though it is never mutated here; for
+        // PROCESSING/READY the TTL no longer applies (see reservation-ttl.ts).
+        if (isReservationTtlElapsed(order.status, reservation.expiresAt, now)) {
           continue;
         }
 

@@ -1,6 +1,7 @@
 import { Prisma, ReservationStatus, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
+import { isReservationTtlElapsed } from "@/lib/services/sales/reservation-ttl";
 
 export type WarehouseOrderDetailItem = {
   id: string;
@@ -25,6 +26,8 @@ export type WarehouseOrderDetailReservation = {
   quantityKg: string;
   status: string;
   expiresAt: string | null;
+  /** ACTIVE with an elapsed TTL that still matters for this order status (CONFIRMED), so it is not usable fulfillment. */
+  isTtlElapsed: boolean;
 };
 
 export type WarehouseOrderDetail = {
@@ -136,7 +139,7 @@ export async function getWarehouseOrderDetail(
 
   for (const reservation of order.reservations) {
     if (reservation.status !== ReservationStatus.ACTIVE) continue;
-    if (reservation.expiresAt !== null && reservation.expiresAt <= now) continue;
+    if (isReservationTtlElapsed(order.status, reservation.expiresAt, now)) continue;
     if (!reservation.salesOrderItemId) continue;
     if (!itemById.has(reservation.salesOrderItemId)) continue;
     if (!reservation.batch) continue;
@@ -187,6 +190,9 @@ export async function getWarehouseOrderDetail(
       quantityKg: decimalToString(reservation.quantityKg),
       status: reservation.status,
       expiresAt: reservation.expiresAt?.toISOString() ?? null,
+      isTtlElapsed:
+        reservation.status === ReservationStatus.ACTIVE &&
+        isReservationTtlElapsed(order.status, reservation.expiresAt, now),
     }),
   );
 
