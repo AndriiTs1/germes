@@ -34,6 +34,7 @@ vi.mock("@/lib/db/prisma", () => ({
 }));
 
 import { NeedsAttention } from "@/components/dashboard/operations/needs-attention";
+import { formatMoney } from "@/components/sales/format";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getAttentionItems } from "@/lib/services/dashboard/get-attention-items";
 
@@ -56,17 +57,17 @@ beforeEach(() => {
 describe("getAttentionItems — open supplier payables", () => {
   it("1. OPEN 1000 UAH → 1000 UAH", async () => {
     db.payables = [payable("OPEN", "1000", "0")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "1000 UAH" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "1000", currency: "UAH" } }]);
   });
 
   it("2. PARTIALLY_PAID 1000/400 → only the 600 UAH remainder", async () => {
     db.payables = [payable("PARTIALLY_PAID", "1000", "400")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "600 UAH" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "600", currency: "UAH" } }]);
   });
 
   it("3. PAID is not counted", async () => {
     db.payables = [payable("PAID", "1000", "1000"), payable("OPEN", "100", "0")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "100 UAH" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "100", currency: "UAH" } }]);
   });
 
   it("4. CANCELLED is not counted", async () => {
@@ -76,26 +77,26 @@ describe("getAttentionItems — open supplier payables", () => {
 
   it("5. outstanding <= 0 is not counted (and never reduces another balance)", async () => {
     db.payables = [payable("OPEN", "1000", "1000"), payable("PARTIALLY_PAID", "1000", "1300"), payable("OPEN", "200", "0")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "200 UAH" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "200", currency: "UAH" } }]);
   });
 
   it("a stored OVERDUE status with a balance counts as open", async () => {
     db.payables = [payable("OVERDUE", "300", "100")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "200 UAH" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "200", currency: "UAH" } }]);
   });
 
   it("6. 1000 UAH + 100 EUR → two items, never 1100 UAH", async () => {
     db.payables = [payable("OPEN", "1000", "0", "UAH"), payable("OPEN", "100", "0", "EUR")];
     const items = await payableItems();
     expect(items).toHaveLength(2);
-    expect(items.map((item) => item.value)).not.toContain("1100 UAH");
+    expect(items.map((item) => `${item.money?.amount} ${item.money?.currency}`)).not.toContain("1100 UAH");
   });
 
   it("7. currency order is deterministic (by code), whatever the row order", async () => {
     db.payables = [payable("OPEN", "1", "0", "USD"), payable("OPEN", "2", "0", "UAH"), payable("OPEN", "3", "0", "EUR")];
-    const first = (await payableItems()).map((item) => item.value);
+    const first = (await payableItems()).map((item) => `${item.money?.amount} ${item.money?.currency}`);
     db.payables = [...db.payables].reverse();
-    const second = (await payableItems()).map((item) => item.value);
+    const second = (await payableItems()).map((item) => `${item.money?.amount} ${item.money?.currency}`);
     expect(first).toEqual(["3 EUR", "2 UAH", "1 USD"]);
     expect(second).toEqual(first);
   });
@@ -106,15 +107,15 @@ describe("getAttentionItems — open supplier payables", () => {
 
   it("9. EUR-only data gives EUR (no hardcoded UAH)", async () => {
     db.payables = [payable("OPEN", "250", "0", "EUR"), payable("PARTIALLY_PAID", "100", "40", "EUR")];
-    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", value: "310 EUR" }]);
+    expect(await payableItems()).toEqual([{ kind: "openSupplierPayables", money: { amount: "310", currency: "EUR" } }]);
   });
 
   it("11. overdue receivable items are unchanged next to payable items", async () => {
     db.receivables = [{ ...payable("OPEN", "1000", "0"), dueDate: PAST }];
     db.payables = [payable("OPEN", "50", "0", "EUR")];
     expect(await getAttentionItems(NOW)).toEqual([
-      { kind: "overdueCustomerPayments", value: "1000 UAH" },
-      { kind: "openSupplierPayables", value: "50 EUR" },
+      { kind: "overdueCustomerPayments", money: { amount: "1000", currency: "UAH" } },
+      { kind: "openSupplierPayables", money: { amount: "50", currency: "EUR" } },
     ]);
   });
 });
@@ -126,8 +127,8 @@ describe("Needs Attention card — payable label", () => {
     const html = renderToStaticMarkup(await NeedsAttention({ locale, dictionary }));
     const label = dictionary.commandCenter.needsAttention.openSupplierPayables;
     expect(html.split(label).length - 1).toBe(2);
-    expect(html).toContain("1000 UAH");
-    expect(html).toContain("100 EUR");
+    expect(html).toContain(formatMoney("1000", "UAH", locale));
+    expect(html).toContain(formatMoney("100", "EUR", locale));
     expect(label).not.toMatch(/approv|утвержд|затвердж|согласов|погодж/i);
     expect(html).not.toMatch(/approv|утвержд|затвердж|согласов|погодж/i);
   });

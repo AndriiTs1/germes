@@ -134,7 +134,7 @@ describe("getAttentionItems — overdue customer payments", () => {
 
   it("14. overdue OPEN / PARTIALLY_PAID receivables create an item without any OVERDUE status", async () => {
     db.receivables = [row("OPEN", "1000", "0", PAST), row("PARTIALLY_PAID", "1000", "400", PAST)];
-    expect(await overdueItems()).toEqual([{ kind: "overdueCustomerPayments", value: "1600 UAH" }]);
+    expect(await overdueItems()).toEqual([{ kind: "overdueCustomerPayments", money: { amount: "1600", currency: "UAH" } }]);
   });
 
   it("15. future-due, PAID and CANCELLED receivables create no item", async () => {
@@ -150,8 +150,8 @@ describe("getAttentionItems — overdue customer payments", () => {
   it("uses each record's currency; currencies are never added together", async () => {
     db.receivables = [row("OPEN", "500", "0", PAST, "EUR"), row("OPEN", "1000", "0", PAST, "UAH")];
     expect(await overdueItems()).toEqual([
-      { kind: "overdueCustomerPayments", value: "500 EUR" },
-      { kind: "overdueCustomerPayments", value: "1000 UAH" },
+      { kind: "overdueCustomerPayments", money: { amount: "500", currency: "EUR" } },
+      { kind: "overdueCustomerPayments", money: { amount: "1000", currency: "UAH" } },
     ]);
   });
 });

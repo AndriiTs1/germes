@@ -12,7 +12,7 @@ type FinanceRow = {
 };
 
 const db = vi.hoisted(() => ({
-  orders: [] as { currency: string; items: { quantityKg: unknown; pricePerKg: unknown }[] }[],
+  orders: [] as { status: string; currency: string; orderDate: Date; shippedAt: Date | null; items: { quantityKg: unknown; pricePerKg: unknown }[] }[],
   receivables: [] as FinanceRow[],
   payables: [] as FinanceRow[],
   batchFindMany: vi.fn(async () => []),
@@ -20,7 +20,13 @@ const db = vi.hoisted(() => ({
 
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {
-    salesOrder: { findMany: async () => db.orders },
+    // Honours the status filter of getSalesPerformance (revenue) and the active-orders count.
+    salesOrder: {
+      findMany: async ({ where }: { where?: { status?: { in?: string[] } } } = {}) =>
+        db.orders.filter((o) => !where?.status?.in || where.status.in.includes(o.status)),
+      count: async ({ where }: { where?: { status?: { in?: string[] } } } = {}) =>
+        db.orders.filter((o) => !where?.status?.in || where.status.in.includes(o.status)).length,
+    },
     receivable: { findMany: async () => db.receivables },
     payable: { findMany: async () => db.payables },
     batch: { findMany: db.batchFindMany },
@@ -40,8 +46,9 @@ function fin(status: string, amount: string, paid: string, currency: string, due
   return { amount: d(amount), paidAmount: d(paid), status, currency, dueDate };
 }
 
+/** An unshipped (CONFIRMED) order: counts as active, never as revenue. */
 function order(currency: string) {
-  return { currency, items: [{ quantityKg: d("1"), pricePerKg: d("1") }] };
+  return { status: "CONFIRMED", currency, orderDate: PAST, shippedAt: null, items: [{ quantityKg: d("1"), pricePerKg: d("1") }] };
 }
 
 async function renderKpis() {
@@ -140,10 +147,9 @@ describe("Owner Dashboard KPI cards — currency labels", () => {
     expect(html).toContain(formatMoney("100", "EUR", "en"));
     expect(html).not.toContain(formatMoney("1100", "UAH", "en"));
     expect(html).not.toContain(formatMoney("1100", "EUR", "en"));
-    for (const id of ["cashBanks", "receivables", "overdueAr", "payables", "grossMargin"] as const) {
+    for (const id of ["revenue12m", "receivables", "overdueAr", "payables", "activeOrders"] as const) {
       expect(html).toContain(t[id].replace(/&/g, "&amp;"));
     }
-    expect(html).toContain("0%");
   });
 });
 
@@ -155,7 +161,7 @@ describe("getCommandCenterKpis — no Inventory Value", () => {
     expect(db.batchFindMany).not.toHaveBeenCalled();
   });
 
-  it("6 + 7. receivables / overdue / payables still work; Gross Margin unchanged", async () => {
+  it("6 + 7. receivables / overdue / payables still work; no gross margin any more", async () => {
     db.receivables = [fin("PARTIALLY_PAID", "1000", "400", "UAH", PAST), fin("OPEN", "100", "0", "EUR")];
     db.payables = [fin("OPEN", "300", "0", "EUR")];
     const kpis = await getCommandCenterKpis(NOW);
@@ -165,6 +171,7 @@ describe("getCommandCenterKpis — no Inventory Value", () => {
     ]);
     expect(kpis.receivables.overdueOutstanding).toEqual([{ currency: "UAH", amount: "600" }]);
     expect(kpis.payables.outstanding).toEqual([{ currency: "EUR", amount: "300" }]);
-    expect(kpis.grossMargin).toEqual({ value: "0", percent: "0" });
+    expect(kpis).not.toHaveProperty("grossMargin");
+    expect(kpis).not.toHaveProperty("cashBanks");
   });
 });

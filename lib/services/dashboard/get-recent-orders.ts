@@ -1,24 +1,33 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
+const RECENT_ORDERS_LIMIT = 5;
+
 export type RecentOrderData = {
   id: string;
+  orderNumber: string;
   customer: string;
+  /** Σ quantityKg × pricePerKg (Decimal string), in the order's own currency. */
   amount: string;
   currency: string;
-  orderDate: Date;
-  isToday: boolean;
-  time: string;
+  /** Real SalesOrder status — every status is shown, none hidden. */
+  status: string;
+  /** Full instant (ISO); the card shows it in Europe/Kyiv. */
+  orderDate: string;
 };
 
+/**
+ * The latest sales orders of any status, newest orderDate first; id breaks
+ * ties so the list never depends on database row order.
+ */
 export async function getRecentOrders(): Promise<RecentOrderData[]> {
   const orders = await prisma.salesOrder.findMany({
-    take: 5,
-    orderBy: {
-      orderDate: "desc",
-    },
+    take: RECENT_ORDERS_LIMIT,
+    orderBy: [{ orderDate: "desc" }, { id: "desc" }],
     select: {
+      id: true,
       orderNumber: true,
+      status: true,
       orderDate: true,
       currency: true,
       customer: {
@@ -35,27 +44,15 @@ export async function getRecentOrders(): Promise<RecentOrderData[]> {
     },
   });
 
-  const today = new Date();
-
-  return orders.map((order) => {
-    const total = order.items.reduce(
-      (sum, item) =>
-        sum.plus(item.quantityKg.mul(item.pricePerKg)),
-      new Prisma.Decimal(0),
-    );
-
-    return {
-      id: order.orderNumber,
-      customer: order.customer.name,
-      amount: `${total.toString()} ${order.currency}`,
-      currency: order.currency,
-      orderDate: order.orderDate,
-      isToday:
-        order.orderDate.toDateString() === today.toDateString(),
-      time: order.orderDate.toLocaleTimeString("en-US", {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
-    };
-  });
+  return orders.map((order) => ({
+    id: order.id,
+    orderNumber: order.orderNumber,
+    customer: order.customer.name,
+    amount: order.items
+      .reduce((sum, item) => sum.plus(item.quantityKg.mul(item.pricePerKg)), new Prisma.Decimal(0))
+      .toString(),
+    currency: order.currency,
+    status: order.status,
+    orderDate: order.orderDate.toISOString(),
+  }));
 }

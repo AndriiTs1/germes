@@ -7,13 +7,14 @@ export type AttentionKind =
   | "openSupplierPayables"
   | "lowStock"
   | "supplierPaymentDueTomorrow"
-  | "ordersAwaitingShipment";
+  | "confirmedOrdersAwaitingProcessing";
 
 export type AttentionItem = {
   icon: LucideIcon;
   kind: AttentionKind;
   productName?: string;
   value?: string;
+  money?: { amount: string; currency: string };
   count?: number;
   accent: AttentionAccent;
 };

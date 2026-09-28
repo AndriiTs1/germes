@@ -15,7 +15,7 @@ export function DashboardAnalytics({ locale, dictionary }: { locale: Locale; dic
   return (
     <div className="grid grid-cols-1 gap-4 min-[768px]:max-[1439px]:grid-cols-2 min-[768px]:max-[1439px]:[&>*:last-child]:col-span-2 min-[1440px]:grid-cols-[7fr_6fr_6fr]">
       <SalesPerformance locale={locale} dictionary={dictionary} />
-      <InventoryStatus dictionary={dictionary} />
+      <InventoryStatus locale={locale} dictionary={dictionary} />
       <ProcurementNeeds dictionary={dictionary} />
     </div>
   );

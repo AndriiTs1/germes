@@ -4,7 +4,6 @@ import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { NoWorkspaceAvailable } from "@/components/dashboard/no-workspace-available";
 import { DashboardOperations } from "@/components/dashboard/operations/dashboard-operations";
-import { PeriodControl } from "@/components/dashboard/period-control";
 import { requireUser } from "@/lib/auth/require-user";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
@@ -57,6 +56,9 @@ export default async function Home() {
         permissionCodes={permissionCodes}
         activePath="/"
         dictionary={dictionary}
+        // Decorative control (no state/handler) — hidden here: the Command Center
+        // shows fixed periods (e.g. revenue for 12 months), not "this month".
+        showPeriodControl={false}
       >
         <NoWorkspaceAvailable dictionary={dictionary} />
       </DashboardShell>
@@ -69,16 +71,14 @@ export default async function Home() {
       permissionCodes={permissionCodes}
       activePath="/"
       dictionary={dictionary}
+      // Decorative control (no state/handler) — hidden here: the Command Center
+      // shows fixed periods (e.g. revenue for 12 months), not "this month".
+      showPeriodControl={false}
     >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           {dictionary.commandCenter.title}
         </h1>
-
-        {/* Header hides the period control below md; it lives here instead. */}
-        <div className="mt-4 md:hidden">
-          <PeriodControl label={dictionary.commandCenter.periodThisMonth} />
-        </div>
       </div>
 
       <DashboardKpis locale={locale} dictionary={dictionary} />

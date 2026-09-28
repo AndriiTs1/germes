@@ -1,8 +1,8 @@
 import {
+  ClipboardList,
   CreditCard,
   HandCoins,
-  Landmark,
-  Percent,
+  TrendingUp,
   TriangleAlert,
   type LucideIcon,
 } from "lucide-react";
@@ -13,11 +13,11 @@ export type KpiTrendSentiment = "positive" | "negative" | "neutral";
 
 /** Stable key into dictionary.commandCenter.kpi — the card's label is never stored here. */
 export type KpiId =
-  | "cashBanks"
+  | "revenue12m"
   | "receivables"
   | "overdueAr"
   | "payables"
-  | "grossMargin";
+  | "activeOrders";
 
 /**
  * No trend here on purpose: a trend is only shown once a real
@@ -37,8 +37,8 @@ export type KpiDatum = {
  */
 export const kpiData: KpiDatum[] = [
   {
-    id: "cashBanks",
-    icon: Landmark,
+    id: "revenue12m",
+    icon: TrendingUp,
     accent: "mint",
   },
   {
@@ -57,8 +57,8 @@ export const kpiData: KpiDatum[] = [
     accent: "violet",
   },
   {
-    id: "grossMargin",
-    icon: Percent,
+    id: "activeOrders",
+    icon: ClipboardList,
     accent: "teal",
   },
 ];

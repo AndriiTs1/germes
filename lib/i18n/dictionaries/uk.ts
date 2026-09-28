@@ -1108,11 +1108,11 @@ export const uk: Dictionary = {
     title: "Командний центр",
     periodThisMonth: "Цей місяць",
     kpi: {
-      cashBanks: "Грошові кошти та банки",
+      revenue12m: "Виручка за 12 місяців",
       receivables: "Дебіторська заборгованість",
       overdueAr: "Прострочена дебіторська заборгованість",
       payables: "Кредиторська заборгованість",
-      grossMargin: "Валова маржа",
+      activeOrders: "Активні замовлення",
       comparisonLabel: "порівняно з минулим місяцем",
     },
     salesPerformance: {
@@ -1134,13 +1134,11 @@ export const uk: Dictionary = {
     },
     inventoryStatus: {
       title: "Стан запасів",
-      unitsInStock: "кг / одиниць на складі",
+      unitsInStock: "кг на складі (фізично)",
       breakdownAriaLabel: "Розподіл запасів:",
       segments: {
-        inStock: "В наявності",
+        available: "Доступно",
         reserved: "Зарезервовано",
-        inTransit: "В дорозі",
-        lowStock: "Малий залишок",
       },
     },
     procurementNeeds: {
@@ -1155,7 +1153,7 @@ export const uk: Dictionary = {
       openSupplierPayables: "Відкрита кредиторська заборгованість",
       lowStockPrefix: "Малий залишок:",
       supplierPaymentDueTomorrow: "Оплата постачальнику завтра",
-      ordersAwaitingShipment: "Замовлення очікують відвантаження",
+      confirmedOrdersAwaitingProcessing: "Підтверджені замовлення очікують обробки",
       ordersCount: {
         one: "{count} замовлення",
         few: "{count} замовлення",
@@ -1166,6 +1164,7 @@ export const uk: Dictionary = {
     recentOrders: {
       title: "Останні замовлення",
       todayPrefix: "Сьогодні,",
+      empty: "Замовлень поки немає",
     },
     paymentCalendar: {
       title: "Платіжний календар",

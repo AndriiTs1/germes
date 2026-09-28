@@ -1108,11 +1108,11 @@ export const ru: Dictionary = {
     title: "Командный центр",
     periodThisMonth: "Этот месяц",
     kpi: {
-      cashBanks: "Денежные средства и банки",
+      revenue12m: "Выручка за 12 месяцев",
       receivables: "Дебиторская задолженность",
       overdueAr: "Просроченная дебиторская задолженность",
       payables: "Кредиторская задолженность",
-      grossMargin: "Валовая маржа",
+      activeOrders: "Активные заказы",
       comparisonLabel: "по сравнению с прошлым месяцем",
     },
     salesPerformance: {
@@ -1134,13 +1134,11 @@ export const ru: Dictionary = {
     },
     inventoryStatus: {
       title: "Состояние запасов",
-      unitsInStock: "кг / единиц на складе",
+      unitsInStock: "кг на складе (физически)",
       breakdownAriaLabel: "Структура запасов:",
       segments: {
-        inStock: "В наличии",
+        available: "Доступно",
         reserved: "Зарезервировано",
-        inTransit: "В пути",
-        lowStock: "Низкий остаток",
       },
     },
     procurementNeeds: {
@@ -1155,7 +1153,7 @@ export const ru: Dictionary = {
       openSupplierPayables: "Открытая кредиторская задолженность",
       lowStockPrefix: "Низкий остаток:",
       supplierPaymentDueTomorrow: "Оплата поставщику завтра",
-      ordersAwaitingShipment: "Заказы ожидают отгрузки",
+      confirmedOrdersAwaitingProcessing: "Подтверждённые заказы ожидают обработки",
       ordersCount: {
         one: "{count} заказ",
         few: "{count} заказа",
@@ -1166,6 +1164,7 @@ export const ru: Dictionary = {
     recentOrders: {
       title: "Последние заказы",
       todayPrefix: "Сегодня,",
+      empty: "Заказов пока нет",
     },
     paymentCalendar: {
       title: "Платёжный календарь",

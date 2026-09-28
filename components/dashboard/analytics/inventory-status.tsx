@@ -1,6 +1,8 @@
 import { AnalyticsCard } from "@/components/dashboard/analytics/analytics-card";
+import { formatKg } from "@/components/sales/format";
 import { getInventoryStatus } from "@/lib/services/dashboard/get-inventory-status";
 import type { ChartAccent, InventorySegmentKey } from "@/components/dashboard/analytics/analytics-data";
+import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { cn } from "@/lib/utils";
 
@@ -16,7 +18,7 @@ const accentStyles: Record<ChartAccent, { stroke: string; dot: string }> = {
   rose: { stroke: "stroke-rose-500", dot: "bg-rose-500" },
 };
 
-export async function InventoryStatus({ dictionary }: { dictionary: Dictionary }) {
+export async function InventoryStatus({ locale, dictionary }: { locale: Locale; dictionary: Dictionary }) {
   const { value, segments } = await getInventoryStatus();
   const t = dictionary.commandCenter.inventoryStatus;
   const segmentLabel = (key: InventorySegmentKey) => t.segments[key];
@@ -26,7 +28,7 @@ export async function InventoryStatus({ dictionary }: { dictionary: Dictionary }
     <AnalyticsCard title={t.title}>
       <div className="mt-2 flex items-baseline gap-1.5">
         <span className="text-[22px] leading-none font-semibold tracking-tight text-slate-900">
-          {value}
+          {formatKg(value, locale)}
         </span>
       </div>
       <p className="mt-1 text-[11.5px] text-slate-400">{t.unitsInStock}</p>

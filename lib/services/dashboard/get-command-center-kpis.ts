@@ -1,5 +1,6 @@
-import { Prisma } from "@/lib/generated/prisma/client";
+import { Prisma, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { getSalesPerformance } from "@/lib/services/dashboard/get-sales-performance";
 import {
   addToCurrencyTotals,
   openOutstanding,
@@ -8,16 +9,33 @@ import {
   type CurrencyAmount,
 } from "@/lib/services/finance/outstanding";
 
+/** Orders Warehouse/Sales are working on right now. */
+const ACTIVE_ORDER_STATUSES: SalesOrderStatus[] = [
+  SalesOrderStatus.CONFIRMED,
+  SalesOrderStatus.PROCESSING,
+  SalesOrderStatus.READY,
+];
+
+/**
+ * Presentation order only: the primary sales currency first (if present),
+ * then the rest in currency-code order as toCurrencyAmounts already returns
+ * them. Amounts are untouched and never combined.
+ */
+function primaryCurrencyFirst(amounts: CurrencyAmount[], primary: string | null): CurrencyAmount[] {
+  if (primary === null) return amounts;
+  const head = amounts.filter((entry) => entry.currency === primary);
+  return head.length === 0 ? amounts : [...head, ...amounts.filter((entry) => entry.currency !== primary)];
+}
+
 export type CommandCenterKpis = {
-  /** Placeholder: no bank/cash model exists yet, so no currency either. */
-  cashBanks: {
-    value: string;
-  };
-  /** Kept for callers; its currency is the last order's and must not label other KPIs. */
-  salesTurnover: {
-    value: string;
-    currency: string;
-  };
+  /**
+   * Shipped revenue for the last 12 Kyiv calendar months, per currency —
+   * exactly the totals of getSalesPerformance (same rule, same query), never
+   * summed across currencies. Empty = nothing shipped. Ordered like the Sales
+   * Performance card: the currency with the most shipped orders first, then
+   * by code, so the main business currency is the headline line.
+   */
+  revenue12m: CurrencyAmount[];
   receivables: {
     /** Open balances per currency (empty = none); never summed across currencies. */
     outstanding: CurrencyAmount[];
@@ -28,10 +46,9 @@ export type CommandCenterKpis = {
     /** Open balances per currency (empty = none); never summed across currencies. */
     outstanding: CurrencyAmount[];
   };
-  /** Σ receivedKg × unitCost. Batch.unitCost has no currency, so none is claimed here. */
-  grossMargin: {
-    value: string;
-    percent: string;
+  /** Count of CONFIRMED + PROCESSING + READY sales orders. */
+  activeOrders: {
+    count: number;
   };
 };
 
@@ -42,30 +59,10 @@ export type CommandCenterKpis = {
  * with dueDate strictly before `now`.
  */
 export async function getCommandCenterKpis(now: Date = new Date()): Promise<CommandCenterKpis> {
-  const orders = await prisma.salesOrder.findMany({
-    select: {
-      currency: true,
-      items: {
-        select: {
-          quantityKg: true,
-          pricePerKg: true,
-        },
-      },
-    },
-  });
-
-  let turnover = new Prisma.Decimal(0);
-  let currency = "UAH";
-
-  for (const order of orders) {
-    currency = order.currency;
-
-    for (const item of order.items) {
-      turnover = turnover.plus(
-        item.quantityKg.mul(item.pricePerKg),
-      );
-    }
-  }
+  const [salesPerformance, activeOrderCount] = await Promise.all([
+    getSalesPerformance(now),
+    prisma.salesOrder.count({ where: { status: { in: ACTIVE_ORDER_STATUSES } } }),
+  ]);
 
   const receivables = await prisma.receivable.findMany({
     select: {
@@ -110,34 +107,30 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     }
   }
 
-  // Gross margin requires real COGS data.
-  // Current schema has inventory cost, but not cost of sold items.
-  // Do not calculate Revenue - Inventory Value: that would be incorrect.
-  const grossProfit = new Prisma.Decimal(0);
-  const grossMargin = new Prisma.Decimal(0);
+  const revenue12m = [...salesPerformance.series]
+    .sort((a, b) => b.orderCount - a.orderCount || (a.currency < b.currency ? -1 : a.currency > b.currency ? 1 : 0))
+    .map(({ currency, total }) => ({ currency, amount: total }));
+  // Primary sales currency = the one with the most SHIPPED/COMPLETED orders
+  // in the same 12 months (the Sales Performance / revenue headline). None
+  // when nothing shipped → plain currency-code order everywhere.
+  const primaryCurrency = revenue12m[0]?.currency ?? null;
 
+  // No cash/bank model and no COGS exist, so the Owner Dashboard shows no
+  // cash or gross-margin figure at all rather than a placeholder zero.
   return {
-    cashBanks: {
-      value: "0",
-    },
-
-    salesTurnover: {
-      value: turnover.toString(),
-      currency,
-    },
+    revenue12m,
 
     receivables: {
-      outstanding: toCurrencyAmounts(receivableOutstanding),
-      overdueOutstanding: toCurrencyAmounts(overdueReceivable),
+      outstanding: primaryCurrencyFirst(toCurrencyAmounts(receivableOutstanding), primaryCurrency),
+      overdueOutstanding: primaryCurrencyFirst(toCurrencyAmounts(overdueReceivable), primaryCurrency),
     },
 
     payables: {
-      outstanding: toCurrencyAmounts(payableOutstanding),
+      outstanding: primaryCurrencyFirst(toCurrencyAmounts(payableOutstanding), primaryCurrency),
     },
 
-    grossMargin: {
-      value: grossProfit.toString(),
-      percent: grossMargin.toString(),
+    activeOrders: {
+      count: activeOrderCount,
     },
   };
 }

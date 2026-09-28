@@ -13,9 +13,11 @@ export type AttentionItemData = {
     | "openSupplierPayables"
     | "lowStock"
     | "supplierPaymentDueTomorrow"
-    | "ordersAwaitingShipment";
+    | "confirmedOrdersAwaitingProcessing";
   productName?: string;
   value?: string;
+  /** Money kinds: the Decimal amount (string) and its own currency — formatted by the card, never summed across currencies. */
+  money?: { amount: string; currency: string };
   count?: number;
 };
 
@@ -54,7 +56,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
   for (const [currency, amount] of [...overdueByCurrency.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     items.push({
       kind: "overdueCustomerPayments",
-      value: `${amount.toString()} ${currency}`,
+      money: { amount: amount.toString(), currency },
     });
   }
 
@@ -81,7 +83,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
   for (const { currency, amount } of toCurrencyAmounts(openPayablesByCurrency)) {
     items.push({
       kind: "openSupplierPayables",
-      value: `${amount} ${currency}`,
+      money: { amount, currency },
     });
   }
 
@@ -93,7 +95,7 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
 
   if (ordersCount > 0) {
     items.push({
-      kind: "ordersAwaitingShipment",
+      kind: "confirmedOrdersAwaitingProcessing",
       count: ordersCount,
     });
   }

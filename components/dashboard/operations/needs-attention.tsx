@@ -1,9 +1,10 @@
 import { ChevronRight } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
+import { formatMoney } from "@/components/sales/format";
 import { getAttentionItems } from "@/lib/services/dashboard/get-attention-items";
 import type { AttentionAccent, AttentionItem } from "@/components/dashboard/operations/operations-data";
-import { CircleAlert, ClipboardCheck, Truck } from "lucide-react";
+import { CircleAlert, ClipboardCheck, ClipboardList } from "lucide-react";
 import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { pluralize } from "@/lib/i18n/pluralize";
@@ -24,10 +25,13 @@ function itemLabel(item: AttentionItem, t: Dictionary["commandCenter"]["needsAtt
   return t[item.kind];
 }
 
-/** item.value for money/kg kinds; a genuinely pluralized "{count} orders" (never a frozen string) for kind: "ordersAwaitingShipment". */
+/** Money kinds via the shared money formatter (in their own currency); a genuinely pluralized "{count} orders" for kind: "confirmedOrdersAwaitingProcessing"; item.value otherwise. */
 function itemValue(item: AttentionItem, locale: Locale, t: Dictionary["commandCenter"]["needsAttention"]): string {
   if (item.count !== undefined) {
     return pluralize(locale, item.count, t.ordersCount);
+  }
+  if (item.money) {
+    return formatMoney(item.money.amount, item.money.currency, locale);
   }
   return item.value ?? "";
 }
@@ -51,7 +55,7 @@ export async function NeedsAttention({
         ? CircleAlert
         : item.kind === "openSupplierPayables"
           ? ClipboardCheck
-          : Truck,
+          : ClipboardList,
     accent:
       item.kind === "overdueCustomerPayments"
         ? "rose"
@@ -73,7 +77,7 @@ export async function NeedsAttention({
       <ul className="flex flex-1 flex-col gap-0.5 min-[768px]:justify-between min-[768px]:gap-0">
         {needsAttention.map((item) => (
           // kind + value: overdue payments and open payables come as one item per currency.
-          <li key={`${item.kind}:${item.value ?? ""}`}>
+          <li key={`${item.kind}:${item.money?.currency ?? item.value ?? ""}`}>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-xl px-2 py-1 text-left transition-colors hover:bg-slate-50"

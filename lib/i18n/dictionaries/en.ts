@@ -1114,11 +1114,11 @@ export const en = {
     title: "Command Center",
     periodThisMonth: "This month",
     kpi: {
-      cashBanks: "Cash & Banks",
+      revenue12m: "Revenue — last 12 months",
       receivables: "Receivables",
       overdueAr: "Overdue AR",
       payables: "Payables",
-      grossMargin: "Gross Margin",
+      activeOrders: "Active orders",
       comparisonLabel: "vs last month",
     },
     salesPerformance: {
@@ -1140,13 +1140,11 @@ export const en = {
     },
     inventoryStatus: {
       title: "Inventory Status",
-      unitsInStock: "kg / units in stock",
+      unitsInStock: "kg physically in stock",
       breakdownAriaLabel: "Inventory breakdown:",
       segments: {
-        inStock: "In stock",
+        available: "Available",
         reserved: "Reserved",
-        inTransit: "In transit",
-        lowStock: "Low stock",
       },
     },
     procurementNeeds: {
@@ -1161,8 +1159,8 @@ export const en = {
       openSupplierPayables: "Open supplier payables",
       lowStockPrefix: "Low stock:",
       supplierPaymentDueTomorrow: "Supplier payment due tomorrow",
-      ordersAwaitingShipment: "Orders awaiting shipment",
-      /** Passed straight to lib/i18n/pluralize.ts — the "{count} orders" value shown for kind: "ordersAwaitingShipment", genuinely pluralized per locale rather than a frozen "5 orders" string. */
+      confirmedOrdersAwaitingProcessing: "Confirmed orders awaiting processing",
+      /** Passed straight to lib/i18n/pluralize.ts — the "{count} orders" value shown for kind: "confirmedOrdersAwaitingProcessing", genuinely pluralized per locale rather than a frozen "5 orders" string. */
       ordersCount: {
         one: "{count} order",
         few: "{count} orders",
@@ -1173,6 +1171,7 @@ export const en = {
     recentOrders: {
       title: "Recent Orders",
       todayPrefix: "Today,",
+      empty: "No orders yet",
     },
     paymentCalendar: {
       title: "Payment Calendar",

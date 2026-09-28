@@ -4,7 +4,7 @@ import { kpiData, type KpiId } from "@/components/dashboard/kpi-data";
 import { getCommandCenterKpis } from "@/lib/services/dashboard/get-command-center-kpis";
 import type { CurrencyAmount } from "@/lib/services/finance/outstanding";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
-import type { Locale } from "@/lib/i18n/config";
+import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 
 export async function DashboardKpis({
   locale,
@@ -20,16 +20,15 @@ export async function DashboardKpis({
   const perCurrency = (amounts: CurrencyAmount[]): string | string[] =>
     amounts.length === 0 ? "0" : amounts.map(({ amount, currency }) => formatMoney(amount, currency, locale));
 
-  // Every value carries only a currency it actually knows — never the last
-  // sales order's currency. Cash is a placeholder shown as a plain number.
-  // Inventory Value is not shown at all: Batch.unitCost has no currency and
-  // receivedKg is not the current stock, so no honest value exists yet.
+  // Every value is computed from real records and carries only a currency it
+  // actually knows. Not shown at all (no honest source yet): cash & banks,
+  // gross margin, inventory value.
   const valueMap: Record<KpiId, string | string[]> = {
-    cashBanks: commandCenterKpis.cashBanks.value,
+    revenue12m: perCurrency(commandCenterKpis.revenue12m),
     receivables: perCurrency(commandCenterKpis.receivables.outstanding),
     overdueAr: perCurrency(commandCenterKpis.receivables.overdueOutstanding),
     payables: perCurrency(commandCenterKpis.payables.outstanding),
-    grossMargin: `${commandCenterKpis.grossMargin.percent}%`,
+    activeOrders: new Intl.NumberFormat(INTL_LOCALE_MAP[locale]).format(commandCenterKpis.activeOrders.count),
   };
 
   const items = kpiData.map((kpi) => {
