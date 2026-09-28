@@ -522,6 +522,71 @@ export const en = {
       subtitle: "Receivables and payment control",
     },
 
+    search: {
+      placeholder: "Customer, supplier, order...",
+      mobilePlaceholder: "Search finance...",
+      ariaLabel: "Search finance",
+      emptyTitle: "No results",
+      emptyDescription: "Check the counterparty name or order number",
+      hint: "Search shows the counterparty's current financial position",
+      groups: {
+        customers: "Customers",
+        suppliers: "Suppliers",
+        orders: "Orders",
+      },
+      receivable: "Receivable",
+      payable: "Payable",
+      balance: "Balance",
+      overdue: "Overdue",
+      dueDate: "Due",
+      noOpenReceivables: "No open receivables",
+      noOpenPayables: "No open payables",
+      settled: "No open balance",
+    },
+
+    ownerOverview: {
+      kpi: {
+        receivables: "Receivables",
+        overdue: "Overdue",
+        payables: "Payables",
+        horizon: "Cash movement · 7 days",
+      },
+      cashPlan: {
+        inflow: "Inflows",
+        outflow: "Outflows",
+        net: "Net",
+        itemsShort: "items",
+      },
+      topDebtors: {
+        title: "Largest debtors",
+        positions: "open positions",
+        overdue: "Overdue",
+        noOverdue: "No overdue balance",
+        empty: "No open receivables",
+      },
+      aging: {
+        title: "Overdue receivables aging",
+        empty: "No overdue receivables",
+        buckets: {
+          "1-7": "1–7 days",
+          "8-30": "8–30 days",
+          "31-60": "31–60 days",
+          "61-90": "61–90 days",
+          "90+": "Over 90 days",
+        },
+      },
+      summary: {
+        openReceivables: "open positions",
+        customersWithDebt: "customers with debt",
+        overdueReceivables: "overdue positions",
+        openPayables: "open obligations",
+        overduePayables: "overdue",
+        receivablesContext: "{positions} open positions · {customers} customers with debt",
+        overdueReceivablesRatio: "{overdue} of {total} open positions",
+        overduePayablesRatio: "{overdue} of {total} obligations overdue",
+      },
+    },
+
     receivables: {
       title: "Receivables",
       empty: "No receivables",

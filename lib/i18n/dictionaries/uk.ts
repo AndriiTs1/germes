@@ -516,6 +516,71 @@ export const uk: Dictionary = {
       subtitle: "Дебіторська заборгованість і контроль оплат",
     },
 
+    search: {
+      placeholder: "Клієнт, постачальник, замовлення...",
+      mobilePlaceholder: "Пошук у фінансах...",
+      ariaLabel: "Пошук у фінансах",
+      emptyTitle: "Нічого не знайдено",
+      emptyDescription: "Перевірте назву контрагента або номер замовлення",
+      hint: "Пошук показує поточну фінансову позицію контрагента",
+      groups: {
+        customers: "Клієнти",
+        suppliers: "Постачальники",
+        orders: "Замовлення",
+      },
+      receivable: "Дебіторка",
+      payable: "Кредиторка",
+      balance: "Залишок",
+      overdue: "Прострочено",
+      dueDate: "Строк оплати",
+      noOpenReceivables: "Відкритої дебіторки немає",
+      noOpenPayables: "Відкритої кредиторки немає",
+      settled: "Відкритого залишку немає",
+    },
+
+    ownerOverview: {
+      kpi: {
+        receivables: "Дебіторка",
+        overdue: "Прострочено",
+        payables: "Кредиторка",
+        horizon: "Рух коштів · 7 днів",
+      },
+      cashPlan: {
+        inflow: "Надходження",
+        outflow: "Виплати",
+        net: "Сальдо",
+        itemsShort: "поз.",
+      },
+      topDebtors: {
+        title: "Найбільші боржники",
+        positions: "відкритих позицій",
+        overdue: "Прострочено",
+        noOverdue: "Без прострочення",
+        empty: "Відкритої дебіторки немає",
+      },
+      aging: {
+        title: "Вік простроченої дебіторки",
+        empty: "Простроченої дебіторки немає",
+        buckets: {
+          "1-7": "1–7 днів",
+          "8-30": "8–30 днів",
+          "31-60": "31–60 днів",
+          "61-90": "61–90 днів",
+          "90+": "Понад 90 днів",
+        },
+      },
+      summary: {
+        openReceivables: "відкритих позицій",
+        customersWithDebt: "клієнтів з боргом",
+        overdueReceivables: "прострочених позицій",
+        openPayables: "відкритих зобов'язань",
+        overduePayables: "прострочених",
+        receivablesContext: "{positions} відкритих позицій · {customers} клієнти з боргом",
+        overdueReceivablesRatio: "{overdue} із {total} відкритих позицій",
+        overduePayablesRatio: "{overdue} із {total} зобов'язань прострочено",
+      },
+    },
+
     receivables: {
       title: "Дебіторська заборгованість",
       empty: "Дебіторської заборгованості немає",

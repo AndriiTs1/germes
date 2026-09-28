@@ -516,6 +516,71 @@ export const ru: Dictionary = {
       subtitle: "Дебиторская задолженность и контроль оплат",
     },
 
+    search: {
+      placeholder: "Клиент, поставщик, заказ...",
+      mobilePlaceholder: "Поиск в финансах...",
+      ariaLabel: "Поиск в финансах",
+      emptyTitle: "Ничего не найдено",
+      emptyDescription: "Проверьте название контрагента или номер заказа",
+      hint: "Поиск показывает текущую финансовую позицию контрагента",
+      groups: {
+        customers: "Клиенты",
+        suppliers: "Поставщики",
+        orders: "Заказы",
+      },
+      receivable: "Дебиторка",
+      payable: "Кредиторка",
+      balance: "Остаток",
+      overdue: "Просрочено",
+      dueDate: "Срок оплаты",
+      noOpenReceivables: "Открытой дебиторки нет",
+      noOpenPayables: "Открытой кредиторки нет",
+      settled: "Открытого остатка нет",
+    },
+
+    ownerOverview: {
+      kpi: {
+        receivables: "Дебиторка",
+        overdue: "Просрочено",
+        payables: "Кредиторка",
+        horizon: "Движение денег · 7 дней",
+      },
+      cashPlan: {
+        inflow: "Поступления",
+        outflow: "Выплаты",
+        net: "Сальдо",
+        itemsShort: "поз.",
+      },
+      topDebtors: {
+        title: "Крупнейшие должники",
+        positions: "открытых позиций",
+        overdue: "Просрочено",
+        noOverdue: "Без просрочки",
+        empty: "Открытой дебиторки нет",
+      },
+      aging: {
+        title: "Возраст просроченной дебиторки",
+        empty: "Просроченной дебиторки нет",
+        buckets: {
+          "1-7": "1–7 дней",
+          "8-30": "8–30 дней",
+          "31-60": "31–60 дней",
+          "61-90": "61–90 дней",
+          "90+": "Более 90 дней",
+        },
+      },
+      summary: {
+        openReceivables: "открытых позиций",
+        customersWithDebt: "клиентов с долгом",
+        overdueReceivables: "просроченных позиций",
+        openPayables: "открытых обязательств",
+        overduePayables: "просроченных",
+        receivablesContext: "{positions} открытых позиций · {customers} клиентов с долгом",
+        overdueReceivablesRatio: "{overdue} из {total} открытых позиций",
+        overduePayablesRatio: "{overdue} из {total} обязательств просрочено",
+      },
+    },
+
     receivables: {
       title: "Дебиторская задолженность",
       empty: "Дебиторской задолженности нет",

@@ -1,3 +1,5 @@
+import type { ReactNode } from "react";
+
 import { Bell, Search } from "lucide-react";
 
 import { MobileNav } from "@/components/dashboard/mobile-nav";
@@ -21,6 +23,8 @@ type DashboardHeaderProps = {
    * search (e.g. a filtered list) can pass false to avoid two search fields.
    */
   showGlobalSearch?: boolean;
+  /** Optional page-specific search UI. Other pages keep the existing global field. */
+  searchSlot?: ReactNode;
 };
 
 export function DashboardHeader({
@@ -32,6 +36,7 @@ export function DashboardHeader({
   showPeriodControl = true,
   compactSearchPlaceholder,
   showGlobalSearch = true,
+  searchSlot,
 }: DashboardHeaderProps) {
   return (
     <header className="sticky top-0 z-10 flex h-16 shrink-0 items-center gap-2 border-b border-slate-200/70 bg-white/90 px-4 backdrop-blur-md sm:gap-3 sm:px-6 xl:gap-4 xl:px-8">
@@ -53,6 +58,7 @@ export function DashboardHeader({
       </div>
 
       {showGlobalSearch ? (
+        searchSlot ?? (
         <>
           {/*
             Tablet / compact desktop: same field, shorter placeholder — a native
@@ -97,6 +103,7 @@ export function DashboardHeader({
             />
           </div>
         </>
+        )
       ) : null}
 
 
