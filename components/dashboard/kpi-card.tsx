@@ -22,14 +22,19 @@ const sentimentTextStyles: Record<KpiTrendSentiment, string> = {
   neutral: "text-slate-500",
 };
 
+/** A real period-over-period comparison. Omitted = no trend row is rendered at all. */
+export type KpiTrend = {
+  value: string;
+  direction: KpiTrendDirection;
+  sentiment: KpiTrendSentiment;
+  comparisonLabel: string;
+};
+
 type KpiCardProps = {
   label: string;
   value: string;
   unit?: string;
-  trendValue: string;
-  trendDirection: KpiTrendDirection;
-  trendSentiment: KpiTrendSentiment;
-  comparisonLabel: string;
+  trend?: KpiTrend;
   icon: LucideIcon;
   accent: KpiAccent;
 };
@@ -38,14 +43,11 @@ export function KpiCard({
   label,
   value,
   unit,
-  trendValue,
-  trendDirection,
-  trendSentiment,
-  comparisonLabel,
+  trend,
   icon: Icon,
   accent,
 }: KpiCardProps) {
-  const TrendIcon = trendDirection === "up" ? ArrowUpRight : ArrowDownRight;
+  const TrendIcon = trend?.direction === "up" ? ArrowUpRight : ArrowDownRight;
 
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
@@ -82,16 +84,17 @@ export function KpiCard({
         ) : null}
       </div>
 
-      <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11.5px]">
-        <span
-          className={cn(
-            "inline-flex items-center gap-0.5 font-medium whitespace-nowrap",
-            sentimentTextStyles[trendSentiment],
-          )}
-        >
-          <TrendIcon className="h-3 w-3" strokeWidth={2} />
-          {trendValue}
-        </span>
+      {trend ? (
+        <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11.5px]">
+          <span
+            className={cn(
+              "inline-flex items-center gap-0.5 font-medium whitespace-nowrap",
+              sentimentTextStyles[trend.sentiment],
+            )}
+          >
+            <TrendIcon className="h-3 w-3" strokeWidth={2} />
+            {trend.value}
+          </span>
         {/*
           basis-full: forces the comparison text onto its own flex-wrap
           line, every time, so it always gets the card's full content width
@@ -100,8 +103,9 @@ export function KpiCard({
           un-wrapped "по сравнению с прошлым месяцем" did before.
           line-clamp-2 caps it at the "2 lines is acceptable" limit.
         */}
-        <span className="line-clamp-2 min-w-0 basis-full text-slate-400">{comparisonLabel}</span>
-      </div>
+          <span className="line-clamp-2 min-w-0 basis-full text-slate-400">{trend.comparisonLabel}</span>
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -124,14 +128,11 @@ export function KpiRow({
   label,
   value,
   unit,
-  trendValue,
-  trendDirection,
-  trendSentiment,
-  comparisonLabel,
+  trend,
   icon: Icon,
   accent,
 }: KpiCardProps) {
-  const TrendIcon = trendDirection === "up" ? ArrowUpRight : ArrowDownRight;
+  const TrendIcon = trend?.direction === "up" ? ArrowUpRight : ArrowDownRight;
 
   return (
     <div className="flex items-start gap-2.5 px-4 py-3">
@@ -158,18 +159,20 @@ export function KpiRow({
               </span>
             ) : null}
           </div>
-          <span
-            className={cn(
-              "inline-flex shrink-0 items-center gap-0.5 text-[11.5px] font-medium whitespace-nowrap",
-              sentimentTextStyles[trendSentiment],
-            )}
-          >
-            <TrendIcon className="h-3 w-3" strokeWidth={2} />
-            {trendValue}
-          </span>
+          {trend ? (
+            <span
+              className={cn(
+                "inline-flex shrink-0 items-center gap-0.5 text-[11.5px] font-medium whitespace-nowrap",
+                sentimentTextStyles[trend.sentiment],
+              )}
+            >
+              <TrendIcon className="h-3 w-3" strokeWidth={2} />
+              {trend.value}
+            </span>
+          ) : null}
         </div>
 
-        <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{comparisonLabel}</p>
+        {trend ? <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{trend.comparisonLabel}</p> : null}
       </div>
     </div>
   );

@@ -37,7 +37,7 @@ export async function DashboardKpis({
             ),
       unit: undefined,
       label: t[kpi.id],
-      comparisonLabel: t.comparisonLabel,
+      // No trend: there is no real previous-period comparison yet.
     };
   });
 
