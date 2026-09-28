@@ -40,8 +40,10 @@ export type ListSalesOrdersOptions = {
   page?: number;
   /** Excludes SHIPPED/COMPLETED/CANCELLED when true. Ignored when `status` is set. */
   onlyActive?: boolean;
-  /** Exact status filter (e.g. COMPLETED, CANCELLED). Takes precedence over `onlyActive`. */
+  /** Exact status filter (e.g. COMPLETED, CANCELLED). Takes precedence over `statuses` and `onlyActive`. */
   status?: SalesOrderStatus;
+  /** Any of these statuses (e.g. SHIPPED + COMPLETED). Ignored when `status` is set; takes precedence over `onlyActive`. */
+  statuses?: SalesOrderStatus[];
   /** Matches orderNumber OR customer.name, case-insensitive, via Prisma — never filtered in JS. */
   search?: string;
 };
@@ -85,6 +87,7 @@ export async function listSalesOrders(
     page,
     onlyActive = false,
     status,
+    statuses,
     search,
   } = options;
 
@@ -94,7 +97,9 @@ export async function listSalesOrders(
 
   const where: Prisma.SalesOrderWhereInput = {
     responsibleId: resolveResponsibleFilter(scope, currentUserId, managerId),
-    status: status ?? (onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
+    status:
+      status ??
+      (statuses ? { in: statuses } : onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
     OR: trimmedSearch
       ? [
           { orderNumber: { contains: trimmedSearch, mode: "insensitive" } },
@@ -125,7 +130,8 @@ export async function listSalesOrders(
         responsible: { select: { id: true, name: true } },
         items: { select: { quantityKg: true, pricePerKg: true } },
       },
-      orderBy: { orderDate: "desc" },
+      // id breaks orderDate ties so skip/take pages never overlap or drop rows.
+      orderBy: [{ orderDate: "desc" }, { id: "desc" }],
       take,
       skip,
       cursor: cursorArg,

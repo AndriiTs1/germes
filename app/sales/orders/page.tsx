@@ -5,17 +5,14 @@ import { OrdersFilters, type OrdersStatusFilter } from "@/components/sales/order
 import { OrdersList } from "@/components/sales/orders-list";
 import { OrdersPagination } from "@/components/sales/orders-pagination";
 import { ManagerFilterChip } from "@/components/sales/manager-filter-chip";
-import { SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { getSalesManager } from "@/lib/services/sales/get-sales-manager";
 import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
-import {
-  listSalesOrders,
-  type ListSalesOrdersOptions,
-} from "@/lib/services/sales/list-sales-orders";
+import { listSalesOrders } from "@/lib/services/sales/list-sales-orders";
+import { statusFilterToOptions } from "@/lib/services/sales/orders-status-filter";
 
 const SALES_ORDERS_PERMISSION = "sales.orders.read";
 const SALES_ORDERS_CREATE_PERMISSION = "sales.orders.create";
@@ -24,21 +21,6 @@ const PAGE_SIZE = 20;
 function parseStatusFilter(value: string | undefined): OrdersStatusFilter {
   if (value === "active" || value === "completed" || value === "cancelled") return value;
   return "all";
-}
-
-function statusFilterToOptions(
-  filter: OrdersStatusFilter,
-): Pick<ListSalesOrdersOptions, "onlyActive" | "status"> {
-  switch (filter) {
-    case "active":
-      return { onlyActive: true };
-    case "completed":
-      return { status: SalesOrderStatus.COMPLETED };
-    case "cancelled":
-      return { status: SalesOrderStatus.CANCELLED };
-    default:
-      return {};
-  }
 }
 
 export default async function SalesOrdersPage(props: PageProps<"/sales/orders">) {
