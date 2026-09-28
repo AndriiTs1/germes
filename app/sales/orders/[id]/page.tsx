@@ -149,7 +149,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
                 reservations={order.reservations}
                 availability={reservationAvailability}
                 canCreate={canCreateForOrder}
-                canRelease={canReleaseReservations}
+                canRelease={canReleaseReservations && order.status === "CONFIRMED"}
                 locale={locale}
                 dictionary={dictionary.orderDetail.reservations}
                 common={dictionary.common}

@@ -1,4 +1,4 @@
-import { ReservationStatus } from "@/lib/generated/prisma/client";
+import { ReservationStatus, SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 
 export type ReleaseStockReservationError =
@@ -17,6 +17,11 @@ class ReservationUnavailableError extends Error {}
  * V1 rules:
  * - reservation must belong to a SalesOrder whose responsibleId is currentUserId;
  * - reservation must currently be ACTIVE;
+ * - its SalesOrder must still be CONFIRMED — the same status reservations
+ *   can be created in. Once Warehouse has accepted the order (PROCESSING/
+ *   READY) its reservations are the fulfillment snapshot: releasing one
+ *   would leave the order stuck (it can't go back to CONFIRMED to
+ *   re-reserve). Asserted in the read AND in the atomic update below;
  * - ACTIVE -> RELEASED is the only transition handled here;
  * - no role/auth logic here: caller must enforce sales.reservations.release;
  * - updateMany re-asserts ACTIVE status to protect against double release /
@@ -38,6 +43,7 @@ export async function releaseStockReservation(
           status: ReservationStatus.ACTIVE,
           salesOrder: {
             responsibleId: currentUserId,
+            status: SalesOrderStatus.CONFIRMED,
           },
         },
         select: {
@@ -61,6 +67,9 @@ export async function releaseStockReservation(
           id: reservation.id,
           status: ReservationStatus.ACTIVE,
           salesOrderId: reservation.salesOrderId,
+          // Re-asserted in the UPDATE itself, so an order that moved to
+          // PROCESSING after the read above can't have its reservation released.
+          salesOrder: { status: SalesOrderStatus.CONFIRMED },
         },
         data: {
           status: ReservationStatus.RELEASED,
