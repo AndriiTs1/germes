@@ -83,10 +83,13 @@ export const en = {
       title: "Users",
       subtitle: "Accounts, roles, status and authentication",
       stats: {
-        total: "Total users",
+        total: "Users",
         active: "Active",
         authLinked: "Auth connected",
         attention: "Needs attention",
+        roles: "Roles",
+        privileged: "Privileged",
+        accessIssues: "Access issues",
       },
       table: {
         user: "User",

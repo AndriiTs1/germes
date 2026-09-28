@@ -77,10 +77,13 @@ export const ru: Dictionary = {
       title: "Пользователи",
       subtitle: "Аккаунты, роли, статус и авторизация",
       stats: {
-        total: "Всего пользователей",
+        total: "Пользователи",
         active: "Активные",
         authLinked: "Auth подключён",
         attention: "Требуют внимания",
+        roles: "Роли",
+        privileged: "Привилегированные",
+        accessIssues: "Проблемы доступа",
       },
       table: {
         user: "Пользователь",

@@ -77,10 +77,13 @@ export const uk: Dictionary = {
       title: "Користувачі",
       subtitle: "Облікові записи, ролі, статус та авторизація",
       stats: {
-        total: "Усього користувачів",
+        total: "Користувачі",
         active: "Активні",
         authLinked: "Auth підключено",
         attention: "Потребують уваги",
+        roles: "Ролі",
+        privileged: "Привілейовані",
+        accessIssues: "Проблеми доступу",
       },
       table: {
         user: "Користувач",
