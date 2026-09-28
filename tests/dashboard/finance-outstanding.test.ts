@@ -112,9 +112,9 @@ describe("getCommandCenterKpis", () => {
     ];
     const kpis = await getCommandCenterKpis(NOW);
     // 1000 + 600 + 2000 + 300
-    expect(kpis.receivables.outstanding).toBe("3900");
+    expect(kpis.receivables.outstanding).toEqual([{ currency: "UAH", amount: "3900" }]);
     // 1000 + 600 (future, null, PAID, CANCELLED excluded)
-    expect(kpis.overdueReceivables.total).toBe("1600");
+    expect(kpis.receivables.overdueOutstanding).toEqual([{ currency: "UAH", amount: "1600" }]);
   });
 
   it("12 + 13. payables: open/partially paid remainder only; PAID and CANCELLED excluded", async () => {
@@ -124,7 +124,7 @@ describe("getCommandCenterKpis", () => {
       row("PAID", "700", "700"),
       row("CANCELLED", "900", "0"),
     ];
-    expect((await getCommandCenterKpis(NOW)).payables.outstanding).toBe("1550");
+    expect((await getCommandCenterKpis(NOW)).payables.outstanding).toEqual([{ currency: "UAH", amount: "1550" }]);
   });
 });
 

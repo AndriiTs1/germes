@@ -1,7 +1,8 @@
 import { KpiCard, KpiRow } from "@/components/dashboard/kpi-card";
-import { formatMoney } from "@/components/sales/format";
-import { kpiData } from "@/components/dashboard/kpi-data";
+import { formatKg, formatMoney } from "@/components/sales/format";
+import { kpiData, type KpiId } from "@/components/dashboard/kpi-data";
 import { getCommandCenterKpis } from "@/lib/services/dashboard/get-command-center-kpis";
+import type { CurrencyAmount } from "@/lib/services/finance/outstanding";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { Locale } from "@/lib/i18n/config";
 
@@ -15,26 +16,26 @@ export async function DashboardKpis({
   const t = dictionary.commandCenter.kpi;
   const commandCenterKpis = await getCommandCenterKpis();
 
-  const items = kpiData.map((kpi) => {
-    const valueMap = {
-      cashBanks: commandCenterKpis.cashBanks.value,
-      receivables: commandCenterKpis.receivables.outstanding,
-      overdueAr: commandCenterKpis.overdueReceivables.total,
-      payables: commandCenterKpis.payables.outstanding,
-      inventoryValue: commandCenterKpis.inventoryValue.value,
-      grossMargin: commandCenterKpis.grossMargin.percent + "%",
-    };
+  /** One line per currency, each in its own code; "0" (no invented currency) when there are none. */
+  const perCurrency = (amounts: CurrencyAmount[]): string | string[] =>
+    amounts.length === 0 ? "0" : amounts.map(({ amount, currency }) => formatMoney(amount, currency, locale));
 
+  // Every value carries only a currency it actually knows — never the last
+  // sales order's currency. Cash is a placeholder and Batch.unitCost has no
+  // currency, so those two are shown as plain numbers.
+  const valueMap: Record<KpiId, string | string[]> = {
+    cashBanks: commandCenterKpis.cashBanks.value,
+    receivables: perCurrency(commandCenterKpis.receivables.outstanding),
+    overdueAr: perCurrency(commandCenterKpis.receivables.overdueOutstanding),
+    payables: perCurrency(commandCenterKpis.payables.outstanding),
+    inventoryValue: formatKg(commandCenterKpis.inventoryValue.value, locale),
+    grossMargin: `${commandCenterKpis.grossMargin.percent}%`,
+  };
+
+  const items = kpiData.map((kpi) => {
     return {
       ...kpi,
-      value:
-        kpi.id === "grossMargin"
-          ? `${commandCenterKpis.grossMargin.percent}%`
-          : formatMoney(
-              valueMap[kpi.id],
-              commandCenterKpis.salesTurnover.currency,
-              locale,
-            ),
+      value: valueMap[kpi.id],
       unit: undefined,
       label: t[kpi.id],
       // No trend: there is no real previous-period comparison yet.

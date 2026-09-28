@@ -32,7 +32,8 @@ export type KpiTrend = {
 
 type KpiCardProps = {
   label: string;
-  value: string;
+  /** One line, or one line per currency (never summed); extra lines render smaller. */
+  value: string | string[];
   unit?: string;
   trend?: KpiTrend;
   icon: LucideIcon;
@@ -48,6 +49,7 @@ export function KpiCard({
   accent,
 }: KpiCardProps) {
   const TrendIcon = trend?.direction === "up" ? ArrowUpRight : ArrowDownRight;
+  const [primaryValue, ...extraValues] = Array.isArray(value) ? value : [value];
 
   return (
     <div className="rounded-2xl border border-slate-200/70 bg-white px-5 py-4 shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
@@ -75,7 +77,7 @@ export function KpiCard({
 
       <div className="mt-3 flex items-baseline gap-1.5">
         <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
-          {value}
+          {primaryValue}
         </span>
         {unit ? (
           <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
@@ -83,6 +85,11 @@ export function KpiCard({
           </span>
         ) : null}
       </div>
+      {extraValues.map((extra) => (
+        <p key={extra} className="mt-1 text-[15px] leading-tight font-semibold whitespace-nowrap tracking-tight text-slate-900">
+          {extra}
+        </p>
+      ))}
 
       {trend ? (
         <div className="mt-2 flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[11.5px]">
@@ -133,6 +140,7 @@ export function KpiRow({
   accent,
 }: KpiCardProps) {
   const TrendIcon = trend?.direction === "up" ? ArrowUpRight : ArrowDownRight;
+  const [primaryValue, ...extraValues] = Array.isArray(value) ? value : [value];
 
   return (
     <div className="flex items-start gap-2.5 px-4 py-3">
@@ -151,7 +159,7 @@ export function KpiRow({
         <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
           <div className="flex items-baseline gap-1.5">
             <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
-              {value}
+              {primaryValue}
             </span>
             {unit ? (
               <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
@@ -171,6 +179,12 @@ export function KpiRow({
             </span>
           ) : null}
         </div>
+
+        {extraValues.map((extra) => (
+          <p key={extra} className="mt-0.5 text-[15px] leading-tight font-semibold whitespace-nowrap tracking-tight text-slate-900">
+            {extra}
+          </p>
+        ))}
 
         {trend ? <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{trend.comparisonLabel}</p> : null}
       </div>

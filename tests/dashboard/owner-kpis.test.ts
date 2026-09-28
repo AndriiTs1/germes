@@ -3,19 +3,18 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("@/lib/services/dashboard/get-command-center-kpis", () => ({
   getCommandCenterKpis: async () => ({
-    cashBanks: { value: "0", currency: "UAH" },
+    cashBanks: { value: "0" },
     salesTurnover: { value: "0", currency: "UAH" },
-    receivables: { total: "176000", outstanding: "176000", currency: "UAH" },
-    overdueReceivables: { total: "0", currency: "UAH" },
-    payables: { total: "52000", outstanding: "52000", currency: "UAH" },
-    inventoryValue: { value: "1250000", currency: "UAH" },
-    grossMargin: { value: "0", percent: "0", currency: "UAH" },
+    receivables: { outstanding: [{ currency: "UAH", amount: "176000" }], overdueOutstanding: [] },
+    payables: { outstanding: [{ currency: "UAH", amount: "52000" }] },
+    inventoryValue: { value: "1250000" },
+    grossMargin: { value: "0", percent: "0" },
   }),
 }));
 
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
 import { kpiData } from "@/components/dashboard/kpi-data";
-import { formatMoney } from "@/components/sales/format";
+import { formatKg, formatMoney } from "@/components/sales/format";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 
 const FAKE_TRENDS = ["+12%", "+18%", "+24%", "-8%", "+6%", "+2.6 pp"];
@@ -57,7 +56,7 @@ describe("Owner Dashboard KPIs — no fake trends", () => {
     }
     expect(html).toContain(formatMoney("176000", "UAH", "en"));
     expect(html).toContain(formatMoney("52000", "UAH", "en"));
-    expect(html).toContain(formatMoney("1250000", "UAH", "en"));
+    expect(html).toContain(formatKg("1250000", "en")); // no currency: Batch.unitCost has none
     expect(html).toContain("0%");
   });
 });

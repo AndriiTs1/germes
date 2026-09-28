@@ -1,47 +1,48 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { openOutstanding, overdueOutstanding } from "@/lib/services/finance/outstanding";
+import {
+  addToCurrencyTotals,
+  openOutstanding,
+  overdueOutstanding,
+  toCurrencyAmounts,
+  type CurrencyAmount,
+} from "@/lib/services/finance/outstanding";
 
 export type CommandCenterKpis = {
+  /** Placeholder: no bank/cash model exists yet, so no currency either. */
   cashBanks: {
     value: string;
-    currency: string;
   };
+  /** Kept for callers; its currency is the last order's and must not label other KPIs. */
   salesTurnover: {
     value: string;
     currency: string;
   };
   receivables: {
-    total: string;
-    outstanding: string;
-    currency: string;
-  };
-  overdueReceivables: {
-    total: string;
-    currency: string;
+    /** Open balances per currency (empty = none); never summed across currencies. */
+    outstanding: CurrencyAmount[];
+    /** The overdue part of those balances, per currency. */
+    overdueOutstanding: CurrencyAmount[];
   };
   payables: {
-    total: string;
-    outstanding: string;
-    currency: string;
+    /** Open balances per currency (empty = none); never summed across currencies. */
+    outstanding: CurrencyAmount[];
   };
+  /** Σ receivedKg × unitCost. Batch.unitCost has no currency, so none is claimed here. */
   inventoryValue: {
     value: string;
-    currency: string;
   };
   grossMargin: {
     value: string;
     percent: string;
-    currency: string;
   };
 };
 
 /**
- * `receivables.outstanding` / `payables.outstanding` are the open balances
- * (openOutstanding: not PAID/CANCELLED, amount - paidAmount > 0) and are
- * what the Dashboard shows; `total` stays the raw Σ amount of all records.
- * Overdue receivables = open balance with dueDate strictly before `now`.
- * Currencies are still summed together here (known, separate issue).
+ * Receivable/payable balances are open balances only (openOutstanding: not
+ * PAID/CANCELLED, amount - paidAmount > 0), grouped by each record's own
+ * currency — no conversion, no cross-currency sum. Overdue = open balance
+ * with dueDate strictly before `now`.
  */
 export async function getCommandCenterKpis(now: Date = new Date()): Promise<CommandCenterKpis> {
   const orders = await prisma.salesOrder.findMany({
@@ -79,21 +80,18 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     },
   });
 
-  let receivableTotal = new Prisma.Decimal(0);
-  let receivableOutstanding = new Prisma.Decimal(0);
-  let overdueReceivable = new Prisma.Decimal(0);
+  const receivableOutstanding = new Map<string, Prisma.Decimal>();
+  const overdueReceivable = new Map<string, Prisma.Decimal>();
 
   for (const receivable of receivables) {
-    receivableTotal = receivableTotal.plus(receivable.amount);
-
     const outstanding = openOutstanding(receivable);
     if (outstanding) {
-      receivableOutstanding = receivableOutstanding.plus(outstanding);
+      addToCurrencyTotals(receivableOutstanding, receivable.currency, outstanding);
     }
 
     const overdue = overdueOutstanding(receivable, now);
     if (overdue) {
-      overdueReceivable = overdueReceivable.plus(overdue);
+      addToCurrencyTotals(overdueReceivable, receivable.currency, overdue);
     }
   }
 
@@ -101,19 +99,17 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     select: {
       amount: true,
       paidAmount: true,
+      currency: true,
       status: true,
     },
   });
 
-  let payableTotal = new Prisma.Decimal(0);
-  let payableOutstanding = new Prisma.Decimal(0);
+  const payableOutstanding = new Map<string, Prisma.Decimal>();
 
   for (const payable of payables) {
-    payableTotal = payableTotal.plus(payable.amount);
-
     const outstanding = openOutstanding(payable);
     if (outstanding) {
-      payableOutstanding = payableOutstanding.plus(outstanding);
+      addToCurrencyTotals(payableOutstanding, payable.currency, outstanding);
     }
   }
 
@@ -143,7 +139,6 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
   return {
     cashBanks: {
       value: "0",
-      currency,
     },
 
     salesTurnover: {
@@ -152,31 +147,21 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     },
 
     receivables: {
-      total: receivableTotal.toString(),
-      outstanding: receivableOutstanding.toString(),
-      currency,
-    },
-
-    overdueReceivables: {
-      total: overdueReceivable.toString(),
-      currency,
+      outstanding: toCurrencyAmounts(receivableOutstanding),
+      overdueOutstanding: toCurrencyAmounts(overdueReceivable),
     },
 
     payables: {
-      total: payableTotal.toString(),
-      outstanding: payableOutstanding.toString(),
-      currency,
+      outstanding: toCurrencyAmounts(payableOutstanding),
     },
 
     inventoryValue: {
       value: inventoryValue.toString(),
-      currency,
     },
 
     grossMargin: {
       value: grossProfit.toString(),
       percent: grossMargin.toString(),
-      currency,
     },
   };
 }

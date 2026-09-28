@@ -34,3 +34,22 @@ export function overdueOutstanding(
   if (record.dueDate === null || !(record.dueDate.getTime() < now.getTime())) return null;
   return openOutstanding(record);
 }
+
+/** One currency's total. Amounts in different currencies are never added together. */
+export type CurrencyAmount = { currency: string; amount: string };
+
+/** Accumulates Decimal amounts per currency code (no conversion). */
+export function addToCurrencyTotals(
+  totals: Map<string, Prisma.Decimal>,
+  currency: string,
+  amount: Prisma.Decimal,
+): void {
+  totals.set(currency, (totals.get(currency) ?? new Prisma.Decimal(0)).plus(amount));
+}
+
+/** Per-currency totals as a list ordered by currency code (code-unit order, locale-independent). */
+export function toCurrencyAmounts(totals: Map<string, Prisma.Decimal>): CurrencyAmount[] {
+  return [...totals.entries()]
+    .sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))
+    .map(([currency, amount]) => ({ currency, amount: amount.toString() }));
+}
