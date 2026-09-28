@@ -36,21 +36,21 @@ describe("determinism & isolation", () => {
     expect(datasetChecksum(generateDataset({ asOf: AS_OF, seed: "DEMO-100M-other" }))).not.toBe(datasetChecksum(ds));
   });
 
-  it("C. the CLI rejects --apply and --cleanup (Phase 1 is dry-run only)", () => {
+  it("C. the CLI rejects --cleanup, mixed modes and a missing mode; --dry-run accepts any seed", () => {
+    expect(() => parseArgs(["--cleanup"])).toThrow("--cleanup is not supported");
     for (const argv of [
-      ["--apply", "--as-of", "2026-09-28T12:00:00+03:00", "--seed", SEED],
-      ["--cleanup"],
       ["--dry-run", "--apply", "--as-of", "2026-09-28T12:00:00+03:00", "--seed", SEED],
       ["--as-of", "2026-09-28T12:00:00+03:00", "--seed", SEED],
     ]) {
       expect(() => parseArgs(argv)).toThrow(CliError);
-      expect(() => parseArgs(argv)).toThrow("Phase 1 supports --dry-run only");
+      expect(() => parseArgs(argv)).toThrow("exactly one mode");
     }
     expect(() => parseArgs(["--dry-run", "--seed", SEED])).toThrow("--as-of");
-    expect(parseArgs(["--dry-run", "--as-of", "2026-09-28T12:00:00+03:00", "--seed", SEED])).toEqual({ asOf: AS_OF, seed: SEED });
+    expect(parseArgs(["--dry-run", "--as-of", "2026-09-28T12:00:00+03:00", "--seed", SEED])).toEqual({ mode: "dry-run", asOf: AS_OF, seed: SEED });
+    expect(parseArgs(["--dry-run", "--as-of", "2026-09-28T12:00:00+03:00", "--seed", "any-other"]).seed).toBe("any-other");
   });
 
-  it("D. needs no DATABASE_URL, and no generator file imports Prisma or reads DB env", () => {
+  it("D. needs no DATABASE_URL; dry-run modules never import Prisma, and the CLI loads DB modules only dynamically", () => {
     const saved = { DATABASE_URL: process.env.DATABASE_URL, DIRECT_URL: process.env.DIRECT_URL };
     delete process.env.DATABASE_URL;
     delete process.env.DIRECT_URL;
@@ -60,16 +60,25 @@ describe("determinism & isolation", () => {
       if (saved.DATABASE_URL !== undefined) process.env.DATABASE_URL = saved.DATABASE_URL;
       if (saved.DIRECT_URL !== undefined) process.env.DIRECT_URL = saved.DIRECT_URL;
     }
-    const files = [
+    // Database modules of the apply phase (loaded only by --preflight / --verify / --apply).
+    const databaseModules = new Set(["apply.ts", "prisma-db.ts", "verify-services.ts"]);
+    const dryRunFiles = [
       path.join(ROOT, "scripts/demo-seed.ts"),
-      ...readdirSync(path.join(ROOT, "scripts/demo-100m")).map((f) => path.join(ROOT, "scripts/demo-100m", f)),
+      ...readdirSync(path.join(ROOT, "scripts/demo-100m"))
+        .filter((f) => !databaseModules.has(f))
+        .map((f) => path.join(ROOT, "scripts/demo-100m", f)),
     ];
-    for (const file of files) {
+    expect(dryRunFiles.length).toBeGreaterThanOrEqual(10);
+    for (const file of dryRunFiles) {
       const code = readFileSync(file, "utf8");
-      expect(code, file).not.toMatch(/from\s+["'][^"']*(prisma|generated\/prisma|@prisma|lib\/db|\bpg["'])/);
+      expect(code, file).not.toMatch(/from\s+["'][^"']*(prisma|generated\/prisma|@prisma|lib\/db|lib\/services|\bpg["'])/);
       expect(code, file).not.toMatch(/process\.env\.(DATABASE_URL|DIRECT_URL)/);
       expect(code, file).not.toMatch(/dotenv/);
     }
+    // The CLI may reach the database modules only through dynamic import().
+    const cli = readFileSync(path.join(ROOT, "scripts/demo-seed.ts"), "utf8");
+    expect(cli).not.toMatch(/^import[^;]*(apply|prisma-db|verify-services)["']/m);
+    expect(cli).toMatch(/await import\("\.\/demo-100m\/prisma-db"\)/);
   });
 });
 

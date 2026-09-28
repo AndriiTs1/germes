@@ -19,6 +19,21 @@ export const USER_KEYS = {
   procurement: "procurement",
 } as const;
 
+/**
+ * Demo accounts the dataset's users resolve to (by email, as created by
+ * prisma/seed.ts) and the role each must hold. Used only by the apply phase
+ * to find the real user ids; never printed.
+ */
+export const USER_ACCOUNTS = {
+  sales: { email: "sales@germes.demo", role: "SALES" },
+  sales2: { email: "sales2@germes.demo", role: "SALES" },
+  sales3: { email: "sales3@germes.demo", role: "SALES" },
+  warehouse: { email: "warehouse@germes.demo", role: "WAREHOUSE" },
+  warehouse2: { email: "warehouse2@germes.demo", role: "WAREHOUSE" },
+  accounting: { email: "accounting@germes.demo", role: "ACCOUNTING" },
+  procurement: { email: "procurement@germes.demo", role: "PROCUREMENT" },
+} as const;
+
 export type MasterCustomer = { code: string; name: string; responsible: SalesManagerKey };
 export type MasterSupplier = { code: string; name: string; country: string | null };
 export type MasterProduct = { sku: string; name: string; category: string };

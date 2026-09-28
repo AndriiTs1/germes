@@ -6,6 +6,27 @@
  */
 
 export const DATASET_VERSION = "DEMO-100M-v1";
+
+/**
+ * The one dataset --apply may write: this seed at this as-of must reproduce
+ * this checksum exactly (any generator change that alters the data breaks it).
+ */
+export const CANONICAL = {
+  seed: "DEMO-100M-v1",
+  asOf: "2026-09-28T09:00:00.000Z", // 2026-09-28T12:00:00+03:00
+  checksum: "6327ab92e308817b04f5bf1a65feb0dc47e1377232c8da375fbb4a916c899395",
+} as const;
+
+/** Production baseline the apply phase requires before its first write. */
+export const PRODUCTION_BASELINE = {
+  customers: 41,
+  suppliers: 44,
+  products: 42,
+  warehouses: 2,
+  salesUsers: 3,
+  /** Pre-existing purchase orders that may be present (never touched). */
+  allowedExistingPurchaseOrders: ["PO-2026-001"],
+} as const;
 export const DEMO_MARKER = "[DEMO-100M]";
 export const AUDIT_DEMO_METADATA = { demo: "DEMO-100M", demoVersion: "v1" } as const;
 export const PAYABLE_REFERENCE_PREFIX = "DEMO100M/RCV-";
