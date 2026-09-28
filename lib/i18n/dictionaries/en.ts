@@ -1178,6 +1178,7 @@ export const en = {
     },
     paymentCalendar: {
       title: "Payment Calendar",
+      empty: "No open payments with a due date",
       events: {
         supplierPayment: "Supplier payment",
         taxPayment: "Tax payment",

@@ -1,4 +1,5 @@
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
+import { formatMoney } from "@/components/sales/format";
 import { getPaymentCalendar } from "@/lib/services/dashboard/get-payment-calendar";
 import type { PaymentCalendarData } from "@/lib/services/dashboard/get-payment-calendar";
 import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
@@ -8,14 +9,12 @@ import { cn } from "@/lib/utils";
 const statusTextStyles: Record<PaymentCalendarData["status"], string> = {
   overdue: "text-rose-600",
   positive: "text-emerald-600",
-  neutral: "text-slate-400",
   upcoming: "text-slate-400",
 };
 
 const amountStyles: Record<PaymentCalendarData["status"], string> = {
   overdue: "text-rose-600",
   positive: "text-emerald-600",
-  neutral: "text-slate-900",
   upcoming: "text-slate-900",
 };
 
@@ -30,7 +29,12 @@ export async function PaymentCalendar({
 }) {
   const items = await getPaymentCalendar();
   const t = dictionary.commandCenter.paymentCalendar;
-  const monthFormatter = new Intl.DateTimeFormat(INTL_LOCALE_MAP[locale], { month: "short" });
+  // The badge shows the Europe/Kyiv calendar day of the due instant, never the server's.
+  const monthFormatter = new Intl.DateTimeFormat(INTL_LOCALE_MAP[locale], {
+    month: "short",
+    timeZone: "Europe/Kyiv",
+  });
+  const dayFormatter = new Intl.DateTimeFormat("en-US", { day: "numeric", timeZone: "Europe/Kyiv" });
 
   return (
     <OperationsCard
@@ -45,21 +49,29 @@ export async function PaymentCalendar({
         </button>
       }
     >
-      <ul className="flex flex-1 flex-col justify-between">
-        {items.map((item, index) => {
-          const monthLabel = monthFormatter.format(new Date(Date.UTC(2000, item.monthIndex, 1)));
+      {items.length === 0 ? (
+        <p className="flex flex-1 items-center justify-center px-2 py-6 text-center text-[12.5px] text-slate-400">
+          {t.empty}
+        </p>
+      ) : null}
+      <ul className={cn("flex flex-1 flex-col justify-between", items.length === 0 && "hidden")}>
+        {items.map((item) => {
+          const dueDate = new Date(item.dueDate);
+          const monthLabel = monthFormatter.format(dueDate);
+          const day = dayFormatter.format(dueDate);
+          const amount = formatMoney(item.amount, item.currency, locale);
           const eventLabel = t.events[item.eventType];
           const statusLabel = t.status[item.status];
 
           return (
-            <li key={`${item.day}-${item.monthIndex}-${index}`}>
+            <li key={`${item.eventType}-${item.id}`}>
               {/* >=380px: unchanged single-row layout */}
               <div className="hidden items-center gap-3 rounded-xl px-2 py-0.5 transition-colors hover:bg-slate-50 min-[380px]:flex">
                 <div className="flex w-9 shrink-0 flex-col items-center rounded-lg bg-slate-50 py-0.5">
                   <span className="text-[9px] font-medium tracking-wide text-slate-400 uppercase">
                     {monthLabel}
                   </span>
-                  <span className="text-[13px] leading-tight font-semibold text-slate-700">{item.day}</span>
+                  <span className="text-[13px] leading-tight font-semibold text-slate-700">{day}</span>
                 </div>
                 <div className="min-w-0 flex-1">
                   {/* line-clamp-2 (not truncate): the event label was being cut even where the row had room to wrap — this container already had min-w-0 flex-1. */}
@@ -71,7 +83,7 @@ export async function PaymentCalendar({
                   </p>
                 </div>
                 <span className={cn("shrink-0 text-[12.5px] font-semibold", amountStyles[item.status])}>
-                  {item.amount}
+                  {amount}
                 </span>
               </div>
 
@@ -83,7 +95,7 @@ export async function PaymentCalendar({
                       {monthLabel}
                     </span>
                     <span className="text-[13px] leading-tight font-semibold text-slate-700">
-                      {item.day}
+                      {day}
                     </span>
                   </div>
                   <div className="min-w-0 flex-1">
@@ -102,7 +114,7 @@ export async function PaymentCalendar({
                 </div>
                 <div className="flex justify-end pl-12">
                   <span className={cn("text-[12.5px] font-semibold", amountStyles[item.status])}>
-                    {item.amount}
+                    {amount}
                   </span>
                 </div>
               </div>

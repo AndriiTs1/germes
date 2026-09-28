@@ -1171,6 +1171,7 @@ export const uk: Dictionary = {
     },
     paymentCalendar: {
       title: "Платіжний календар",
+      empty: "Немає відкритих платежів із терміном оплати",
       events: {
         supplierPayment: "Оплата постачальнику",
         taxPayment: "Податковий платіж",
