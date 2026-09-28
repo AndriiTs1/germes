@@ -5,7 +5,7 @@ import { decimalToString } from "@/lib/services/sales/decimal";
 /** Rows shown per overview section; the full registry is /procurement/orders. */
 export const PROCUREMENT_OVERVIEW_ROW_LIMIT = 5;
 
-/** "Upcoming planned arrivals" window: today plus the next 7 calendar days. */
+/** "Upcoming planned arrivals" window: 7 calendar days — today plus the next 6. */
 export const PLANNED_ARRIVAL_WINDOW_DAYS = 7;
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -29,7 +29,6 @@ export type ProcurementPlannedArrival = {
 };
 
 export type ProcurementWorkspaceOverview = {
-  purchaseOrderCount: number;
   draftCount: number;
   confirmedCount: number;
   /** Sum of item quantityKg over CONFIRMED orders only — "ordered", never "in transit" or stock. */
@@ -58,13 +57,14 @@ export const ATTENTION_WHERE: Prisma.PurchaseOrderWhereInput = {
 };
 
 /**
- * [today, today + 8 days) on the UTC calendar — the same convention used to
- * store date-only fields (expectedArrivalDate is written as UTC midnight of
- * the chosen day, see createPurchaseOrder).
+ * [today, today + 7 days) on the UTC calendar — exactly 7 calendar dates,
+ * today included. Same convention used to store date-only fields
+ * (expectedArrivalDate is written as UTC midnight of the chosen day, see
+ * createPurchaseOrder).
  */
 export function getPlannedArrivalWindow(now: Date): { from: Date; to: Date } {
   const from = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
-  const to = new Date(from.getTime() + (PLANNED_ARRIVAL_WINDOW_DAYS + 1) * DAY_MS);
+  const to = new Date(from.getTime() + PLANNED_ARRIVAL_WINDOW_DAYS * DAY_MS);
   return { from, to };
 }
 
@@ -103,7 +103,6 @@ export async function getProcurementWorkspaceOverview(now: Date = new Date()): P
   };
 
   const [
-    purchaseOrderCount,
     draftCount,
     confirmedCount,
     ordered,
@@ -113,7 +112,6 @@ export async function getProcurementWorkspaceOverview(now: Date = new Date()): P
     plannedQuantity,
     arrivalRows,
   ] = await Promise.all([
-      prisma.purchaseOrder.count(),
       prisma.purchaseOrder.count({ where: { status: PurchaseOrderStatus.DRAFT } }),
       prisma.purchaseOrder.count({ where: { status: PurchaseOrderStatus.CONFIRMED } }),
       prisma.purchaseOrderItem.aggregate({
@@ -157,7 +155,6 @@ export async function getProcurementWorkspaceOverview(now: Date = new Date()): P
     ]);
 
   return {
-    purchaseOrderCount,
     draftCount,
     confirmedCount,
     orderedQuantityKg: decimalToString(ordered._sum.quantityKg ?? new Prisma.Decimal(0)),
