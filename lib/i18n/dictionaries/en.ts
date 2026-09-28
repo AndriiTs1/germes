@@ -1044,6 +1044,7 @@ export const en = {
         processing: "Processing",
         confirmed: "Confirmed",
         fullyReserved: "Fully Reserved",
+        readyToProcess: "Ready to process",
       },
       fulfillmentQueueTitle: "Fulfillment Queue",
       stock: {

@@ -37,15 +37,18 @@ export default async function WarehousePage() {
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           {dictionary.warehouse.workspace.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">
-          {dictionary.warehouse.workspace.subtitle}
-        </p>
+        {permissionCodes.includes("inventory.shipments.process") ? (
+          <p className="mt-1 text-[13px] text-slate-500">
+            {dictionary.warehouse.workspace.subtitle}
+          </p>
+        ) : null}
       </div>
 
       <WarehouseWorkspace
         locale={locale}
         dictionary={dictionary}
         canReadStock={permissionCodes.includes("inventory.stock.read")}
+        canProcessShipments={permissionCodes.includes("inventory.shipments.process")}
       />
     </DashboardShell>
   );

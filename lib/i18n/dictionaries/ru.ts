@@ -1038,6 +1038,7 @@ export const ru: Dictionary = {
         processing: "В обработке",
         confirmed: "Подтверждено",
         fullyReserved: "Полностью зарезервировано",
+        readyToProcess: "Готовы к обработке",
       },
       fulfillmentQueueTitle: "Очередь выполнения",
       stock: {

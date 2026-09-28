@@ -1038,6 +1038,7 @@ export const uk: Dictionary = {
         processing: "В обробці",
         confirmed: "Підтверджено",
         fullyReserved: "Повністю зарезервовано",
+        readyToProcess: "Готові до обробки",
       },
       fulfillmentQueueTitle: "Черга виконання",
       stock: {
