@@ -1,7 +1,7 @@
 import { Prisma, type SalesOrderStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
-import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
+import { ACTIVE_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
 import { resolveResponsibleFilter, type SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type SalesOrderListItem = {
@@ -38,7 +38,7 @@ export type ListSalesOrdersOptions = {
   cursor?: string;
   /** 1-indexed offset pagination — simpler to reflect in a URL than cursor. Takes precedence over `cursor`. */
   page?: number;
-  /** Excludes SHIPPED/COMPLETED/CANCELLED when true. Ignored when `status` is set. */
+  /** Only active orders (ACTIVE_SALES_ORDER_STATUSES: CONFIRMED / PROCESSING / READY — no DRAFT) when true. Ignored when `status` or `statuses` is set. */
   onlyActive?: boolean;
   /** Exact status filter (e.g. COMPLETED, CANCELLED). Takes precedence over `statuses` and `onlyActive`. */
   status?: SalesOrderStatus;
@@ -99,7 +99,7 @@ export async function listSalesOrders(
     responsibleId: resolveResponsibleFilter(scope, currentUserId, managerId),
     status:
       status ??
-      (statuses ? { in: statuses } : onlyActive ? { notIn: TERMINAL_SALES_ORDER_STATUSES } : undefined),
+      (statuses ? { in: statuses } : onlyActive ? { in: ACTIVE_SALES_ORDER_STATUSES } : undefined),
     OR: trimmedSearch
       ? [
           { orderNumber: { contains: trimmedSearch, mode: "insensitive" } },

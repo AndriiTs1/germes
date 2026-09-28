@@ -1,7 +1,7 @@
 import { Prisma, type CustomerStatus, FinanceStatus } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
 import { decimalToString } from "@/lib/services/sales/decimal";
-import { TERMINAL_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
+import { ACTIVE_SALES_ORDER_STATUSES } from "@/lib/services/sales/config";
 import { resolveResponsibleFilter, type SalesReadScope } from "@/lib/services/sales/read-scope";
 
 export type CustomerReceivableSummary = {
@@ -23,7 +23,7 @@ export type SalesCustomerListItem = {
   nextActionAt: string | null;
   creditLimit: string | null;
   paymentTermDays: number;
-  /** Orders whose status is NOT IN TERMINAL_SALES_ORDER_STATUSES — same shared definition as Orders. */
+  /** Orders in ACTIVE_SALES_ORDER_STATUSES (CONFIRMED / PROCESSING / READY; DRAFT excluded) — the shared definition. */
   activeOrdersCount: number;
   /** Grouped by currency, never summed across currencies. Empty array = no outstanding receivables. */
   receivables: CustomerReceivableSummary[];
@@ -128,7 +128,7 @@ export async function listSalesCustomers(
         responsible: { select: { id: true, name: true } },
         _count: {
           select: {
-            salesOrders: { where: { status: { notIn: TERMINAL_SALES_ORDER_STATUSES } } },
+            salesOrders: { where: { status: { in: ACTIVE_SALES_ORDER_STATUSES } } },
           },
         },
       },

@@ -39,3 +39,25 @@ describe("listSalesCustomers ordering", () => {
     expect(m.findMany.mock.calls[0][0]).toMatchObject({ skip: 0, take: 20 });
   });
 });
+
+describe("listSalesCustomers — active orders count", () => {
+  it("counts only CONFIRMED / PROCESSING / READY orders per customer (DRAFT excluded)", async () => {
+    await listSalesCustomers("user-1");
+    const where = m.findMany.mock.calls[0][0].select._count.select.salesOrders.where;
+    expect(where).toEqual({ status: { in: ["CONFIRMED", "PROCESSING", "READY"] } });
+    expect(where.status.in).not.toContain("DRAFT");
+  });
+
+  it("returns the database's filtered count unchanged", async () => {
+    m.findMany.mockResolvedValue([
+      {
+        id: "c1", code: "CUST-001", name: "Customer", status: "ACTIVE", contactPerson: null, phone: null, email: null,
+        lastContactAt: null, lastPurchaseAt: null, nextActionAt: null, creditLimit: null, paymentTermDays: 0,
+        responsible: null, _count: { salesOrders: 3 },
+      },
+    ]);
+    m.count.mockResolvedValue(1);
+    const result = await listSalesCustomers("user-1");
+    expect(result.items[0].activeOrdersCount).toBe(3);
+  });
+});

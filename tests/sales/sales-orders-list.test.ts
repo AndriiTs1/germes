@@ -40,17 +40,17 @@ describe("/sales/orders status tabs → listSalesOrders options", () => {
     }
   });
 
-  it("3. active still excludes SHIPPED, COMPLETED and CANCELLED", async () => {
-    expect((await whereFor(statusFilterToOptions("active"))).status).toEqual({
-      notIn: ["SHIPPED", "COMPLETED", "CANCELLED"],
-    });
+  it("3. active = CONFIRMED / PROCESSING / READY only — DRAFT is not active", async () => {
+    const { status } = await whereFor(statusFilterToOptions("active"));
+    expect(status).toEqual({ in: ["CONFIRMED", "PROCESSING", "READY"] });
+    for (const excluded of ["DRAFT", "SHIPPED", "COMPLETED", "CANCELLED"]) expect(status.in).not.toContain(excluded);
   });
 
   it("4. cancelled is exactly CANCELLED", async () => {
     expect((await whereFor(statusFilterToOptions("cancelled"))).status).toBe("CANCELLED");
   });
 
-  it("5. all adds no status restriction", async () => {
+  it("5. all adds no status restriction (drafts stay reachable there)", async () => {
     expect((await whereFor(statusFilterToOptions("all"))).status).toBeUndefined();
   });
 });

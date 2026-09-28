@@ -80,8 +80,14 @@ describe("Active Orders on /sales = CONFIRMED + PROCESSING + READY (DRAFT exclud
     const result = await listSalesOrders("m1", { scope: "all", statuses: ACTIVE_SALES_ORDER_STATUSES, limit: 5 });
     expect(result.totalCount).toBe(5);
     expect(result.orders.every((o) => o.status !== "DRAFT")).toBe(true);
-    // The /sales/orders "active" tab (onlyActive) still includes drafts — the order list is unchanged.
-    expect((await listSalesOrders("m1", { scope: "all", onlyActive: true, limit: 50 })).totalCount).toBe(8);
+  });
+
+  it("/sales/orders: the 'active' tab (onlyActive) is the same 5 — no drafts; 'all' still lists the drafts", async () => {
+    const active = await listSalesOrders("m1", { scope: "all", onlyActive: true, limit: 50 });
+    expect(active.totalCount).toBe(5);
+    expect(active.orders.some((o) => o.status === "DRAFT")).toBe(false);
+    const all = await listSalesOrders("m1", { scope: "all", limit: 50 });
+    expect(all.orders.filter((o) => o.status === "DRAFT")).toHaveLength(3);
   });
 
   it("team summary: company total and every manager count only CONFIRMED / PROCESSING / READY", async () => {

@@ -27,10 +27,3 @@ export const ACTIVE_SALES_ORDER_STATUSES: SalesOrderStatus[] = [
   SalesOrderStatus.PROCESSING,
   SalesOrderStatus.READY,
 ];
-
-/** SalesOrder statuses considered finished — excluded from "active" order views. */
-export const TERMINAL_SALES_ORDER_STATUSES: SalesOrderStatus[] = [
-  SalesOrderStatus.SHIPPED,
-  SalesOrderStatus.COMPLETED,
-  SalesOrderStatus.CANCELLED,
-];
