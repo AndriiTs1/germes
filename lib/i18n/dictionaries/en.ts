@@ -1118,7 +1118,6 @@ export const en = {
       receivables: "Receivables",
       overdueAr: "Overdue AR",
       payables: "Payables",
-      inventoryValue: "Inventory Value",
       grossMargin: "Gross Margin",
       comparisonLabel: "vs last month",
     },

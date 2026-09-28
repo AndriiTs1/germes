@@ -15,7 +15,7 @@ const db = vi.hoisted(() => ({
   orders: [] as { currency: string; items: { quantityKg: unknown; pricePerKg: unknown }[] }[],
   receivables: [] as FinanceRow[],
   payables: [] as FinanceRow[],
-  batches: [] as { receivedKg: unknown; unitCost: unknown }[],
+  batchFindMany: vi.fn(async () => []),
 }));
 
 vi.mock("@/lib/db/prisma", () => ({
@@ -23,12 +23,12 @@ vi.mock("@/lib/db/prisma", () => ({
     salesOrder: { findMany: async () => db.orders },
     receivable: { findMany: async () => db.receivables },
     payable: { findMany: async () => db.payables },
-    batch: { findMany: async () => db.batches },
+    batch: { findMany: db.batchFindMany },
   },
 }));
 
 import { DashboardKpis } from "@/components/dashboard/dashboard-kpis";
-import { formatKg, formatMoney } from "@/components/sales/format";
+import { formatMoney } from "@/components/sales/format";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCommandCenterKpis } from "@/lib/services/dashboard/get-command-center-kpis";
 
@@ -53,7 +53,7 @@ beforeEach(() => {
   db.orders = [];
   db.receivables = [];
   db.payables = [];
-  db.batches = [];
+  db.batchFindMany.mockClear();
 });
 
 describe("getCommandCenterKpis — per-currency balances", () => {
@@ -120,11 +120,9 @@ describe("Owner Dashboard KPI cards — currency labels", () => {
 
   it("8 + 12. no finance records → plain 0, no currency borrowed from the last EUR order", async () => {
     db.orders = [order("EUR")];
-    db.batches = [{ receivedKg: d("10"), unitCost: d("5") }];
     const html = await renderKpis();
     expect(html).not.toContain("EUR");
     expect(html).not.toContain("UAH");
-    expect(html).toContain(formatKg("50", "en")); // inventory value, no currency claimed
   });
 
   it("10. one currency renders one line", async () => {
@@ -142,9 +140,31 @@ describe("Owner Dashboard KPI cards — currency labels", () => {
     expect(html).toContain(formatMoney("100", "EUR", "en"));
     expect(html).not.toContain(formatMoney("1100", "UAH", "en"));
     expect(html).not.toContain(formatMoney("1100", "EUR", "en"));
-    for (const id of ["cashBanks", "receivables", "overdueAr", "payables", "inventoryValue", "grossMargin"] as const) {
+    for (const id of ["cashBanks", "receivables", "overdueAr", "payables", "grossMargin"] as const) {
       expect(html).toContain(t[id].replace(/&/g, "&amp;"));
     }
     expect(html).toContain("0%");
+  });
+});
+
+describe("getCommandCenterKpis — no Inventory Value", () => {
+  it("4 + 5. inventoryValue is not computed and Batch is never queried", async () => {
+    db.receivables = [fin("OPEN", "1000", "0", "UAH")];
+    const kpis = await getCommandCenterKpis(NOW);
+    expect(kpis).not.toHaveProperty("inventoryValue");
+    expect(db.batchFindMany).not.toHaveBeenCalled();
+  });
+
+  it("6 + 7. receivables / overdue / payables still work; Gross Margin unchanged", async () => {
+    db.receivables = [fin("PARTIALLY_PAID", "1000", "400", "UAH", PAST), fin("OPEN", "100", "0", "EUR")];
+    db.payables = [fin("OPEN", "300", "0", "EUR")];
+    const kpis = await getCommandCenterKpis(NOW);
+    expect(kpis.receivables.outstanding).toEqual([
+      { currency: "EUR", amount: "100" },
+      { currency: "UAH", amount: "600" },
+    ]);
+    expect(kpis.receivables.overdueOutstanding).toEqual([{ currency: "UAH", amount: "600" }]);
+    expect(kpis.payables.outstanding).toEqual([{ currency: "EUR", amount: "300" }]);
+    expect(kpis.grossMargin).toEqual({ value: "0", percent: "0" });
   });
 });

@@ -1112,7 +1112,6 @@ export const ru: Dictionary = {
       receivables: "Дебиторская задолженность",
       overdueAr: "Просроченная дебиторская задолженность",
       payables: "Кредиторская задолженность",
-      inventoryValue: "Стоимость запасов",
       grossMargin: "Валовая маржа",
       comparisonLabel: "по сравнению с прошлым месяцем",
     },

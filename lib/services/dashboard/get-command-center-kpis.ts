@@ -29,9 +29,6 @@ export type CommandCenterKpis = {
     outstanding: CurrencyAmount[];
   };
   /** Σ receivedKg × unitCost. Batch.unitCost has no currency, so none is claimed here. */
-  inventoryValue: {
-    value: string;
-  };
   grossMargin: {
     value: string;
     percent: string;
@@ -113,23 +110,6 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     }
   }
 
-  const batches = await prisma.batch.findMany({
-    select: {
-      receivedKg: true,
-      unitCost: true,
-    },
-  });
-
-  let inventoryValue = new Prisma.Decimal(0);
-
-  for (const batch of batches) {
-    if (batch.receivedKg && batch.unitCost) {
-      inventoryValue = inventoryValue.plus(
-        batch.receivedKg.mul(batch.unitCost),
-      );
-    }
-  }
-
   // Gross margin requires real COGS data.
   // Current schema has inventory cost, but not cost of sold items.
   // Do not calculate Revenue - Inventory Value: that would be incorrect.
@@ -153,10 +133,6 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
 
     payables: {
       outstanding: toCurrencyAmounts(payableOutstanding),
-    },
-
-    inventoryValue: {
-      value: inventoryValue.toString(),
     },
 
     grossMargin: {

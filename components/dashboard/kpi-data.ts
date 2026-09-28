@@ -1,5 +1,4 @@
 import {
-  Boxes,
   CreditCard,
   HandCoins,
   Landmark,
@@ -18,7 +17,6 @@ export type KpiId =
   | "receivables"
   | "overdueAr"
   | "payables"
-  | "inventoryValue"
   | "grossMargin";
 
 /**
@@ -57,11 +55,6 @@ export const kpiData: KpiDatum[] = [
     id: "payables",
     icon: CreditCard,
     accent: "violet",
-  },
-  {
-    id: "inventoryValue",
-    icon: Boxes,
-    accent: "amber",
   },
   {
     id: "grossMargin",

@@ -1112,7 +1112,6 @@ export const uk: Dictionary = {
       receivables: "Дебіторська заборгованість",
       overdueAr: "Прострочена дебіторська заборгованість",
       payables: "Кредиторська заборгованість",
-      inventoryValue: "Вартість запасів",
       grossMargin: "Валова маржа",
       comparisonLabel: "порівняно з минулим місяцем",
     },
