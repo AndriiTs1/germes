@@ -1126,10 +1126,12 @@ export const en = {
       title: "Sales Performance",
       viewReportAriaLabel: "View sales report",
       summary: {
-        monthlySales: "Monthly sales",
+        shippedSales: "Shipped sales by month",
         through: "through",
-        trendingUp: "trending up",
-        highestAt: "highest at",
+        trendUp: "up",
+        trendDown: "down",
+        trendFlat: "unchanged",
+        noTrend: "no comparison with last month",
       },
     },
     cashFlow: {

@@ -1120,10 +1120,12 @@ export const ru: Dictionary = {
       title: "Динамика продаж",
       viewReportAriaLabel: "Просмотреть отчёт по продажам",
       summary: {
-        monthlySales: "Продажи за месяц",
+        shippedSales: "Отгруженные продажи по месяцам",
         through: "по",
-        trendingUp: "тенденция к росту",
-        highestAt: "максимум",
+        trendUp: "рост на",
+        trendDown: "снижение на",
+        trendFlat: "без изменений",
+        noTrend: "нет сравнения с прошлым месяцем",
       },
     },
     cashFlow: {

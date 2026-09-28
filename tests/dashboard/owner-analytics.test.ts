@@ -7,13 +7,12 @@ const m = vi.hoisted(() => ({ getCashFlow: vi.fn() }));
 vi.mock("@/lib/services/dashboard/get-cash-flow", () => ({ getCashFlow: m.getCashFlow }));
 vi.mock("@/lib/services/dashboard/get-sales-performance", () => ({
   getSalesPerformance: async () => ({
-    value: "0",
-    unit: "UAH",
-    trendValue: "0%",
     months: [
-      { monthIndex: 7, pct: 50 },
-      { monthIndex: 8, pct: 100 },
+      { year: 2026, month: 8 },
+      { year: 2026, month: 9 },
     ],
+    series: [{ currency: "UAH", total: "150", monthly: ["50", "100"], orderCount: 2 }],
+    trend: { currency: "UAH", direction: "up", percent: "100" },
   }),
 }));
 vi.mock("@/lib/services/dashboard/get-inventory-status", () => ({
