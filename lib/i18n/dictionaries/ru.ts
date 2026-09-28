@@ -104,7 +104,6 @@ export const ru: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупки",
-      subtitle: "Ключевая информация по закупкам",
       kpi: {
         suppliers: "Всего поставщиков",
         activeSuppliers: "Активные поставщики",
@@ -710,7 +709,6 @@ export const ru: Dictionary = {
   sales: {
     workspace: {
       title: "Рабочее пространство продаж",
-      subtitle: "Ваши клиенты, заказы и действия",
       kpi: {
         needsAttention: "Требуют внимания",
         activeOrders: "Активные заказы",
@@ -725,9 +723,19 @@ export const ru: Dictionary = {
         reservationsNeedReview: "Некоторые резервирования требуют проверки",
       },
       activeOrdersEmpty: "Сейчас нет активных заказов",
+      operationalDetails: {
+        title: "Операционные детали",
+        show: "Показать детали",
+        hide: "Скрыть детали",
+      },
+      preview: {
+        showAll: "Показать все ({count})",
+        collapse: "Свернуть",
+      },
+      goToWarehouse: "Перейти на склад",
+      goToFinance: "Перейти в финансы",
       team: {
         title: "Команда продаж",
-        subtitle: "Итог по компании и портфель каждого менеджера",
         companyTotal: "Итого по компании",
         outsideTeam: "Без менеджера",
         outsideTeamHint: "Клиенты или заказы без активного менеджера",
@@ -764,6 +772,12 @@ export const ru: Dictionary = {
       expiredLabel: "Истекло",
       expiringSoonLabel: "Скоро истекает",
       activeLabel: "Активно",
+      noProblems: "Нет истёкших или истекающих резервирований",
+      counters: {
+        expired: "Просрочено",
+        expiringSoon: "Скоро истекают",
+        active: "Активные",
+      },
     },
     receivablesCard: {
       title: "Дебиторская задолженность",

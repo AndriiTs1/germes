@@ -9,28 +9,48 @@ import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { SalesOrderListItem } from "@/lib/services/sales/list-sales-orders";
 import { cn } from "@/lib/utils";
 
+/**
+ * `totalCount`: the full active-order count, shown next to the title (the list itself is a short recent slice).
+ * `viewAllInFooter`: "view all" goes under the list (styled like the lists' "show all") instead of the header,
+ * so it lines up with the neighbouring card's footer action.
+ */
 export function ActiveOrdersCard({
   orders,
   locale,
   dictionary,
   className,
+  viewAllHref = "/sales/orders",
+  totalCount,
+  viewAllInFooter = false,
 }: {
   orders: SalesOrderListItem[];
   locale: Locale;
   dictionary: Dictionary;
   className?: string;
+  viewAllHref?: string;
+  totalCount?: number;
+  viewAllInFooter?: boolean;
 }) {
   return (
     <OperationsCard
       title={dictionary.sales.workspace.kpi.activeOrders}
       className={className}
+      badge={
+        totalCount !== undefined && totalCount > 0 ? (
+          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-slate-100 px-1.5 text-[11px] font-semibold text-slate-600 xl:h-[18px] xl:min-w-[18px] xl:px-1 xl:text-[10.5px]">
+            {totalCount}
+          </span>
+        ) : undefined
+      }
       action={
-        <Link
-          href="/sales/orders"
-          className="text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-700"
-        >
-          {dictionary.common.viewAll}
-        </Link>
+        viewAllInFooter ? undefined : (
+          <Link
+            href={viewAllHref}
+            className="text-[12px] font-medium text-slate-400 transition-colors hover:text-slate-700"
+          >
+            {dictionary.common.viewAll}
+          </Link>
+        )
       }
     >
       {orders.length === 0 ? (
@@ -80,6 +100,13 @@ export function ActiveOrdersCard({
           ))}
         </ul>
       )}
+      {viewAllInFooter ? (
+        // The list above is flex-1, so this sits at the card bottom — same
+        // classes as PreviewList's "show all" for one shared footer line.
+        <Link href={viewAllHref} className="mt-2 self-start px-2 text-[12px] font-medium text-blue-600 hover:text-blue-700">
+          {dictionary.common.viewAll}
+        </Link>
+      ) : null}
     </OperationsCard>
   );
 }

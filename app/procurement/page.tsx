@@ -50,7 +50,6 @@ export default async function ProcurementPage() {
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           {dictionary.procurement.workspace.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">{dictionary.procurement.workspace.subtitle}</p>
       </div>
 
       <ProcurementWorkspaceOverview overview={overview} locale={locale} dictionary={dictionary} />

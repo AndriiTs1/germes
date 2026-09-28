@@ -1,4 +1,5 @@
 import { Boxes } from "lucide-react";
+import type { ReactNode } from "react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
 import { AvailableStockList } from "@/components/sales/available-stock-list";
@@ -6,19 +7,28 @@ import type { Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type { ProductStockAvailability } from "@/lib/services/sales/get-stock-availability";
 
+/**
+ * `problemsFirst` (supervisory /sales): negative availability, then
+ * reservations on non-sellable batches, then the rest — display order only.
+ * `action`: optional header link (e.g. to /warehouse), decided by the caller.
+ */
 export function AvailableStockCard({
   stock,
   locale,
   dictionary,
   className,
+  problemsFirst = false,
+  action,
 }: {
   stock: ProductStockAvailability[];
   locale: Locale;
   dictionary: Dictionary;
   className?: string;
+  problemsFirst?: boolean;
+  action?: ReactNode;
 }) {
   return (
-    <OperationsCard title={dictionary.sales.availableStock.title} className={className}>
+    <OperationsCard title={dictionary.sales.availableStock.title} className={className} action={action}>
       {stock.length === 0 ? (
         <div className="flex flex-1 flex-col items-center justify-center gap-1.5 py-6 text-center">
           <Boxes className="h-5 w-5 text-slate-300 xl:h-4 xl:w-4" strokeWidth={1.75} />
@@ -30,6 +40,7 @@ export function AvailableStockCard({
         <AvailableStockList
           stock={stock}
           locale={locale}
+          problemsFirst={problemsFirst}
           labels={{
             reservedLabel: dictionary.sales.availableStock.reservedLabel,
             kgUnit: dictionary.common.kgUnit,

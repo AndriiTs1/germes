@@ -110,7 +110,6 @@ export const en = {
   procurement: {
     workspace: {
       title: "Procurement",
-      subtitle: "Key procurement information",
       kpi: {
         suppliers: "Total suppliers",
         activeSuppliers: "Active suppliers",
@@ -716,7 +715,6 @@ export const en = {
   sales: {
     workspace: {
       title: "Sales Workspace",
-      subtitle: "Your customers, orders and actions",
       kpi: {
         needsAttention: "Needs Attention",
         activeOrders: "Active Orders",
@@ -731,9 +729,19 @@ export const en = {
         reservationsNeedReview: "Some reservations need review",
       },
       activeOrdersEmpty: "No active orders right now",
+      operationalDetails: {
+        title: "Operational details",
+        show: "Show details",
+        hide: "Hide details",
+      },
+      preview: {
+        showAll: "Show all ({count})",
+        collapse: "Collapse",
+      },
+      goToWarehouse: "Go to warehouse",
+      goToFinance: "Go to finance",
       team: {
         title: "Sales team",
-        subtitle: "Company-wide totals and each manager's portfolio",
         companyTotal: "Company total",
         outsideTeam: "No manager",
         outsideTeamHint: "Customers or orders without an active sales manager",
@@ -770,6 +778,12 @@ export const en = {
       expiredLabel: "Expired",
       expiringSoonLabel: "Expiring soon",
       activeLabel: "Active",
+      noProblems: "No expired or expiring reservations",
+      counters: {
+        expired: "Expired",
+        expiringSoon: "Expiring soon",
+        active: "Active",
+      },
     },
     receivablesCard: {
       title: "Receivables",

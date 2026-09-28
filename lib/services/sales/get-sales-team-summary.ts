@@ -53,6 +53,15 @@ type Bucket = {
 
 const OUTSIDE_TEAM = "__outside_team__";
 
+/**
+ * "Turnover" = value of sales that actually happened: shipped or completed.
+ * DRAFT / CONFIRMED / PROCESSING / READY are not sales yet; CANCELLED never is.
+ */
+export const TURNOVER_SALES_ORDER_STATUSES: SalesOrderStatus[] = [
+  SalesOrderStatus.SHIPPED,
+  SalesOrderStatus.COMPLETED,
+];
+
 function emptyBucket(): Bucket {
   return {
     customerCount: 0,
@@ -124,7 +133,8 @@ function toMetrics(bucket: Bucket): SalesTeamMetrics {
  *   - customers: isActive only (as listSalesCustomers)
  *   - attention: attention-rules.ts (shared with getAttentionCustomers)
  *   - active orders: ACTIVE_SALES_ORDER_STATUSES (CONFIRMED / PROCESSING / READY — DRAFT excluded)
- *   - turnover: all-time sum of quantityKg * pricePerKg, excluding CANCELLED
+ *   - turnover: all-time sum of quantityKg * pricePerKg over TURNOVER_SALES_ORDER_STATUSES
+ *     (SHIPPED / COMPLETED — sales that actually happened)
  *   - receivables: excludes PAID/CANCELLED, outstanding = amount - paidAmount,
  *     non-positive outstanding skipped, overdue = dueDate < now
  * Money stays per currency end to end — never summed across currencies.
@@ -187,11 +197,13 @@ export async function getSalesTeamSummary(): Promise<SalesTeamSummary> {
     if (ACTIVE_SALES_ORDER_STATUSES.includes(order.status)) {
       bucket.activeOrderCount += 1;
     }
-    const orderTotal = order.items.reduce(
-      (sum, item) => sum.plus(item.quantityKg.mul(item.pricePerKg)),
-      new Prisma.Decimal(0),
-    );
-    addTurnover(bucket, order.currency, orderTotal);
+    if (TURNOVER_SALES_ORDER_STATUSES.includes(order.status)) {
+      const orderTotal = order.items.reduce(
+        (sum, item) => sum.plus(item.quantityKg.mul(item.pricePerKg)),
+        new Prisma.Decimal(0),
+      );
+      addTurnover(bucket, order.currency, orderTotal);
+    }
   }
 
   for (const receivable of receivables) {

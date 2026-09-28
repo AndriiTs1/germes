@@ -120,6 +120,9 @@ export function ProcurementWorkspaceOverview({
     },
   ];
 
+  const showAttention = overview.attention.totalCount > 0;
+  const showArrivals = overview.plannedArrivals.length > 0;
+
   const reasonLabels: Record<ProcurementAttentionReason, string> = {
     MISSING_PRICE: t.attention.reasons.missingPrice,
     MISSING_WAREHOUSE: t.attention.reasons.missingWarehouse,
@@ -139,76 +142,86 @@ export function ProcurementWorkspaceOverview({
         </div>
       </section>
 
-      {overview.attention.totalCount > 0 ? (
-        <section aria-labelledby="procurement-attention-title" className={CARD}>
-          <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
-            <h2 id="procurement-attention-title" className={SECTION_TITLE}>
-              {t.attention.title}
-            </h2>
-            <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-50 px-1.5 text-[11px] font-semibold text-amber-700">
-              {overview.attention.totalCount}
-            </span>
-          </div>
-          <ul className="divide-y divide-slate-100 border-t border-slate-100">
-            {overview.attention.items.map((item) => (
-              <li key={item.id}>
-                <Link href={`/procurement/orders/${item.id}`} className={ROW_LINK}>
-                  <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
-                    <span className="shrink-0 text-[13px] font-semibold text-slate-900">{item.orderNumber}</span>
-                    <span className="min-w-0 truncate text-[12.5px] text-slate-600">{item.supplierName}</span>
-                  </div>
-                  <p className="mt-0.5 text-[12px] text-amber-700">
-                    {item.reasons.map((reason) => reasonLabels[reason]).join(" · ")}
-                  </p>
-                </Link>
-              </li>
-            ))}
-          </ul>
-          {overview.attention.totalCount > overview.attention.items.length ? (
-            <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-2.5 text-[12px]">
-              <span className="text-slate-400">
-                {t.attention.shownOf
-                  .replace("{shown}", String(overview.attention.items.length))
-                  .replace("{total}", String(overview.attention.totalCount))}
+      {/* Both lists side by side from 1280px (80rem — a px arbitrary breakpoint
+          sorts wrongly in Tailwind v4), one column below; a lone list keeps
+          the full width. items-start: each card keeps its natural height. */}
+      <div
+        className={cn(
+          "grid grid-cols-1 items-start gap-4",
+          showAttention && showArrivals && "min-[80rem]:grid-cols-2",
+        )}
+      >
+        {showAttention ? (
+          <section aria-labelledby="procurement-attention-title" className={CARD}>
+            <div className="flex items-center justify-between gap-3 px-4 pt-4 pb-2">
+              <h2 id="procurement-attention-title" className={SECTION_TITLE}>
+                {t.attention.title}
+              </h2>
+              <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-amber-50 px-1.5 text-[11px] font-semibold text-amber-700">
+                {overview.attention.totalCount}
               </span>
-              <Link href="/procurement/orders" className="font-medium text-blue-600 hover:text-blue-700">
-                {t.allOrders}
-              </Link>
             </div>
-          ) : null}
-        </section>
-      ) : null}
-
-      {overview.plannedArrivals.length > 0 ? (
-        <section aria-labelledby="procurement-arrivals-title" className={CARD}>
-          <h2 id="procurement-arrivals-title" className={cn(SECTION_TITLE, "px-4 pt-4 pb-2")}>
-            {t.arrivals.title}
-          </h2>
-          <ul className="divide-y divide-slate-100 border-t border-slate-100">
-            {overview.plannedArrivals.map((arrival) => (
-              <li key={arrival.id}>
-                <Link href={`/procurement/orders/${arrival.id}`} className={ROW_LINK}>
-                  <div className="flex items-baseline justify-between gap-3">
-                    <span className="min-w-0 truncate text-[13px] text-slate-900">
-                      <span className="font-semibold">{formatShortDate(arrival.expectedArrivalDate, locale)}</span>
-                      <span className="text-slate-400"> · </span>
-                      {arrival.orderNumber}
-                    </span>
-                    <span className="shrink-0 text-[13px] font-semibold whitespace-nowrap text-slate-900">
-                      {formatKg(arrival.totalQuantityKg, locale)} {kg}
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[12px] text-slate-500">
-                    {arrival.supplierName}
-                    <span className="text-slate-300"> · </span>
-                    {arrival.destinationWarehouseName ?? t.arrivals.noWarehouse}
-                  </p>
+            <ul className="divide-y divide-slate-100 border-t border-slate-100">
+              {overview.attention.items.map((item) => (
+                <li key={item.id}>
+                  <Link href={`/procurement/orders/${item.id}`} className={ROW_LINK}>
+                    <div className="flex flex-col gap-0.5 sm:flex-row sm:items-baseline sm:gap-3">
+                      <span className="shrink-0 text-[13px] font-semibold text-slate-900">{item.orderNumber}</span>
+                      <span className="min-w-0 truncate text-[12.5px] text-slate-600">{item.supplierName}</span>
+                    </div>
+                    <p className="mt-0.5 text-[12px] text-amber-700">
+                      {item.reasons.map((reason) => reasonLabels[reason]).join(" · ")}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+            {overview.attention.totalCount > overview.attention.items.length ? (
+              <div className="flex items-center justify-between gap-3 border-t border-slate-100 px-4 py-2.5 text-[12px]">
+                <span className="text-slate-400">
+                  {t.attention.shownOf
+                    .replace("{shown}", String(overview.attention.items.length))
+                    .replace("{total}", String(overview.attention.totalCount))}
+                </span>
+                <Link href="/procurement/orders" className="font-medium text-blue-600 hover:text-blue-700">
+                  {t.allOrders}
                 </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+              </div>
+            ) : null}
+          </section>
+        ) : null}
+
+        {showArrivals ? (
+          <section aria-labelledby="procurement-arrivals-title" className={CARD}>
+            <h2 id="procurement-arrivals-title" className={cn(SECTION_TITLE, "px-4 pt-4 pb-2")}>
+              {t.arrivals.title}
+            </h2>
+            <ul className="divide-y divide-slate-100 border-t border-slate-100">
+              {overview.plannedArrivals.map((arrival) => (
+                <li key={arrival.id}>
+                  <Link href={`/procurement/orders/${arrival.id}`} className={ROW_LINK}>
+                    <div className="flex items-baseline justify-between gap-3">
+                      <span className="min-w-0 truncate text-[13px] text-slate-900">
+                        <span className="font-semibold">{formatShortDate(arrival.expectedArrivalDate, locale)}</span>
+                        <span className="text-slate-400"> · </span>
+                        {arrival.orderNumber}
+                      </span>
+                      <span className="shrink-0 text-[13px] font-semibold whitespace-nowrap text-slate-900">
+                        {formatKg(arrival.totalQuantityKg, locale)} {kg}
+                      </span>
+                    </div>
+                    <p className="mt-0.5 truncate text-[12px] text-slate-500">
+                      {arrival.supplierName}
+                      <span className="text-slate-300"> · </span>
+                      {arrival.destinationWarehouseName ?? t.arrivals.noWarehouse}
+                    </p>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </section>
+        ) : null}
+      </div>
     </div>
   );
 }

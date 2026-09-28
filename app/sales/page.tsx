@@ -42,9 +42,6 @@ export default async function SalesPage() {
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5] xl:leading-[1.2]">
           {dictionary.sales.workspace.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500 xl:mt-0.5 xl:text-slate-400">
-          {dictionary.sales.workspace.subtitle}
-        </p>
       </div>
 
       <SalesWorkspace

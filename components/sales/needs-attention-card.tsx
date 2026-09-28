@@ -1,26 +1,54 @@
 import { AlertCircle, PackageCheck } from "lucide-react";
 
 import { OperationsCard } from "@/components/dashboard/operations/operations-card";
+import { PreviewList } from "@/components/sales/preview-list";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import type {
   AttentionCustomer,
   AttentionReasonType,
 } from "@/lib/services/sales/get-attention-customers";
 
+const LIST_CLASS = "flex flex-1 flex-col gap-0.5 overflow-y-auto xl:divide-y xl:divide-slate-100";
+
+/**
+ * `previewLimit` (supervisory /sales): show only the first N customers — the
+ * list is already most-critical-first — with an in-place "show all" over the
+ * already-loaded rest. Without it every customer is listed (manager workspace).
+ */
 export function NeedsAttentionCard({
   customers,
   dictionary,
   className,
+  previewLimit,
 }: {
   customers: AttentionCustomer[];
   dictionary: Dictionary;
   className?: string;
+  previewLimit?: number;
 }) {
   const reasonLabels: Record<AttentionReasonType, string> = {
     NEXT_ACTION_OVERDUE: dictionary.sales.needsAttention.reasons.nextActionOverdue,
     STALE_CONTACT: dictionary.sales.needsAttention.reasons.staleContact,
     STALE_PURCHASE: dictionary.sales.needsAttention.reasons.stalePurchase,
   };
+
+  const items = customers.map((customer) => (
+    <li key={customer.customerId}>
+      <div className="flex items-center gap-3 rounded-xl px-2 py-1.5 xl:items-start xl:py-2">
+        <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-rose-50 text-rose-600">
+          <AlertCircle className="h-4 w-4" strokeWidth={1.75} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-[12.5px] font-semibold text-slate-900 xl:text-[13px]">
+            {customer.customerName}
+          </p>
+          <p className="truncate text-[11px] text-slate-400">
+            {customer.reasons.map((reason) => reasonLabels[reason.type]).join(" · ")}
+          </p>
+        </div>
+      </div>
+    </li>
+  ));
 
   return (
     <OperationsCard
@@ -41,26 +69,16 @@ export function NeedsAttentionCard({
             {dictionary.sales.needsAttention.empty}
           </p>
         </div>
+      ) : previewLimit !== undefined ? (
+        <PreviewList
+          preview={items.slice(0, previewLimit)}
+          full={items}
+          showAllLabel={dictionary.sales.workspace.preview.showAll.replace("{count}", String(items.length))}
+          collapseLabel={dictionary.sales.workspace.preview.collapse}
+          className={LIST_CLASS}
+        />
       ) : (
-        <ul className="flex flex-1 flex-col gap-0.5 overflow-y-auto xl:divide-y xl:divide-slate-100">
-          {customers.map((customer) => (
-            <li key={customer.customerId}>
-              <div className="flex items-center gap-3 rounded-xl px-2 py-1.5 xl:items-start xl:py-2">
-                <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-[9px] bg-rose-50 text-rose-600">
-                  <AlertCircle className="h-4 w-4" strokeWidth={1.75} />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-[12.5px] font-semibold text-slate-900 xl:text-[13px]">
-                    {customer.customerName}
-                  </p>
-                  <p className="truncate text-[11px] text-slate-400">
-                    {customer.reasons.map((reason) => reasonLabels[reason.type]).join(" · ")}
-                  </p>
-                </div>
-              </div>
-            </li>
-          ))}
-        </ul>
+        <ul className={LIST_CLASS}>{items}</ul>
       )}
     </OperationsCard>
   );

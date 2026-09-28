@@ -104,7 +104,6 @@ export const uk: Dictionary = {
   procurement: {
     workspace: {
       title: "Закупівлі",
-      subtitle: "Ключова інформація щодо закупівель",
       kpi: {
         suppliers: "Усього постачальників",
         activeSuppliers: "Активні постачальники",
@@ -710,7 +709,6 @@ export const uk: Dictionary = {
   sales: {
     workspace: {
       title: "Робочий простір продажів",
-      subtitle: "Ваші клієнти, замовлення та дії",
       kpi: {
         needsAttention: "Потребують уваги",
         activeOrders: "Активні замовлення",
@@ -725,9 +723,19 @@ export const uk: Dictionary = {
         reservationsNeedReview: "Деякі резервування потребують перевірки",
       },
       activeOrdersEmpty: "Наразі немає активних замовлень",
+      operationalDetails: {
+        title: "Операційні деталі",
+        show: "Показати деталі",
+        hide: "Сховати деталі",
+      },
+      preview: {
+        showAll: "Показати всі ({count})",
+        collapse: "Згорнути",
+      },
+      goToWarehouse: "Перейти на склад",
+      goToFinance: "Перейти у фінанси",
       team: {
         title: "Команда продажів",
-        subtitle: "Підсумок по компанії та портфель кожного менеджера",
         companyTotal: "Разом по компанії",
         outsideTeam: "Без менеджера",
         outsideTeamHint: "Клієнти або замовлення без активного менеджера",
@@ -764,6 +772,12 @@ export const uk: Dictionary = {
       expiredLabel: "Прострочено",
       expiringSoonLabel: "Скоро закінчується",
       activeLabel: "Активне",
+      noProblems: "Немає прострочених або тих, що скоро закінчуються",
+      counters: {
+        expired: "Прострочено",
+        expiringSoon: "Скоро закінчуються",
+        active: "Активні",
+      },
     },
     receivablesCard: {
       title: "Дебіторська заборгованість",

@@ -97,7 +97,7 @@ describe("Active Orders on /sales = CONFIRMED + PROCESSING + READY (DRAFT exclud
     expect(byManager).toEqual({ m1: 2, m2: 2, m3: 1 });
   });
 
-  it("the /sales page: KPI = 5 and the Active Orders card lists no draft", async () => {
+  it("the /sales page: KPI = 5 and no draft anywhere (owner view — the cards start collapsed)", async () => {
     const dictionary = getDictionary("en");
     const html = renderToStaticMarkup(
       await SalesWorkspace({
@@ -116,6 +116,21 @@ describe("Active Orders on /sales = CONFIRMED + PROCESSING + READY (DRAFT exclud
     expect(kpiChunk).not.toMatch(/>8</);
     const drafts = db.orders.filter((o) => o.status === "DRAFT").map((o) => o.orderNumber);
     for (const number of drafts) expect(html).not.toContain(number);
-    expect(html).toContain(db.orders.find((o) => o.status === "READY")!.orderNumber);
+  });
+
+  it("the /sales page, manager workspace: the Active Orders card lists active orders, no draft", async () => {
+    const dictionary = getDictionary("en");
+    const html = renderToStaticMarkup(
+      await SalesWorkspace({
+        userId: "m2",
+        permissionCodes: ["sales.orders.read", "customers.read"],
+        readScope: "own",
+        locale: "en",
+        dictionary,
+      }),
+    );
+    const m2 = db.orders.filter((o) => o.responsibleId === "m2");
+    for (const o of m2.filter((o) => o.status === "READY")) expect(html).toContain(o.orderNumber);
+    for (const o of m2.filter((o) => o.status === "DRAFT")) expect(html).not.toContain(o.orderNumber);
   });
 });

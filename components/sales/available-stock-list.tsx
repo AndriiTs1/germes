@@ -17,13 +17,26 @@ const VISIBLE_LIMIT = 5;
  * Dictionary) to keep the client payload small. Sorted by product name for
  * display only; the service's data and ordering are untouched.
  */
+const isNegativeAvailable = (product: ProductStockAvailability) => product.availableKg.trim().startsWith("-");
+const hasInconsistentReserved = (product: ProductStockAvailability) => product.inconsistentReservedKg !== "0";
+
+/** 0 = negative available, 1 = reserved against a non-sellable batch, 2 = fine. */
+function problemRank(product: ProductStockAvailability): number {
+  if (isNegativeAvailable(product)) return 0;
+  if (hasInconsistentReserved(product)) return 1;
+  return 2;
+}
+
 export function AvailableStockList({
   stock,
   locale,
   labels,
+  problemsFirst = false,
 }: {
   stock: ProductStockAvailability[];
   locale: Locale;
+  /** Problem rows first (see problemRank), then by name. Default: by name only. */
+  problemsFirst?: boolean;
   labels: {
     reservedLabel: string;
     kgUnit: string;
@@ -34,7 +47,9 @@ export function AvailableStockList({
   const [expanded, setExpanded] = useState(false);
 
   const collator = new Intl.Collator(INTL_LOCALE_MAP[locale]);
-  const sorted = [...stock].sort((a, b) => collator.compare(a.name, b.name));
+  const sorted = [...stock].sort(
+    (a, b) => (problemsFirst ? problemRank(a) - problemRank(b) : 0) || collator.compare(a.name, b.name),
+  );
   const visible = expanded ? sorted : sorted.slice(0, VISIBLE_LIMIT);
   const canToggle = sorted.length > VISIBLE_LIMIT;
 
@@ -42,8 +57,8 @@ export function AvailableStockList({
     <>
       <ul className="flex flex-1 flex-col gap-1 overflow-y-auto xl:gap-0 xl:divide-y xl:divide-slate-100">
         {visible.map((product) => {
-          const isNegative = product.availableKg.trim().startsWith("-");
-          const hasInconsistent = product.inconsistentReservedKg !== "0";
+          const isNegative = isNegativeAvailable(product);
+          const hasInconsistent = hasInconsistentReserved(product);
 
           return (
             <li key={product.productId}>

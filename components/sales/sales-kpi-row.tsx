@@ -13,7 +13,8 @@ const accentChipStyles: Record<SalesKpiAccent, string> = {
 
 export type SalesKpiCardProps = {
   label: string;
-  value: string;
+  /** One value, or one full line per currency (money is never summed across currencies). */
+  value: string | string[];
   unit?: string;
   icon: LucideIcon;
   accent: SalesKpiAccent;
@@ -50,22 +51,43 @@ function SalesKpiCard({ label, value, unit, icon: Icon, accent, warning }: Sales
         </p>
       </div>
 
-      <div className="mt-3 flex items-baseline gap-1.5 xl:mt-2.5">
-        <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900 xl:text-[23px] xl:font-bold">
-          {value}
-        </span>
-        {unit ? (
-          <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400 xl:text-[11px] xl:font-normal">
-            {unit}
+      {Array.isArray(value) ? (
+        <ValueLines lines={value} className="mt-3 xl:mt-2.5" />
+      ) : (
+        <div className="mt-3 flex items-baseline gap-1.5 xl:mt-2.5">
+          <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900 xl:text-[23px] xl:font-bold">
+            {value}
           </span>
-        ) : null}
-      </div>
+          {unit ? (
+            <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400 xl:text-[11px] xl:font-normal">
+              {unit}
+            </span>
+          ) : null}
+        </div>
+      )}
 
       {warning ? (
         <p className="mt-2 truncate text-[11.5px] font-medium text-amber-600">{warning}</p>
       ) : (
         <div className="mt-2 h-[15px]" aria-hidden="true" />
       )}
+    </div>
+  );
+}
+
+/**
+ * One line per currency, slightly smaller than a single KPI number so a full
+ * amount fits the card. Never truncated: Intl group separators are
+ * non-breaking, so a too-narrow card can only wrap before the currency code.
+ */
+function ValueLines({ lines, className }: { lines: string[]; className?: string }) {
+  return (
+    <div className={cn("flex flex-col gap-1", className)}>
+      {lines.map((line) => (
+        <span key={line} className="text-[18px] leading-tight font-semibold tracking-tight text-slate-900 xl:text-[19px] xl:font-bold">
+          {line}
+        </span>
+      ))}
     </div>
   );
 }
@@ -85,16 +107,20 @@ function SalesKpiRow({ label, value, unit, icon: Icon, accent, warning }: SalesK
       <p className="min-w-0 flex-1 truncate text-[13px] font-medium text-slate-500">{label}</p>
 
       <div className="shrink-0 text-right">
-        <div className="flex items-baseline justify-end gap-1.5">
-          <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
-            {value}
-          </span>
-          {unit ? (
-            <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
-              {unit}
+        {Array.isArray(value) ? (
+          <ValueLines lines={value} className="items-end" />
+        ) : (
+          <div className="flex items-baseline justify-end gap-1.5">
+            <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
+              {value}
             </span>
-          ) : null}
-        </div>
+            {unit ? (
+              <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
+                {unit}
+              </span>
+            ) : null}
+          </div>
+        )}
         {warning ? (
           <p className="mt-1 text-[11px] font-medium text-amber-600">{warning}</p>
         ) : null}
@@ -107,6 +133,10 @@ function SalesKpiRow({ label, value, unit, icon: Icon, accent, warning }: SalesK
  * Desktop/tablet grid (>=768px) plus the mobile compact-rows-in-one-card
  * pattern already established by Owner's DashboardKpis — same responsive
  * technique, SALES-specific data and no trend fields.
+ *
+ * The 1280px step is written in rem (80rem): Tailwind v4 emits a px
+ * arbitrary breakpoint before the rem-based md:, so md:grid-cols-2 used to
+ * win and the row stayed 2×2 at every desktop width.
  */
 export function SalesKpiSummary({ items }: { items: SalesKpiCardProps[] }) {
   if (items.length === 0) return null;
@@ -117,8 +147,8 @@ export function SalesKpiSummary({ items }: { items: SalesKpiCardProps[] }) {
       : items.length === 2
         ? "md:grid-cols-2"
         : items.length === 3
-          ? "md:grid-cols-2 min-[1280px]:grid-cols-3"
-          : "md:grid-cols-2 min-[1280px]:grid-cols-4";
+          ? "md:grid-cols-2 min-[80rem]:grid-cols-3"
+          : "md:grid-cols-2 min-[80rem]:grid-cols-4";
 
   return (
     <>
