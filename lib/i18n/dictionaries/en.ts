@@ -1160,7 +1160,7 @@ export const en = {
     needsAttention: {
       title: "Needs Attention",
       overdueCustomerPayments: "Overdue customer payments",
-      supplierInvoiceAwaitingApproval: "Supplier invoice awaiting approval",
+      openSupplierPayables: "Open supplier payables",
       lowStockPrefix: "Low stock:",
       supplierPaymentDueTomorrow: "Supplier payment due tomorrow",
       ordersAwaitingShipment: "Orders awaiting shipment",

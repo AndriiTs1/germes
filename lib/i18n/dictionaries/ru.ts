@@ -1154,7 +1154,7 @@ export const ru: Dictionary = {
     needsAttention: {
       title: "Требует внимания",
       overdueCustomerPayments: "Просроченные платежи клиентов",
-      supplierInvoiceAwaitingApproval: "Счёт поставщика ожидает утверждения",
+      openSupplierPayables: "Открытая кредиторская задолженность",
       lowStockPrefix: "Низкий остаток:",
       supplierPaymentDueTomorrow: "Оплата поставщику завтра",
       ordersAwaitingShipment: "Заказы ожидают отгрузки",

@@ -1154,7 +1154,7 @@ export const uk: Dictionary = {
     needsAttention: {
       title: "Потребує уваги",
       overdueCustomerPayments: "Прострочені платежі клієнтів",
-      supplierInvoiceAwaitingApproval: "Рахунок постачальника очікує затвердження",
+      openSupplierPayables: "Відкрита кредиторська заборгованість",
       lowStockPrefix: "Малий залишок:",
       supplierPaymentDueTomorrow: "Оплата постачальнику завтра",
       ordersAwaitingShipment: "Замовлення очікують відвантаження",

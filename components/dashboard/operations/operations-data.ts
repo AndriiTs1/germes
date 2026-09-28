@@ -4,7 +4,7 @@ export type AttentionAccent = "rose" | "amber" | "violet" | "blue";
 
 export type AttentionKind =
   | "overdueCustomerPayments"
-  | "supplierInvoiceAwaitingApproval"
+  | "openSupplierPayables"
   | "lowStock"
   | "supplierPaymentDueTomorrow"
   | "ordersAwaitingShipment";

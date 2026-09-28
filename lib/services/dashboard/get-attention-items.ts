@@ -1,11 +1,16 @@
 import { FinanceStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
-import { overdueOutstanding } from "@/lib/services/finance/outstanding";
+import {
+  addToCurrencyTotals,
+  openOutstanding,
+  overdueOutstanding,
+  toCurrencyAmounts,
+} from "@/lib/services/finance/outstanding";
 
 export type AttentionItemData = {
   kind:
     | "overdueCustomerPayments"
-    | "supplierInvoiceAwaitingApproval"
+    | "openSupplierPayables"
     | "lowStock"
     | "supplierPaymentDueTomorrow"
     | "ordersAwaitingShipment";
@@ -53,29 +58,30 @@ export async function getAttentionItems(now: Date = new Date()): Promise<Attenti
     });
   }
 
+  // Open supplier balances: PAID/CANCELLED excluded, outstanding > 0 only,
+  // one item per currency (never summed across currencies).
   const payables = await prisma.payable.findMany({
     where: {
-      status: {
-        not: "PAID",
-      },
+      status: { notIn: [FinanceStatus.PAID, FinanceStatus.CANCELLED] },
     },
     select: {
       amount: true,
       paidAmount: true,
       currency: true,
+      status: true,
     },
   });
 
-  const payableAmount = payables.reduce(
-    (sum, item) =>
-      sum.plus(item.amount.minus(item.paidAmount)),
-    new Prisma.Decimal(0),
-  );
+  const openPayablesByCurrency = new Map<string, Prisma.Decimal>();
+  for (const payable of payables) {
+    const outstanding = openOutstanding(payable);
+    if (outstanding) addToCurrencyTotals(openPayablesByCurrency, payable.currency, outstanding);
+  }
 
-  if (payableAmount.gt(0)) {
+  for (const { currency, amount } of toCurrencyAmounts(openPayablesByCurrency)) {
     items.push({
-      kind: "supplierInvoiceAwaitingApproval",
-      value: `${payableAmount.toString()} UAH`,
+      kind: "openSupplierPayables",
+      value: `${amount} ${currency}`,
     });
   }
 

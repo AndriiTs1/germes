@@ -49,13 +49,13 @@ export async function NeedsAttention({
     icon:
       item.kind === "overdueCustomerPayments"
         ? CircleAlert
-        : item.kind === "supplierInvoiceAwaitingApproval"
+        : item.kind === "openSupplierPayables"
           ? ClipboardCheck
           : Truck,
     accent:
       item.kind === "overdueCustomerPayments"
         ? "rose"
-        : item.kind === "supplierInvoiceAwaitingApproval"
+        : item.kind === "openSupplierPayables"
           ? "violet"
           : "blue",
   }));
@@ -72,7 +72,7 @@ export async function NeedsAttention({
     >
       <ul className="flex flex-1 flex-col gap-0.5 min-[768px]:justify-between min-[768px]:gap-0">
         {needsAttention.map((item) => (
-          // kind + value: overdue payments come as one item per currency.
+          // kind + value: overdue payments and open payables come as one item per currency.
           <li key={`${item.kind}:${item.value ?? ""}`}>
             <button
               type="button"
