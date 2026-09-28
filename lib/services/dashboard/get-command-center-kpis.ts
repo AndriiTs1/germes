@@ -1,5 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { openOutstanding, overdueOutstanding } from "@/lib/services/finance/outstanding";
 
 export type CommandCenterKpis = {
   cashBanks: {
@@ -35,7 +36,14 @@ export type CommandCenterKpis = {
   };
 };
 
-export async function getCommandCenterKpis(): Promise<CommandCenterKpis> {
+/**
+ * `receivables.outstanding` / `payables.outstanding` are the open balances
+ * (openOutstanding: not PAID/CANCELLED, amount - paidAmount > 0) and are
+ * what the Dashboard shows; `total` stays the raw Σ amount of all records.
+ * Overdue receivables = open balance with dueDate strictly before `now`.
+ * Currencies are still summed together here (known, separate issue).
+ */
+export async function getCommandCenterKpis(now: Date = new Date()): Promise<CommandCenterKpis> {
   const orders = await prisma.salesOrder.findMany({
     select: {
       currency: true,
@@ -67,6 +75,7 @@ export async function getCommandCenterKpis(): Promise<CommandCenterKpis> {
       paidAmount: true,
       currency: true,
       status: true,
+      dueDate: true,
     },
   });
 
@@ -75,17 +84,16 @@ export async function getCommandCenterKpis(): Promise<CommandCenterKpis> {
   let overdueReceivable = new Prisma.Decimal(0);
 
   for (const receivable of receivables) {
-    const outstanding = receivable.amount.minus(
-      receivable.paidAmount,
-    );
-
     receivableTotal = receivableTotal.plus(receivable.amount);
-    receivableOutstanding =
-      receivableOutstanding.plus(outstanding);
 
-    if (receivable.status === "OVERDUE") {
-      overdueReceivable =
-        overdueReceivable.plus(outstanding);
+    const outstanding = openOutstanding(receivable);
+    if (outstanding) {
+      receivableOutstanding = receivableOutstanding.plus(outstanding);
+    }
+
+    const overdue = overdueOutstanding(receivable, now);
+    if (overdue) {
+      overdueReceivable = overdueReceivable.plus(overdue);
     }
   }
 
@@ -93,6 +101,7 @@ export async function getCommandCenterKpis(): Promise<CommandCenterKpis> {
     select: {
       amount: true,
       paidAmount: true,
+      status: true,
     },
   });
 
@@ -100,13 +109,12 @@ export async function getCommandCenterKpis(): Promise<CommandCenterKpis> {
   let payableOutstanding = new Prisma.Decimal(0);
 
   for (const payable of payables) {
-    const outstanding = payable.amount.minus(
-      payable.paidAmount,
-    );
-
     payableTotal = payableTotal.plus(payable.amount);
-    payableOutstanding =
-      payableOutstanding.plus(outstanding);
+
+    const outstanding = openOutstanding(payable);
+    if (outstanding) {
+      payableOutstanding = payableOutstanding.plus(outstanding);
+    }
   }
 
   const batches = await prisma.batch.findMany({

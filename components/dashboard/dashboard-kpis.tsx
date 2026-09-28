@@ -18,9 +18,9 @@ export async function DashboardKpis({
   const items = kpiData.map((kpi) => {
     const valueMap = {
       cashBanks: commandCenterKpis.cashBanks.value,
-      receivables: commandCenterKpis.receivables.total,
+      receivables: commandCenterKpis.receivables.outstanding,
       overdueAr: commandCenterKpis.overdueReceivables.total,
-      payables: commandCenterKpis.payables.total,
+      payables: commandCenterKpis.payables.outstanding,
       inventoryValue: commandCenterKpis.inventoryValue.value,
       grossMargin: commandCenterKpis.grossMargin.percent + "%",
     };

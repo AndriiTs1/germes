@@ -1,5 +1,6 @@
-import { Prisma } from "@/lib/generated/prisma/client";
+import { FinanceStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { overdueOutstanding } from "@/lib/services/finance/outstanding";
 
 export type AttentionItemData = {
   kind:
@@ -13,30 +14,42 @@ export type AttentionItemData = {
   count?: number;
 };
 
-export async function getAttentionItems(): Promise<AttentionItemData[]> {
+export async function getAttentionItems(now: Date = new Date()): Promise<AttentionItemData[]> {
   const items: AttentionItemData[] = [];
 
+  // Actual overdue (open balance, dueDate strictly before now) — never the
+  // stored OVERDUE status, which nothing sets. The DB narrows by status and
+  // dueDate; the balance itself is checked in Decimal by overdueOutstanding.
   const receivables = await prisma.receivable.findMany({
     where: {
-      status: "OVERDUE",
+      status: { notIn: [FinanceStatus.PAID, FinanceStatus.CANCELLED] },
+      dueDate: { lt: now },
     },
     select: {
       amount: true,
       paidAmount: true,
       currency: true,
+      status: true,
+      dueDate: true,
     },
   });
 
-  const overdueAmount = receivables.reduce(
-    (sum, item) =>
-      sum.plus(item.amount.minus(item.paidAmount)),
-    new Prisma.Decimal(0),
-  );
+  // One item per currency, in that record currency — amounts in different
+  // currencies are never added together.
+  const overdueByCurrency = new Map<string, Prisma.Decimal>();
+  for (const receivable of receivables) {
+    const overdue = overdueOutstanding(receivable, now);
+    if (!overdue) continue;
+    overdueByCurrency.set(
+      receivable.currency,
+      (overdueByCurrency.get(receivable.currency) ?? new Prisma.Decimal(0)).plus(overdue),
+    );
+  }
 
-  if (overdueAmount.gt(0)) {
+  for (const [currency, amount] of [...overdueByCurrency.entries()].sort(([a], [b]) => (a < b ? -1 : a > b ? 1 : 0))) {
     items.push({
       kind: "overdueCustomerPayments",
-      value: `${overdueAmount.toString()} UAH`,
+      value: `${amount.toString()} ${currency}`,
     });
   }
 

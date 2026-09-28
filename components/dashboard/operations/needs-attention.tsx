@@ -72,7 +72,8 @@ export async function NeedsAttention({
     >
       <ul className="flex flex-1 flex-col gap-0.5 min-[768px]:justify-between min-[768px]:gap-0">
         {needsAttention.map((item) => (
-          <li key={item.kind}>
+          // kind + value: overdue payments come as one item per currency.
+          <li key={`${item.kind}:${item.value ?? ""}`}>
             <button
               type="button"
               className="flex w-full items-center gap-3 rounded-xl px-2 py-1 text-left transition-colors hover:bg-slate-50"
