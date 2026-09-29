@@ -23,6 +23,14 @@ export function PurchaseOrderDetailItems({ items, currency, locale, dictionary }
   const t = dictionary.procurement.orderDetail.items;
   const kg = dictionary.common.kgUnit;
 
+  if (items.length === 0) {
+    return (
+      <DetailSection title={t.title}>
+        <p className="text-[13px] text-slate-400">{t.empty}</p>
+      </DetailSection>
+    );
+  }
+
   return (
     <DetailSection title={t.title}>
       <div className="hidden lg:block">

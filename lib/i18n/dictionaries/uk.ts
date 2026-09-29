@@ -395,6 +395,7 @@ export const uk: Dictionary = {
         pricePerKg: "Ціна / кг",
         lineAmount: "Сума рядка",
         priceNotSpecified: "Ціну не вказано",
+        empty: "Позиції до замовлення ще не додано.",
       },
       notes: {
         title: "Примітки",

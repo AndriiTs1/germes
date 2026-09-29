@@ -401,6 +401,7 @@ export const en = {
         pricePerKg: "Price / kg",
         lineAmount: "Line total",
         priceNotSpecified: "Price not specified",
+        empty: "No items have been added to this order yet.",
       },
       notes: {
         title: "Notes",

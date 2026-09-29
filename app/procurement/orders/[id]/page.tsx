@@ -65,6 +65,7 @@ export default async function PurchaseOrderDetailPage(props: PageProps<"/procure
       activePath={`/procurement/orders/${order.id}`}
       dictionary={dictionary}
       showPeriodControl={false}
+      showGlobalSearch={false}
     >
       <div className="pb-4 xl:pb-3">
         <Link
