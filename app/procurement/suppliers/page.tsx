@@ -1,4 +1,3 @@
-import { Building2, UserCheck } from "lucide-react";
 import { redirect } from "next/navigation";
 import { DashboardShell } from "@/components/dashboard/dashboard-shell";
 import { SupplierFilters } from "@/components/procurement/supplier-filters";
@@ -9,14 +8,12 @@ import {
   type SupplierStatusFilter,
 } from "@/components/procurement/supplier-list-url";
 import { SupplierPagination } from "@/components/procurement/supplier-pagination";
-import { SalesKpiSummary } from "@/components/sales/sales-kpi-row";
 import { INTL_LOCALE_MAP } from "@/lib/i18n/config";
 import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getCurrentLocale } from "@/lib/i18n/locale";
 import { pluralize } from "@/lib/i18n/pluralize";
 import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
-import { getProcurementOverview } from "@/lib/services/procurement/get-procurement-overview";
 import {
   listSupplierCountries,
   listSuppliers,
@@ -72,7 +69,7 @@ export default async function ProcurementSuppliersPage(props: PageProps<"/procur
   const rawPage = typeof searchParams?.page === "string" ? Number(searchParams.page) : 1;
   const requestedPage = Number.isFinite(rawPage) && rawPage > 0 ? Math.floor(rawPage) : 1;
 
-  const [overview, storedCountries] = await Promise.all([getProcurementOverview(), listSupplierCountries()]);
+  const storedCountries = await listSupplierCountries();
 
   // Country must be an exact stored value or the "not specified" sentinel;
   // an unknown value is dropped (redirect) rather than trusted.
@@ -116,29 +113,18 @@ export default async function ProcurementSuppliersPage(props: PageProps<"/procur
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           {t.suppliers.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">{t.suppliers.subtitle}</p>
       </div>
 
       <div className="flex flex-col gap-4">
-        <SalesKpiSummary
-          items={[
-            { label: t.workspace.kpi.suppliers, value: String(overview.supplierCount), icon: Building2, accent: "blue" },
-            {
-              label: t.workspace.kpi.activeSuppliers,
-              value: String(overview.activeSupplierCount),
-              icon: UserCheck,
-              accent: "violet",
-            },
-          ]}
-        />
-
-        <section aria-label={t.suppliers.title} className="mt-2 flex flex-col gap-4">
-          <div className="flex justify-end">
-            <p className="text-[12.5px] whitespace-nowrap text-slate-500">
-              {pluralize(locale, result.totalCount, t.suppliers.count)}
-            </p>
-          </div>
-          <SupplierFilters q={q} status={status} country={country} countries={countries} dictionary={dictionary} />
+        <section aria-label={t.suppliers.title} className="flex flex-col gap-4">
+          <SupplierFilters
+            q={q}
+            status={status}
+            country={country}
+            countries={countries}
+            resultCount={pluralize(locale, result.totalCount, t.suppliers.count)}
+            dictionary={dictionary}
+          />
           <SupplierList
             suppliers={result.items}
             hasAnySuppliers={result.allCount > 0}

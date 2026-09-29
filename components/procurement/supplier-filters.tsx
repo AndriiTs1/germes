@@ -28,6 +28,7 @@ export function SupplierFilters({
   status,
   country,
   countries,
+  resultCount,
   dictionary,
 }: {
   q: string;
@@ -35,6 +36,7 @@ export function SupplierFilters({
   country: string;
   /** Distinct stored country values, already sorted for display. */
   countries: string[];
+  resultCount: string;
   dictionary: Dictionary;
 }) {
   const t = dictionary.procurement.suppliers;
@@ -52,21 +54,27 @@ export function SupplierFilters({
 
   return (
     <div className="flex flex-col gap-3">
-      <nav aria-label={t.filters.statusAriaLabel} className="flex flex-wrap gap-1.5">
-        {statusTabs.map((tab) => {
-          const isActive = tab.value === status;
-          return (
-            <Link
-              key={tab.value}
-              href={buildSupplierListHref({ q, status: tab.value, country })}
-              aria-current={isActive ? "page" : undefined}
-              className={cn(PILL, isActive ? PILL_ACTIVE : PILL_IDLE)}
-            >
-              {tab.label}
-            </Link>
-          );
-        })}
-      </nav>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+        <nav aria-label={t.filters.statusAriaLabel} className="flex flex-wrap gap-1.5">
+          {statusTabs.map((tab) => {
+            const isActive = tab.value === status;
+            return (
+              <Link
+                key={tab.value}
+                href={buildSupplierListHref({ q, status: tab.value, country })}
+                aria-current={isActive ? "page" : undefined}
+                className={cn(PILL, isActive ? PILL_ACTIVE : PILL_IDLE)}
+              >
+                {tab.label}
+              </Link>
+            );
+          })}
+        </nav>
+
+        <p className="shrink-0 text-[12.5px] whitespace-nowrap text-slate-500">
+          {resultCount}
+        </p>
+      </div>
 
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <SupplierCountrySelect

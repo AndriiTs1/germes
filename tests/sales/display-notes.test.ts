@@ -61,14 +61,14 @@ describe("notes blocks", () => {
     expect(html).not.toContain(MARKER);
   });
 
-  it("supplier: marker-only notes show the neutral empty value, never the marker", () => {
+  it("supplier: marker-only notes show the empty overview state, never the marker", () => {
     const supplier = {
       id: "s1", code: "SUP-001", name: "Supplier", status: "ACTIVE" as const, legalName: null, taxId: null, country: null,
       contactPerson: null, phone: null, email: null, address: null, notes: MARKER, responsible: null,
     };
     const hidden = renderToStaticMarkup(SupplierDetailOverview({ supplier, dictionary }));
     expect(hidden).not.toContain(MARKER);
-    expect(hidden).toContain("—");
+    expect(hidden).toContain(dictionary.procurement.supplierDetail.overviewEmpty);
     const shown = renderToStaticMarkup(SupplierDetailOverview({ supplier: { ...supplier, notes: `Terms by email ${MARKER}` }, dictionary }));
     expect(shown).toContain("Terms by email");
     expect(shown).not.toContain(MARKER);

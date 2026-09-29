@@ -193,6 +193,7 @@ export const ru: Dictionary = {
         responsible: "Ответственный",
         notes: "Примечания",
       },
+      overviewEmpty: "Дополнительные данные поставщика ещё не заполнены.",
       fields: {
         code: "Код поставщика",
         legalName: "Юридическое название",

@@ -199,6 +199,7 @@ export const en = {
         responsible: "Responsible",
         notes: "Notes",
       },
+      overviewEmpty: "Additional supplier details have not been filled in yet.",
       fields: {
         code: "Supplier code",
         legalName: "Legal name",

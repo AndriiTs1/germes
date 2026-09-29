@@ -193,6 +193,7 @@ export const uk: Dictionary = {
         responsible: "Відповідальний",
         notes: "Примітки",
       },
+      overviewEmpty: "Додаткові дані постачальника ще не заповнені.",
       fields: {
         code: "Код постачальника",
         legalName: "Юридична назва",
