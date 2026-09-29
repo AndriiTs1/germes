@@ -10,19 +10,20 @@ import type { SalesOrderDetail } from "@/lib/services/sales/get-sales-order-deta
 type OverviewField = { label: string; value: ReactNode };
 
 /**
- * Responsible salesperson is deliberately omitted: this page is only ever
- * reachable when responsibleId === the viewer's own id, so showing
- * "Responsible: <your own name>" here would just duplicate the identity
- * already visible in the shared shell/sidebar.
+ * Responsible salesperson is shown only in supervisory scope.
+ * For a salesperson viewing their own order it remains omitted because
+ * their identity is already visible in the shared shell/sidebar.
  */
 export function OrderDetailOverview({
   order,
   locale,
   dictionary,
+  showResponsible,
 }: {
   order: SalesOrderDetail;
   locale: Locale;
   dictionary: Dictionary;
+  showResponsible: boolean;
 }) {
   const t = dictionary.orderDetail.overview;
 
@@ -38,8 +39,19 @@ export function OrderDetailOverview({
         </Link>
       ),
     },
-    { label: t.orderDate, value: formatShortDate(order.orderDate, locale) },
   ];
+
+  if (showResponsible) {
+    fields.push({
+      label: dictionary.common.managerFilter.label,
+      value: order.responsible?.name ?? "—",
+    });
+  }
+
+  fields.push({
+    label: t.orderDate,
+    value: formatShortDate(order.orderDate, locale),
+  });
 
   if (order.requestedDate) {
     fields.push({ label: t.requestedDelivery, value: formatShortDate(order.requestedDate, locale) });
@@ -56,7 +68,7 @@ export function OrderDetailOverview({
 
   return (
     <DetailSection title={t.title}>
-      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4">
+      <dl className="grid grid-cols-2 gap-x-4 gap-y-3 min-[640px]:grid-cols-3 min-[1024px]:grid-cols-4 min-[1280px]:grid-cols-5">
         {fields.map((field) => (
           <div key={field.label} className="min-w-0">
             <dt className="text-[11px] font-medium tracking-[0.04em] text-slate-400 uppercase">

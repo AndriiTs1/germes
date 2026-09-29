@@ -104,6 +104,7 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
       activePath={`/sales/orders/${order.id}`}
       dictionary={dictionary}
       showPeriodControl={false}
+      showGlobalSearch={false}
     >
       <div className="pb-4 xl:pb-3">
         <Link
@@ -139,7 +140,12 @@ export default async function SalesOrderDetailPage(props: PageProps<"/sales/orde
       </div>
 
       <div className="flex flex-col gap-4 xl:gap-3">
-        <OrderDetailOverview order={order} locale={locale} dictionary={dictionary} />
+        <OrderDetailOverview
+          order={order}
+          locale={locale}
+          dictionary={dictionary}
+          showResponsible={readScope === "all"}
+        />
         <OrderDetailItems items={order.items} currency={order.currency} locale={locale} dictionary={dictionary} />
 
         {hasSecondaryRow ? (
