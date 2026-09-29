@@ -146,18 +146,15 @@ export function KpiCard({
 }
 
 /**
- * Mobile-only (<768px) compact row variant of the same KPI, used inside a
- * single summary card instead of the tile grid.
+ * Mobile-only (<768px) compact variant of the same KPI: one small card per
+ * KPI (stacked 8px apart by DashboardKpis) instead of the tile grid. Like
+ * the desktop tile, the whole content is centred: icon + label as one
+ * header row, then value, extra currency lines, breakdown and trend. Values
+ * run a size below the desktop tile so long amounts sit easily at ~375px.
  *
- * Previously this put the label and a `shrink-0` value/trend/comparison
- * block on one horizontal line — since that right-hand block never shrinks
- * and its own comparison text was `whitespace-nowrap`, a long RU/UK
- * comparison sentence forced that block very wide and left the label only
- * a sliver of the row (the "Ден / ср..." fragment bug). The label now gets
- * its own full-width top zone instead of sharing width with the value at
- * all — value/trend share one row below it, and comparison gets its own
- * wrapping line — so the label always has the row's full width to wrap
- * into up to two lines, matching KpiCard's behavior one column above it.
+ * Nothing here is `whitespace-nowrap` beyond single values/badges, so a
+ * long RU/UK label or comparison sentence wraps (centred) instead of
+ * squeezing its neighbours — the old "Ден / ср..." fragment bug.
  */
 export function KpiRow({
   label,
@@ -172,53 +169,53 @@ export function KpiRow({
   const [primaryValue, ...extraValues] = Array.isArray(value) ? value : [value];
 
   return (
-    <div className="flex items-start gap-2.5 px-4 py-3">
-      <div
-        className={cn(
-          "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
-          accentChipStyles[accent],
-        )}
-      >
-        <Icon className="h-4 w-4" strokeWidth={1.75} />
+    <div className="flex flex-col items-center rounded-2xl border border-slate-200/70 bg-white px-4 py-3 text-center shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)]">
+      {/* Icon + label as one centred header; min-w-0 lets a long label wrap (max 2 lines). */}
+      <div className="flex max-w-full items-center justify-center gap-2.5">
+        <div
+          className={cn(
+            "flex h-8 w-8 shrink-0 items-center justify-center rounded-[10px]",
+            accentChipStyles[accent],
+          )}
+        >
+          <Icon className="h-4 w-4" strokeWidth={1.75} />
+        </div>
+        <p className="line-clamp-2 min-w-0 text-[13px] leading-[1.25] font-medium text-slate-500">{label}</p>
       </div>
 
-      <div className="min-w-0 flex-1">
-        <p className="line-clamp-2 text-[13px] font-medium text-slate-500">{label}</p>
-
-        <div className="mt-1 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-0.5">
-          <div className="flex items-baseline gap-1.5">
-            <span className="text-[22px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
-              {primaryValue}
-            </span>
-            {unit ? (
-              <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
-                {unit}
-              </span>
-            ) : null}
-          </div>
-          {trend ? (
-            <span
-              className={cn(
-                "inline-flex shrink-0 items-center gap-0.5 text-[11.5px] font-medium whitespace-nowrap",
-                sentimentTextStyles[trend.sentiment],
-              )}
-            >
-              <TrendIcon className="h-3 w-3" strokeWidth={2} />
-              {trend.value}
+      <div className="mt-2 flex flex-wrap items-baseline justify-center gap-x-2 gap-y-0.5">
+        <div className="flex items-baseline gap-1.5">
+          <span className="text-[18px] leading-none font-semibold whitespace-nowrap tracking-tight text-slate-900">
+            {primaryValue}
+          </span>
+          {unit ? (
+            <span className="text-[11.5px] leading-none font-medium whitespace-nowrap text-slate-400">
+              {unit}
             </span>
           ) : null}
         </div>
-
-        {extraValues.map((extra) => (
-          <p key={extra} className="mt-0.5 text-[15px] leading-tight font-semibold whitespace-nowrap tracking-tight text-slate-900">
-            {extra}
-          </p>
-        ))}
-
-        {breakdown ? <KpiBreakdownList breakdown={breakdown} className="mt-1.5" /> : null}
-
-        {trend ? <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{trend.comparisonLabel}</p> : null}
+        {trend ? (
+          <span
+            className={cn(
+              "inline-flex shrink-0 items-center gap-0.5 text-[11.5px] font-medium whitespace-nowrap",
+              sentimentTextStyles[trend.sentiment],
+            )}
+          >
+            <TrendIcon className="h-3 w-3" strokeWidth={2} />
+            {trend.value}
+          </span>
+        ) : null}
       </div>
+
+      {extraValues.map((extra) => (
+        <p key={extra} className="mt-1 text-[14px] leading-tight font-semibold whitespace-nowrap tracking-tight text-slate-900">
+          {extra}
+        </p>
+      ))}
+
+      {breakdown ? <KpiBreakdownList breakdown={breakdown} className="mt-2 justify-center" /> : null}
+
+      {trend ? <p className="mt-0.5 line-clamp-2 text-[11px] text-slate-400">{trend.comparisonLabel}</p> : null}
     </div>
   );
 }

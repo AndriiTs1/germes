@@ -82,9 +82,9 @@ export async function DashboardKpis({
         ))}
       </div>
 
-      {/* <768px: one summary card with all KPIs as compact rows */}
-      <div className="rounded-2xl border border-slate-200/70 bg-white shadow-[0_1px_2px_rgba(15,23,42,0.04),0_1px_3px_rgba(15,23,42,0.04)] md:hidden">
-        <ul className="divide-y divide-slate-100">
+      {/* <768px: each KPI is its own compact card (KpiRow), 8px apart */}
+      <div className="md:hidden">
+        <ul className="flex flex-col gap-2">
           {items.map((kpi) => (
             <li key={kpi.id}>
               <KpiRow {...kpi} />
