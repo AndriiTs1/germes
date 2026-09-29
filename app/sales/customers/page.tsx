@@ -103,13 +103,13 @@ export default async function SalesCustomersPage(props: PageProps<"/sales/custom
       activePath="/sales/customers"
       dictionary={dictionary}
       showPeriodControl={false}
+      showGlobalSearch={false}
     >
       <div className="pb-4">
         <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
           {dictionary.customers.title}
         </h1>
-        <p className="mt-1 text-[13px] text-slate-500">{dictionary.customers.subtitle}</p>
-      </div>
+        </div>
 
       <div className="flex flex-col gap-4">
         {manager ? (
