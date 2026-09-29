@@ -65,6 +65,7 @@ export default async function SalesCustomerDetailPage(props: PageProps<"/sales/c
       activePath={`/sales/customers/${customer.id}`}
       dictionary={dictionary}
       showPeriodControl={false}
+      showGlobalSearch={false}
     >
       <div className="pb-4">
         <Link

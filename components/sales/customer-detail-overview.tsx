@@ -1,6 +1,6 @@
 import { DetailSection } from "@/components/sales/detail-section";
 import { formatShortDate } from "@/components/sales/format";
-import type { Locale } from "@/lib/i18n/config";
+import { INTL_LOCALE_MAP, type Locale } from "@/lib/i18n/config";
 import type { Dictionary } from "@/lib/i18n/get-dictionary";
 import { pluralize } from "@/lib/i18n/pluralize";
 import type { SalesCustomerDetail } from "@/lib/services/sales/get-sales-customer-detail";
@@ -40,7 +40,14 @@ export function CustomerDetailOverview({
     label: t.paymentTerms,
     value: pluralize(locale, customer.paymentTermDays, t.paymentTermsDays),
   });
-  if (customer.creditLimit) fields.push({ label: t.creditLimit, value: customer.creditLimit });
+  if (customer.creditLimit) {
+    fields.push({
+      label: t.creditLimit,
+      value: new Intl.NumberFormat(INTL_LOCALE_MAP[locale], {
+        maximumFractionDigits: 2,
+      }).format(Number(customer.creditLimit)),
+    });
+  }
 
   if (customer.lastContactAt) {
     fields.push({ label: t.lastContact, value: formatShortDate(customer.lastContactAt, locale) });
