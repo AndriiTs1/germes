@@ -9,6 +9,7 @@ import {
   UserRound,
 } from "lucide-react";
 import {
+  type ReactNode,
   useEffect,
   useRef,
   useState,
@@ -31,20 +32,23 @@ type SearchResults = {
   customers: {
     id: string;
     name: string;
-    href: string;
+    /** null when this viewer cannot open the target page — shown as plain text. */
+    href: string | null;
     balances: Balance[];
   }[];
   suppliers: {
     id: string;
     name: string;
-    href: string;
+    /** null when this viewer cannot open the target page — shown as plain text. */
+    href: string | null;
     balances: Balance[];
   }[];
   orders: {
     id: string;
     orderNumber: string;
     customerName: string;
-    href: string;
+    /** null when this viewer cannot open the target page — shown as plain text. */
+    href: string | null;
     dueDate: string | null;
     balances: Balance[];
   }[];
@@ -114,6 +118,37 @@ function FinancialPosition({
         );
       })}
     </div>
+  );
+}
+
+const RESULT_ROW_CLASS = "flex items-start gap-3 rounded-xl px-3 py-2.5";
+
+/**
+ * One search result. With an href it is a link (as before); without one —
+ * the viewer cannot open the target page — the same content is plain text,
+ * never a disabled link.
+ */
+function ResultRow({
+  href,
+  onNavigate,
+  children,
+}: {
+  href: string | null;
+  onNavigate: () => void;
+  children: ReactNode;
+}) {
+  if (!href) {
+    return <div className={RESULT_ROW_CLASS}>{children}</div>;
+  }
+
+  return (
+    <Link
+      href={href}
+      onClick={onNavigate}
+      className={`${RESULT_ROW_CLASS} transition-colors hover:bg-slate-50`}
+    >
+      {children}
+    </Link>
   );
 }
 
@@ -304,13 +339,12 @@ export function FinanceSearch({
 
                 {results.customers.map(
                   (customer) => (
-                    <Link
+                    <ResultRow
                       key={customer.id}
                       href={customer.href}
-                      onClick={() =>
+                      onNavigate={() =>
                         setOpen(false)
                       }
-                      className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-50"
                     >
                       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                         <UserRound className="h-3.5 w-3.5" />
@@ -337,7 +371,7 @@ export function FinanceSearch({
                           }
                         />
                       </div>
-                    </Link>
+                    </ResultRow>
                   ),
                 )}
               </div>
@@ -351,13 +385,12 @@ export function FinanceSearch({
 
                 {results.suppliers.map(
                   (supplier) => (
-                    <Link
+                    <ResultRow
                       key={supplier.id}
                       href={supplier.href}
-                      onClick={() =>
+                      onNavigate={() =>
                         setOpen(false)
                       }
-                      className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-50"
                     >
                       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                         <Building2 className="h-3.5 w-3.5" />
@@ -384,7 +417,7 @@ export function FinanceSearch({
                           }
                         />
                       </div>
-                    </Link>
+                    </ResultRow>
                   ),
                 )}
               </div>
@@ -398,13 +431,12 @@ export function FinanceSearch({
 
                 {results.orders.map(
                   (order) => (
-                    <Link
+                    <ResultRow
                       key={order.id}
                       href={order.href}
-                      onClick={() =>
+                      onNavigate={() =>
                         setOpen(false)
                       }
-                      className="flex items-start gap-3 rounded-xl px-3 py-2.5 transition-colors hover:bg-slate-50"
                     >
                       <div className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-slate-100 text-slate-500">
                         <ShoppingBag className="h-3.5 w-3.5" />
@@ -448,7 +480,7 @@ export function FinanceSearch({
                           </p>
                         ) : null}
                       </div>
-                    </Link>
+                    </ResultRow>
                   ),
                 )}
               </div>

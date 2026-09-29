@@ -5,8 +5,16 @@ import {
   Prisma,
 } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { getPermissionCodesForUser } from "@/lib/permissions/get-current-user-permissions";
 import { requirePermission } from "@/lib/permissions/require-permission";
 import { openOutstanding } from "@/lib/services/finance/outstanding";
+import {
+  customerResultHref,
+  orderResultHref,
+  supplierResultHref,
+  type SearchLinkViewer,
+} from "@/lib/services/finance/search-result-links";
+import { resolveSalesReadScope } from "@/lib/services/sales/read-scope";
 
 const CLOSED = [
   FinanceStatus.PAID,
@@ -49,14 +57,25 @@ function moneyLines(
 }
 
 export async function GET(request: Request) {
+  let user: Awaited<ReturnType<typeof requirePermission>>;
   try {
-    await requirePermission("finance.dashboard.read");
+    user = await requirePermission("finance.dashboard.read");
   } catch {
     return NextResponse.json(
       { error: "FORBIDDEN" },
       { status: 403 },
     );
   }
+
+  // Results are shown to every finance.dashboard.read holder, but each one
+  // links only where this viewer can open the target page (see
+  // search-result-links.ts) — ACCOUNTING/ADMIN never get links that would
+  // end in notFound() or redirect("/").
+  const viewer: SearchLinkViewer = {
+    userId: user.id,
+    readScope: resolveSalesReadScope(user.roles.map((entry) => entry.role.code)),
+    permissionCodes: await getPermissionCodesForUser(user.id),
+  };
 
   const url = new URL(request.url);
   const query =
@@ -84,6 +103,8 @@ export async function GET(request: Request) {
         select: {
           id: true,
           name: true,
+          responsibleId: true,
+          isActive: true,
         },
         orderBy: {
           name: "asc",
@@ -118,6 +139,7 @@ export async function GET(request: Request) {
         select: {
           id: true,
           orderNumber: true,
+          responsibleId: true,
           customer: {
             select: {
               name: true,
@@ -343,7 +365,7 @@ export async function GET(request: Request) {
       return {
         id: customer.id,
         name: customer.name,
-        href: `/sales/customers/${customer.id}`,
+        href: customerResultHref(viewer, customer),
         balances: bucket
           ? moneyLines(
               bucket.outstanding,
@@ -360,7 +382,7 @@ export async function GET(request: Request) {
       return {
         id: supplier.id,
         name: supplier.name,
-        href: `/procurement/suppliers/${supplier.id}`,
+        href: supplierResultHref(viewer, supplier),
         balances: bucket
           ? moneyLines(
               bucket.outstanding,
@@ -377,7 +399,7 @@ export async function GET(request: Request) {
         id: order.id,
         orderNumber: order.orderNumber,
         customerName: order.customer.name,
-        href: `/sales/orders/${order.id}`,
+        href: orderResultHref(viewer, order),
         dueDate:
           bucket?.dueDate?.toISOString() ?? null,
         balances: bucket
