@@ -13,8 +13,8 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-const SITE_TITLE = "Germes — система управления бизнесом";
-const SITE_DESCRIPTION = "Продажи, закупки, склад, финансы и управление компанией в одной системе.";
+const SITE_TITLE = "Germes — система управління бізнесом";
+const SITE_DESCRIPTION = "Продажі, закупівлі, склад, фінанси та управління компанією в одній системі.";
 
 // Social preview: the image itself is the file-based app/opengraph-image.jpg
 // (+ .alt.txt). No metadataBase — on Vercel production Next.js resolves it
