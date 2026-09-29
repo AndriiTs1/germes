@@ -1204,6 +1204,7 @@ export const en = {
       overdueAr: "Overdue AR",
       payables: "Payables",
       activeOrders: "Active orders",
+      activeOrdersByStatus: "Active orders by status",
       comparisonLabel: "vs last month",
     },
     salesPerformance: {

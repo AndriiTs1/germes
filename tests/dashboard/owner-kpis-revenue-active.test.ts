@@ -162,6 +162,43 @@ describe("KPI Active orders = CONFIRMED + PROCESSING + READY", () => {
   });
 });
 
+describe("KPI Active orders — breakdown by status", () => {
+  const byStatus = async () => (await getCommandCenterKpis(NOW)).activeOrders;
+
+  it("splits the active orders by real status, in pipeline order, and adds up to the headline", async () => {
+    db.orders = [
+      ...Array.from({ length: 20 }, () => order("CONFIRMED", "1", OCT)),
+      ...Array.from({ length: 12 }, () => order("PROCESSING", "1", OCT)),
+      ...Array.from({ length: 12 }, () => order("READY", "1", OCT)),
+      ...["DRAFT", "SHIPPED", "COMPLETED", "CANCELLED"].map((s) => order(s, "1", OCT)),
+    ];
+    const kpi = await byStatus();
+    expect(kpi.count).toBe(44);
+    expect(kpi.byStatus).toEqual([
+      { status: "CONFIRMED", count: 20 },
+      { status: "PROCESSING", count: 12 },
+      { status: "READY", count: 12 },
+    ]);
+    expect(kpi.byStatus.reduce((sum, entry) => sum + entry.count, 0)).toBe(kpi.count);
+  });
+
+  it("a status without orders is still listed with 0", async () => {
+    db.orders = [order("READY", "1", OCT)];
+    expect((await byStatus()).byStatus).toEqual([
+      { status: "CONFIRMED", count: 0 },
+      { status: "PROCESSING", count: 0 },
+      { status: "READY", count: 1 },
+    ]);
+  });
+
+  it("no active orders at all → total 0 and every status 0", async () => {
+    db.orders = ["DRAFT", "SHIPPED", "CANCELLED"].map((s) => order(s, "1", OCT));
+    const kpi = await byStatus();
+    expect(kpi.count).toBe(0);
+    expect(kpi.byStatus.map((entry) => entry.count)).toEqual([0, 0, 0]);
+  });
+});
+
 describe("Finance KPIs unchanged", () => {
   const fin = (status: string, amount: string, paid: string, currency: string, dueDate: Date | null = null): FinanceRow => ({
     amount: d(amount),

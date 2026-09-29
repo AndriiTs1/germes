@@ -1198,6 +1198,7 @@ export const uk: Dictionary = {
       overdueAr: "Прострочена дебіторська заборгованість",
       payables: "Кредиторська заборгованість",
       activeOrders: "Активні замовлення",
+      activeOrdersByStatus: "Активні замовлення за статусами",
       comparisonLabel: "порівняно з минулим місяцем",
     },
     salesPerformance: {

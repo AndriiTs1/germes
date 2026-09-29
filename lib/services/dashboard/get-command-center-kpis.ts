@@ -49,6 +49,12 @@ export type CommandCenterKpis = {
   /** Count of CONFIRMED + PROCESSING + READY sales orders. */
   activeOrders: {
     count: number;
+    /**
+     * The same active sales orders split by their real status, in pipeline
+     * order (confirmed → processing → ready). Every active status is always
+     * present, zero included, and the counts add up to `count` exactly.
+     */
+    byStatus: { status: SalesOrderStatus; count: number }[];
   };
 };
 
@@ -59,10 +65,18 @@ export type CommandCenterKpis = {
  * with dueDate strictly before `now`.
  */
 export async function getCommandCenterKpis(now: Date = new Date()): Promise<CommandCenterKpis> {
-  const [salesPerformance, activeOrderCount] = await Promise.all([
+  const [salesPerformance, activeOrderCounts] = await Promise.all([
     getSalesPerformance(now),
-    prisma.salesOrder.count({ where: { status: { in: ACTIVE_ORDER_STATUSES } } }),
+    // One count per active status; the headline total is their sum, so the
+    // breakdown can never disagree with it.
+    Promise.all(
+      ACTIVE_ORDER_STATUSES.map((status) => prisma.salesOrder.count({ where: { status: { in: [status] } } })),
+    ),
   ]);
+  const activeOrdersByStatus = ACTIVE_ORDER_STATUSES.map((status, index) => ({
+    status,
+    count: activeOrderCounts[index],
+  }));
 
   const receivables = await prisma.receivable.findMany({
     select: {
@@ -130,7 +144,8 @@ export async function getCommandCenterKpis(now: Date = new Date()): Promise<Comm
     },
 
     activeOrders: {
-      count: activeOrderCount,
+      count: activeOrdersByStatus.reduce((sum, entry) => sum + entry.count, 0),
+      byStatus: activeOrdersByStatus,
     },
   };
 }

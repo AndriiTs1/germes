@@ -1,4 +1,4 @@
-import { KpiCard, KpiRow } from "@/components/dashboard/kpi-card";
+import { KpiCard, KpiRow, type KpiBreakdown } from "@/components/dashboard/kpi-card";
 import { formatMoney } from "@/components/sales/format";
 import { kpiData, type KpiId } from "@/components/dashboard/kpi-data";
 import { getCommandCenterKpis } from "@/lib/services/dashboard/get-command-center-kpis";
@@ -31,12 +31,25 @@ export async function DashboardKpis({
     activeOrders: new Intl.NumberFormat(INTL_LOCALE_MAP[locale]).format(commandCenterKpis.activeOrders.count),
   };
 
+  const count = new Intl.NumberFormat(INTL_LOCALE_MAP[locale]);
+  // Active orders split by their real status (same labels as everywhere else
+  // in the app) — the parts add up to the headline number.
+  const activeOrdersBreakdown: KpiBreakdown = {
+    label: t.activeOrdersByStatus,
+    items: commandCenterKpis.activeOrders.byStatus.map(({ status, count: statusCount }) => ({
+      key: status,
+      label: dictionary.status.order[status],
+      value: count.format(statusCount),
+    })),
+  };
+
   const items = kpiData.map((kpi) => {
     return {
       ...kpi,
       value: valueMap[kpi.id],
       unit: undefined,
       label: t[kpi.id],
+      breakdown: kpi.id === "activeOrders" ? activeOrdersBreakdown : undefined,
       // No trend: there is no real previous-period comparison yet.
     };
   });
@@ -57,11 +70,13 @@ export async function DashboardKpis({
         content needs at 6 columns (~191px at 2000px); confirm against a
         real browser before relying on it in production.
 
-        Five KPIs: in the 2- and 3-column ranges the last card spans two
-        columns so the final row is always full (no empty cell); >=2000px
-        shows all five in one row.
+        Five KPIs: in the 2-column range (<1024px) the last card spans both
+        columns so the final row is always full (no empty cell). 1024–1999px
+        is a 6-track grid: the first three cards take 2 tracks each (thirds,
+        same widths as before) and the last two take 3 each, so the second
+        row is an even 50 / 50 pair. >=2000px shows all five in one row.
       */}
-      <div className="hidden grid-cols-1 gap-3 min-[380px]:max-[1023px]:grid-cols-2 min-[380px]:max-[1999px]:[&>*:last-child]:col-span-2 min-[1024px]:max-[1999px]:grid-cols-3 min-[2000px]:grid-cols-5 md:grid">
+      <div className="hidden grid-cols-1 gap-3 min-[380px]:max-[1023px]:grid-cols-2 min-[380px]:max-[1023px]:[&>*:last-child]:col-span-2 min-[1024px]:max-[1999px]:grid-cols-6 min-[1024px]:max-[1999px]:[&>*]:col-span-2 min-[1024px]:max-[1999px]:[&>*:nth-last-child(-n+2)]:col-span-3 min-[2000px]:grid-cols-5 md:grid">
         {items.map((kpi) => (
           <KpiCard key={kpi.id} {...kpi} />
         ))}

@@ -9,7 +9,14 @@ vi.mock("@/lib/services/dashboard/get-command-center-kpis", () => ({
     ],
     receivables: { outstanding: [{ currency: "UAH", amount: "176000" }], overdueOutstanding: [] },
     payables: { outstanding: [{ currency: "UAH", amount: "52000" }] },
-    activeOrders: { count: 1234 },
+    activeOrders: {
+      count: 1234,
+      byStatus: [
+        { status: "CONFIRMED", count: 1000 },
+        { status: "PROCESSING", count: 0 },
+        { status: "READY", count: 234 },
+      ],
+    },
   }),
 }));
 
@@ -113,6 +120,26 @@ describe("Owner Dashboard KPIs — final five (no placeholders)", () => {
     expect(html).not.toContain("100123456.78");
     expect(html).toContain(new Intl.NumberFormat("uk-UA").format(1234));
   });
+
+  it.each(["ru", "uk", "en"] as const)(
+    "%s: active orders show their status breakdown (real status labels, formatted counts, zero kept)",
+    async (locale) => {
+      const { html, dictionary } = await renderKpis(locale);
+      const fmt = new Intl.NumberFormat(locale === "en" ? "en-US" : locale === "uk" ? "uk-UA" : "ru-RU");
+      expect(html).toContain(`aria-label="${dictionary.commandCenter.kpi.activeOrdersByStatus}"`);
+      for (const [status, value] of [
+        ["CONFIRMED", 1000],
+        ["PROCESSING", 0],
+        ["READY", 234],
+      ] as const) {
+        expect(html).toContain(
+          `<span class="text-slate-500">${dictionary.status.order[status]}</span><span class="font-semibold tabular-nums text-slate-900">${fmt.format(value)}</span>`,
+        );
+      }
+      // Desktop tile + mobile row: one breakdown list each, and only on the active-orders KPI.
+      expect(html.match(/aria-label="[^"]*"/g)).toHaveLength(2);
+    },
+  );
 
   it("dictionaries no longer carry cashBanks / grossMargin KPI labels", () => {
     for (const locale of ["en", "ru", "uk"] as const) {

@@ -1198,6 +1198,7 @@ export const ru: Dictionary = {
       overdueAr: "Просроченная дебиторская задолженность",
       payables: "Кредиторская задолженность",
       activeOrders: "Активные заказы",
+      activeOrdersByStatus: "Активные заказы по статусам",
       comparisonLabel: "по сравнению с прошлым месяцем",
     },
     salesPerformance: {
