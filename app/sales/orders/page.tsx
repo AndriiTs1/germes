@@ -100,6 +100,7 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
       activePath="/sales/orders"
       dictionary={dictionary}
       showPeriodControl={false}
+      showGlobalSearch={false}
     >
       <div className="pb-4">
         <div className="flex items-center justify-between gap-3">
@@ -107,7 +108,6 @@ export default async function SalesOrdersPage(props: PageProps<"/sales/orders">)
             <h1 className="text-[26px] leading-[1.2] font-semibold tracking-tight text-slate-900 md:leading-[1.5]">
               {dictionary.orders.title}
             </h1>
-            <p className="mt-1 text-[13px] text-slate-500">{dictionary.orders.subtitle}</p>
           </div>
 
           {canCreateOrder ? (
