@@ -24,6 +24,9 @@ export const metadata: Metadata = {
   description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
+    // The social card (text + image) is Ukrainian; <html lang> stays as is —
+    // it describes the app UI, which follows the user's locale cookie.
+    locale: "uk_UA",
     siteName: "Germes",
     title: SITE_TITLE,
     description: SITE_DESCRIPTION,
