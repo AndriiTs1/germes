@@ -230,12 +230,17 @@ async function main() {
     {
       code: "suppliers.create",
       description: "Create a supplier",
-      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+      // OWNER and ADMIN intentionally excluded: supplier creation is routine
+      // procurement execution. See scripts/sync-workspace-permissions.ts to
+      // reconcile existing databases.
+      roles: ["PROCUREMENT"],
     },
     {
       code: "suppliers.update",
       description: "Edit supplier information",
-      roles: ["OWNER", "ADMIN", "PROCUREMENT"],
+      // Also controls supplier-agreement creation today. OWNER and ADMIN stay
+      // read-only; PROCUREMENT performs operational supplier maintenance.
+      roles: ["PROCUREMENT"],
     },
     {
       code: "procurement.overview.read",

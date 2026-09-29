@@ -129,6 +129,20 @@ const SYNCED_PERMISSIONS: {
     roleCodes: ["WAREHOUSE"],
   },
   {
+    code: "suppliers.create",
+    description: "Create a supplier",
+    // RBAC: OWNER and ADMIN excluded — operational procurement work.
+    // Matches prisma/seed.ts exactly.
+    roleCodes: ["PROCUREMENT"],
+  },
+  {
+    code: "suppliers.update",
+    description: "Edit supplier information",
+    // Also gates supplier-agreement creation. OWNER and ADMIN remain
+    // read-only. Matches prisma/seed.ts exactly.
+    roleCodes: ["PROCUREMENT"],
+  },
+  {
     code: "procurement.orders.read",
     description: "View purchase orders",
     roleCodes: ["OWNER", "ADMIN", "PROCUREMENT"],
