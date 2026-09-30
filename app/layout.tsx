@@ -20,7 +20,8 @@ const SITE_DESCRIPTION = "Продажі, закупівлі, склад, фін
 // (+ .alt.txt). No metadataBase — on Vercel production Next.js resolves it
 // to the project's production domain (VERCEL_PROJECT_PRODUCTION_URL).
 export const metadata: Metadata = {
-  title: SITE_TITLE,
+  // Browser tab shows just the brand; the longer SITE_TITLE stays for social cards.
+  title: "Germes",
   description: SITE_DESCRIPTION,
   openGraph: {
     type: "website",
