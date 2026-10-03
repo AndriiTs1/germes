@@ -1,16 +1,7 @@
-import { BatchStatus, Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { aggregateProductStock, emptyProductStockTotals } from "@/lib/services/inventory/product-stock";
 import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 import { decimalToString } from "@/lib/services/sales/decimal";
-
-/**
- * Only BatchStatus.AVAILABLE permits sale. The other three values —
- * QUARANTINE (held pending inspection), BLOCKED (deliberately blocked),
- * DEPLETED (already exhausted) — all describe non-sellable states by their
- * own names; none of them mean "OK to sell". This is the only status this
- * enum defines that means sellable, so it is not a guessed subset.
- */
-const SELLABLE_BATCH_STATUS = BatchStatus.AVAILABLE;
 
 export type ProductStockAvailability = {
   productId: string;
@@ -39,6 +30,10 @@ export type ProductStockAvailability = {
 /**
  * Available-to-sell stock per product, aggregated across all warehouses.
  * Not scoped to a salesperson — physical stock is a company-wide fact.
+ *
+ * The aggregation itself lives in aggregateProductStock
+ * (lib/services/inventory/product-stock.ts) and is shared with the Products
+ * catalog and the Command Center, so every screen counts stock the same way.
  *
  * On-hand is derived purely from StockMovement, generically for every
  * movement type: a row's quantityKg is added to toWarehouseId (if set)
@@ -97,64 +92,20 @@ export async function getStockAvailability(now: Date = new Date()): Promise<Prod
     }),
   ]);
 
-  const physicalOnHandByProduct = new Map<string, Prisma.Decimal>();
-  const sellableOnHandByProduct = new Map<string, Prisma.Decimal>();
-
-  for (const movement of movements) {
-    const productId = movement.batch.productId;
-    const isSellableBatch = movement.batch.status === SELLABLE_BATCH_STATUS;
-
-    let physicalNext = physicalOnHandByProduct.get(productId) ?? new Prisma.Decimal(0);
-    if (movement.toWarehouseId) physicalNext = physicalNext.plus(movement.quantityKg);
-    if (movement.fromWarehouseId) physicalNext = physicalNext.minus(movement.quantityKg);
-    physicalOnHandByProduct.set(productId, physicalNext);
-
-    if (isSellableBatch) {
-      let sellableNext = sellableOnHandByProduct.get(productId) ?? new Prisma.Decimal(0);
-      if (movement.toWarehouseId) sellableNext = sellableNext.plus(movement.quantityKg);
-      if (movement.fromWarehouseId) sellableNext = sellableNext.minus(movement.quantityKg);
-      sellableOnHandByProduct.set(productId, sellableNext);
-    }
-  }
-
-  const reservedByProduct = new Map<string, Prisma.Decimal>();
-  const inconsistentReservedByProduct = new Map<string, Prisma.Decimal>();
-
-  for (const reservation of reservations) {
-    const tiedToNonSellableBatch =
-      reservation.batchId !== null && reservation.batch?.status !== SELLABLE_BATCH_STATUS;
-
-    if (tiedToNonSellableBatch) {
-      const current =
-        inconsistentReservedByProduct.get(reservation.productId) ?? new Prisma.Decimal(0);
-      inconsistentReservedByProduct.set(
-        reservation.productId,
-        current.plus(reservation.quantityKg),
-      );
-      continue;
-    }
-
-    const current = reservedByProduct.get(reservation.productId) ?? new Prisma.Decimal(0);
-    reservedByProduct.set(reservation.productId, current.plus(reservation.quantityKg));
-  }
+  const totalsByProduct = aggregateProductStock(movements, reservations);
 
   return products.map((product) => {
-    const physicalOnHand = physicalOnHandByProduct.get(product.id) ?? new Prisma.Decimal(0);
-    const sellableOnHand = sellableOnHandByProduct.get(product.id) ?? new Prisma.Decimal(0);
-    const reserved = reservedByProduct.get(product.id) ?? new Prisma.Decimal(0);
-    const inconsistentReserved =
-      inconsistentReservedByProduct.get(product.id) ?? new Prisma.Decimal(0);
-    const available = sellableOnHand.minus(reserved);
+    const totals = totalsByProduct.get(product.id) ?? emptyProductStockTotals();
 
     return {
       productId: product.id,
       sku: product.sku,
       name: product.name,
-      physicalOnHandKg: decimalToString(physicalOnHand),
-      sellableOnHandKg: decimalToString(sellableOnHand),
-      activeReservedKg: decimalToString(reserved),
-      inconsistentReservedKg: decimalToString(inconsistentReserved),
-      availableKg: decimalToString(available),
+      physicalOnHandKg: decimalToString(totals.physicalOnHand),
+      sellableOnHandKg: decimalToString(totals.sellableOnHand),
+      activeReservedKg: decimalToString(totals.reserved),
+      inconsistentReservedKg: decimalToString(totals.inconsistentReserved),
+      availableKg: decimalToString(totals.available),
     };
   });
 }

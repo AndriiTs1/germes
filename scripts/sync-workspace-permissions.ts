@@ -16,7 +16,8 @@
  * (inventory.shipments.read — kept on OWNER) and the narrowed process
  * permission (start/mark ready/ship — revoked from OWNER), so OWNER can
  * still view Warehouse fulfillment detail without being able to execute
- * its lifecycle transitions. Adding a future permission or demo user to
+ * its lifecycle transitions. products.read (the read-only /products
+ * catalog) was added for OWNER, SALES, PROCUREMENT and WAREHOUSE. Adding a future permission or demo user to
  * either allow-list is the same one-line pattern: add an entry whose
  * desired state matches prisma/seed.ts exactly.
  *
@@ -141,6 +142,14 @@ const SYNCED_PERMISSIONS: {
     // Also gates supplier-agreement creation. OWNER and ADMIN remain
     // read-only. Matches prisma/seed.ts exactly.
     roleCodes: ["PROCUREMENT"],
+  },
+  {
+    code: "products.read",
+    description: "View the Product master catalog",
+    // Read-only Product catalog (/products). ACCOUNTING and ADMIN excluded.
+    // Stock columns additionally require inventory.stock.read. Matches
+    // prisma/seed.ts exactly.
+    roleCodes: ["OWNER", "SALES", "PROCUREMENT", "WAREHOUSE"],
   },
   {
     code: "procurement.orders.read",

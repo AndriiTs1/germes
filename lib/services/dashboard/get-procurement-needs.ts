@@ -1,5 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { movementNetKg } from "@/lib/services/inventory/product-stock";
 
 /** How many products the card lists. */
 const LOWEST_STOCK_LIMIT = 3;
@@ -7,7 +8,9 @@ const LOWEST_STOCK_LIMIT = 3;
 /**
  * The active products with the lowest current stock — a plain fact, not a
  * procurement recommendation (there is no reorder point / minimum stock).
- * `value` is the number of products actually listed.
+ * `value` is the number of products actually listed. Stock is physical
+ * on-hand across all batches via movementNetKg — the same from/to rule as
+ * /sales, /warehouse and /products (a TRANSFER nets to zero).
  */
 export type ProcurementNeedsData = {
   value: string;
@@ -36,7 +39,8 @@ export async function getProcurementNeeds(): Promise<ProcurementNeedsData> {
           id: true,
           stockMovements: {
             select: {
-              type: true,
+              fromWarehouseId: true,
+              toWarehouseId: true,
               quantityKg: true,
             },
           },
@@ -52,19 +56,7 @@ export async function getProcurementNeeds(): Promise<ProcurementNeedsData> {
 
     for (const batch of product.batches) {
       for (const movement of batch.stockMovements) {
-        if (
-          movement.type === "RECEIPT" ||
-          movement.type === "TRANSFER"
-        ) {
-          stock = stock.plus(movement.quantityKg);
-        }
-
-        if (
-          movement.type === "SHIPMENT" ||
-          movement.type === "WRITE_OFF"
-        ) {
-          stock = stock.minus(movement.quantityKg);
-        }
+        stock = stock.plus(movementNetKg(movement));
       }
     }
 

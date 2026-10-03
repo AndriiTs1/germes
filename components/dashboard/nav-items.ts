@@ -4,6 +4,7 @@ import {
   Landmark,
   LifeBuoy,
   LayoutDashboard,
+  Package,
   ShieldCheck,
   Settings,
   ShoppingCart,
@@ -28,10 +29,11 @@ export type NavItemKey =
   | "customers"
   | "purchaseOrders"
   | "suppliers"
+  | "products"
   | "settings";
 
 /** Keys into dictionary.nav.sections — the group heading, resolved per current locale. */
-export type NavSectionKey = "overview" | "workspace" | "sell" | "buy" | "account";
+export type NavSectionKey = "overview" | "workspace" | "sell" | "buy" | "catalog" | "account";
 
 export type NavItem = {
   labelKey: NavItemKey;
@@ -161,6 +163,20 @@ export const navSections: NavSection[] = [
         // Mirrors the page gate: /procurement/suppliers requires both.
         requiredPermissions: ["procurement.overview.read", "suppliers.read"],
         icon: Building2,
+      },
+    ],
+  },
+  {
+    // Shared master data ("Довідники"), deliberately not under sell/buy or a
+    // single workspace: one Product is used by Sales, Procurement, Warehouse,
+    // supplier agreements and orders alike.
+    labelKey: "catalog",
+    items: [
+      {
+        labelKey: "products",
+        href: "/products",
+        requiredPermission: "products.read",
+        icon: Package,
       },
     ],
   },

@@ -47,6 +47,7 @@ export const ru: Dictionary = {
       workspace: "Рабочее пространство",
       sell: "Продажи",
       buy: "Закупки",
+      catalog: "Справочники",
       account: "Аккаунт",
     },
     commandCenter: "Командный центр",
@@ -60,6 +61,7 @@ export const ru: Dictionary = {
     customers: "Клиенты",
     purchaseOrders: "Заказы",
     suppliers: "Поставщики",
+    products: "Продукты",
     settings: "Настройки",
   },
 
@@ -1186,6 +1188,54 @@ export const ru: Dictionary = {
         shipFailed: "Не удалось отгрузить заказ.",
         shipSuccess: "Заказ успешно отгружен.",
       },
+    },
+  },
+
+  products: {
+    title: "Продукты",
+    count: {
+      one: "{count} продукт",
+      few: "{count} продукта",
+      many: "{count} продуктов",
+      other: "{count} продукта",
+    },
+    paginationAriaLabel: "Страницы каталога продуктов",
+    filters: {
+      all: "Все",
+      active: "Активные",
+      inactive: "Неактивные",
+      statusAriaLabel: "Фильтр продуктов по статусу",
+      categoryAll: "Все категории",
+      categoryAriaLabel: "Фильтр продуктов по категории",
+    },
+    search: {
+      placeholder: "Поиск по SKU или названию",
+      ariaLabel: "Поиск продуктов по SKU или названию",
+    },
+    table: {
+      sku: "SKU",
+      name: "Название",
+      category: "Категория",
+      categoryNone: "—",
+      onHand: "На складе, кг",
+      reserved: "Резерв, кг",
+      available: "Доступно, кг",
+      status: "Статус",
+      notSellable: "из них {value} недоступно к продаже",
+    },
+    mobile: {
+      onHand: "На складе",
+      reserved: "Резерв",
+      available: "Доступно",
+    },
+    status: {
+      active: "Активный",
+      inactive: "Неактивный",
+    },
+    empty: {
+      noProducts: "Продуктов пока нет",
+      noResults: "Нет продуктов по этим фильтрам",
+      clearFilters: "Сбросить фильтры",
     },
   },
 

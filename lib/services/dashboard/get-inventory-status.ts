@@ -1,5 +1,6 @@
 import { Prisma } from "@/lib/generated/prisma/client";
 import { prisma } from "@/lib/db/prisma";
+import { movementNetKg } from "@/lib/services/inventory/product-stock";
 import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservation-ttl";
 
 /**
@@ -7,7 +8,10 @@ import { effectiveActiveReservationWhere } from "@/lib/services/sales/reservatio
  * workflow ("in transit") and no minimum-stock threshold ("low stock"), so
  * no such segments exist.
  *
- *   physical  = stock from StockMovement (formula below, unchanged)
+ *   physical  = stock from StockMovement via movementNetKg — the same
+ *               from/to rule as /sales, /warehouse and /products, so a
+ *               TRANSFER between warehouses nets to zero
+ *               (lib/services/inventory/product-stock.ts)
  *   reserved  = Σ ACTIVE StockReservation.quantityKg
  *   available = physical − reserved
  *
@@ -27,7 +31,8 @@ export type InventoryStatusData = {
 export async function getInventoryStatus(now: Date = new Date()): Promise<InventoryStatusData> {
   const movements = await prisma.stockMovement.findMany({
     select: {
-      type: true,
+      fromWarehouseId: true,
+      toWarehouseId: true,
       quantityKg: true,
     },
   });
@@ -44,19 +49,7 @@ export async function getInventoryStatus(now: Date = new Date()): Promise<Invent
   let reservedKg = new Prisma.Decimal(0);
 
   for (const movement of movements) {
-    if (
-      movement.type === "RECEIPT" ||
-      movement.type === "TRANSFER"
-    ) {
-      totalKg = totalKg.plus(movement.quantityKg);
-    }
-
-    if (
-      movement.type === "SHIPMENT" ||
-      movement.type === "WRITE_OFF"
-    ) {
-      totalKg = totalKg.minus(movement.quantityKg);
-    }
+    totalKg = totalKg.plus(movementNetKg(movement));
   }
 
   for (const reservation of reservations) {

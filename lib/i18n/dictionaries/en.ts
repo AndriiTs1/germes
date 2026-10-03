@@ -53,6 +53,7 @@ export const en = {
       workspace: "Workspace",
       sell: "Sell",
       buy: "Procurement",
+      catalog: "Directories",
       account: "Account",
     },
     commandCenter: "Command Center",
@@ -66,6 +67,7 @@ export const en = {
     customers: "Customers",
     purchaseOrders: "Purchase orders",
     suppliers: "Suppliers",
+    products: "Products",
     settings: "Settings",
   },
 
@@ -1192,6 +1194,54 @@ export const en = {
         shipFailed: "Could not ship the order.",
         shipSuccess: "Order shipped successfully.",
       },
+    },
+  },
+
+  products: {
+    title: "Products",
+    count: {
+      one: "{count} product",
+      few: "{count} products",
+      many: "{count} products",
+      other: "{count} products",
+    },
+    paginationAriaLabel: "Product catalog pages",
+    filters: {
+      all: "All",
+      active: "Active",
+      inactive: "Inactive",
+      statusAriaLabel: "Filter products by status",
+      categoryAll: "All categories",
+      categoryAriaLabel: "Filter products by category",
+    },
+    search: {
+      placeholder: "Search by SKU or name",
+      ariaLabel: "Search products by SKU or name",
+    },
+    table: {
+      sku: "SKU",
+      name: "Name",
+      category: "Category",
+      categoryNone: "—",
+      onHand: "On hand, kg",
+      reserved: "Reserved, kg",
+      available: "Available, kg",
+      status: "Status",
+      notSellable: "incl. {value} not sellable",
+    },
+    mobile: {
+      onHand: "On hand",
+      reserved: "Reserved",
+      available: "Available",
+    },
+    status: {
+      active: "Active",
+      inactive: "Inactive",
+    },
+    empty: {
+      noProducts: "No products yet",
+      noResults: "No products match the filters",
+      clearFilters: "Clear filters",
     },
   },
 

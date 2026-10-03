@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 
-type Movement = { type: string; quantityKg: Prisma.Decimal };
+type Movement = { type: string; fromWarehouseId: string | null; toWarehouseId: string | null; quantityKg: Prisma.Decimal };
 type ProductRow = {
   id: string;
   sku: string;
@@ -28,7 +28,22 @@ import { getDictionary } from "@/lib/i18n/get-dictionary";
 import { getProcurementNeeds } from "@/lib/services/dashboard/get-procurement-needs";
 
 const d = (value: string) => new Prisma.Decimal(value);
-const mv = (type: string, kg: string): Movement => ({ type, quantityKg: d(kg) });
+/**
+ * A movement shaped like real data: RECEIPT/ADJUSTMENT-in arrive at w1,
+ * SHIPMENT/WRITE_OFF leave w1, TRANSFER moves w1 → w2. Override from/to
+ * for anything else (e.g. an ADJUSTMENT that removes stock).
+ */
+const mv = (type: string, kg: string, warehouses?: { from?: string | null; to?: string | null }): Movement => {
+  const defaults: Record<string, { from: string | null; to: string | null }> = {
+    RECEIPT: { from: null, to: "w1" },
+    SHIPMENT: { from: "w1", to: null },
+    WRITE_OFF: { from: "w1", to: null },
+    TRANSFER: { from: "w1", to: "w2" },
+    ADJUSTMENT: { from: null, to: "w1" },
+  };
+  const { from, to } = { ...defaults[type], ...warehouses };
+  return { type, fromWarehouseId: from ?? null, toWarehouseId: to ?? null, quantityKg: d(kg) };
+};
 
 /** A product whose single batch has the given movements. */
 function product(sku: string, movements: Movement[], opts: { id?: string; isActive?: boolean } = {}): ProductRow {
@@ -126,18 +141,39 @@ describe("getProcurementNeeds — the three lowest-stock active products", () =>
     expect(html).not.toContain("<li");
   });
 
-  it("10. stock formula unchanged: RECEIPT/TRANSFER add, SHIPMENT/WRITE_OFF subtract, ADJUSTMENT ignored; all batches summed", async () => {
+  it("10. stock follows each movement's from/to (shared rule); all batches summed", async () => {
     db.products = [
       {
-        ...product("A", [mv("RECEIPT", "100"), mv("SHIPMENT", "30"), mv("TRANSFER", "5"), mv("WRITE_OFF", "10"), mv("ADJUSTMENT", "999")]),
+        ...product("A", []),
         batches: [
-          { id: "b1", stockMovements: [mv("RECEIPT", "100"), mv("SHIPMENT", "30"), mv("TRANSFER", "5"), mv("WRITE_OFF", "10"), mv("ADJUSTMENT", "999")] },
+          {
+            id: "b1",
+            stockMovements: [
+              mv("RECEIPT", "100"),
+              mv("SHIPMENT", "30"),
+              mv("TRANSFER", "5"),
+              mv("WRITE_OFF", "10"),
+              mv("ADJUSTMENT", "4"),
+              mv("ADJUSTMENT", "1", { from: "w1", to: null }),
+            ],
+          },
           { id: "b2", stockMovements: [mv("RECEIPT", "40.6")] },
         ],
       },
     ];
-    // 100 - 30 + 5 - 10 + 40.6 = 105.6 → displayed rounded, as before
-    expect((await getProcurementNeeds()).items[0]).toMatchObject({ sku: "A", stockKg: 106, outOfStock: false });
+    // 100 − 30 + 0 (transfer) − 10 + 4 − 1 + 40.6 = 103.6 → displayed rounded
+    expect((await getProcurementNeeds()).items[0]).toMatchObject({ sku: "A", stockKg: 104, outOfStock: false });
+  });
+
+  it("10a. regression: a TRANSFER between warehouses does not create stock", async () => {
+    db.products = [product("A", [mv("RECEIPT", "50"), mv("TRANSFER", "50")]), stocked("B", "60")];
+    const { items } = await getProcurementNeeds();
+    expect(items.map((item) => [item.sku, item.stockKg])).toEqual([["A", 50], ["B", 60]]);
+  });
+
+  it("10b. regression: stock fully moved then shipped from the second warehouse is out of stock", async () => {
+    db.products = [product("A", [mv("RECEIPT", "20"), mv("TRANSFER", "20"), mv("SHIPMENT", "20", { from: "w2", to: null })])];
+    expect((await getProcurementNeeds()).items[0]).toMatchObject({ sku: "A", stockKg: 0, outOfStock: true });
   });
 });
 

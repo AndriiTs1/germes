@@ -243,6 +243,14 @@ async function main() {
       roles: ["PROCUREMENT"],
     },
     {
+      code: "products.read",
+      description: "View the Product master catalog",
+      // Read-only master data shared by Sales, Procurement and Warehouse.
+      // ACCOUNTING has no catalog need yet; ADMIN administers access, not
+      // business data. Stock columns additionally require inventory.stock.read.
+      roles: ["OWNER", "SALES", "PROCUREMENT", "WAREHOUSE"],
+    },
+    {
       code: "procurement.overview.read",
       description: "View procurement planning and reorder dashboards",
       roles: ["OWNER", "ADMIN", "PROCUREMENT"],

@@ -47,6 +47,7 @@ export const uk: Dictionary = {
       workspace: "Робочий простір",
       sell: "Продажі",
       buy: "Закупівлі",
+      catalog: "Довідники",
       account: "Обліковий запис",
     },
     commandCenter: "Командний центр",
@@ -60,6 +61,7 @@ export const uk: Dictionary = {
     customers: "Клієнти",
     purchaseOrders: "Замовлення",
     suppliers: "Постачальники",
+    products: "Продукти",
     settings: "Налаштування",
   },
 
@@ -1186,6 +1188,54 @@ export const uk: Dictionary = {
         shipFailed: "Не вдалося відвантажити замовлення.",
         shipSuccess: "Замовлення успішно відвантажено.",
       },
+    },
+  },
+
+  products: {
+    title: "Продукти",
+    count: {
+      one: "{count} продукт",
+      few: "{count} продукти",
+      many: "{count} продуктів",
+      other: "{count} продукту",
+    },
+    paginationAriaLabel: "Сторінки каталогу продуктів",
+    filters: {
+      all: "Усі",
+      active: "Активні",
+      inactive: "Неактивні",
+      statusAriaLabel: "Фільтр продуктів за статусом",
+      categoryAll: "Усі категорії",
+      categoryAriaLabel: "Фільтр продуктів за категорією",
+    },
+    search: {
+      placeholder: "Пошук за SKU або назвою",
+      ariaLabel: "Пошук продуктів за SKU або назвою",
+    },
+    table: {
+      sku: "SKU",
+      name: "Назва",
+      category: "Категорія",
+      categoryNone: "—",
+      onHand: "На складі, кг",
+      reserved: "Резерв, кг",
+      available: "Доступно, кг",
+      status: "Статус",
+      notSellable: "з них {value} недоступно до продажу",
+    },
+    mobile: {
+      onHand: "На складі",
+      reserved: "Резерв",
+      available: "Доступно",
+    },
+    status: {
+      active: "Активний",
+      inactive: "Неактивний",
+    },
+    empty: {
+      noProducts: "Продуктів ще немає",
+      noResults: "Немає продуктів за цими фільтрами",
+      clearFilters: "Скинути фільтри",
     },
   },
 

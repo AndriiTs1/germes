@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { Prisma } from "@/lib/generated/prisma/client";
 
-type Movement = { type: string; quantityKg: Prisma.Decimal };
+type Movement = { type: string; fromWarehouseId: string | null; toWarehouseId: string | null; quantityKg: Prisma.Decimal };
 type Reservation = { status: string; quantityKg: Prisma.Decimal };
 type Order = {
   id: string;
@@ -71,7 +71,22 @@ import { getInventoryStatus } from "@/lib/services/dashboard/get-inventory-statu
 import { getRecentOrders } from "@/lib/services/dashboard/get-recent-orders";
 
 const d = (value: string) => new Prisma.Decimal(value);
-const mv = (type: string, kg: string): Movement => ({ type, quantityKg: d(kg) });
+/**
+ * A movement shaped like real data: RECEIPT/ADJUSTMENT-in arrive at w1,
+ * SHIPMENT/WRITE_OFF leave w1, TRANSFER moves w1 → w2. Override from/to
+ * for anything else (e.g. an ADJUSTMENT that removes stock).
+ */
+const mv = (type: string, kg: string, warehouses?: { from?: string | null; to?: string | null }): Movement => {
+  const defaults: Record<string, { from: string | null; to: string | null }> = {
+    RECEIPT: { from: null, to: "w1" },
+    SHIPMENT: { from: "w1", to: null },
+    WRITE_OFF: { from: "w1", to: null },
+    TRANSFER: { from: "w1", to: "w2" },
+    ADJUSTMENT: { from: null, to: "w1" },
+  };
+  const { from, to } = { ...defaults[type], ...warehouses };
+  return { type, fromWarehouseId: from ?? null, toWarehouseId: to ?? null, quantityKg: d(kg) };
+};
 const res = (status: string, kg: string): Reservation => ({ status, quantityKg: d(kg) });
 
 beforeEach(() => {
@@ -81,9 +96,25 @@ beforeEach(() => {
 });
 
 describe("Inventory Status — only real segments", () => {
-  it("29. physical stock formula unchanged (RECEIPT/TRANSFER +, SHIPMENT/WRITE_OFF −, ADJUSTMENT ignored)", async () => {
-    db.movements = [mv("RECEIPT", "1000"), mv("TRANSFER", "50"), mv("SHIPMENT", "200"), mv("WRITE_OFF", "30"), mv("ADJUSTMENT", "999")];
-    expect((await getInventoryStatus()).value).toBe("820");
+  it("29. physical stock follows each movement's from/to (shared rule with /sales, /warehouse, /products)", async () => {
+    db.movements = [
+      mv("RECEIPT", "1000"),
+      mv("TRANSFER", "50"),
+      mv("SHIPMENT", "200"),
+      mv("WRITE_OFF", "30"),
+      mv("ADJUSTMENT", "15"),
+      mv("ADJUSTMENT", "5", { from: "w1", to: null }),
+    ];
+    // 1000 + 0 (transfer) − 200 − 30 + 15 − 5
+    expect((await getInventoryStatus()).value).toBe("780");
+  });
+
+  it("29a. regression: a TRANSFER between warehouses does not change physical stock", async () => {
+    db.movements = [mv("RECEIPT", "1000")];
+    const before = (await getInventoryStatus()).value;
+    db.movements = [mv("RECEIPT", "1000"), mv("TRANSFER", "400"), mv("TRANSFER", "100", { from: "w2", to: "w1" })];
+    expect((await getInventoryStatus()).value).toBe(before);
+    expect(before).toBe("1000");
   });
 
   it("30. reserved uses ACTIVE reservations only", async () => {
