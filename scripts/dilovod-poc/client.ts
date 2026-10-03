@@ -10,16 +10,16 @@
  * { version, key, action, params }. The API key travels inside the packet,
  * so the packet is never logged, returned or included in any error.
  *
- * Only one Dilovod operation is exposed: listMetadata. There is deliberately
- * no public generic call(action, params) — a write action cannot be reached
- * through this module.
+ * Only two read-only Dilovod operations are exposed: listMetadata and
+ * getMetadata. There is deliberately no public generic call(action, params) —
+ * a write action cannot be reached through this module.
  */
 
 const API_VERSION = "0.25";
 const REQUEST_TIMEOUT_MS = 20_000;
 
 /** The only actions this module can ever send. Read-only by construction. */
-type ReadOnlyAction = "listMetadata";
+type ReadOnlyAction = "listMetadata" | "getMetadata";
 
 export type DilovodPocErrorKind =
   | "CONFIG"
@@ -29,7 +29,8 @@ export type DilovodPocErrorKind =
   | "INVALID_JSON"
   | "PROVIDER_ERROR"
   | "UNEXPECTED_SHAPE"
-  | "CONCURRENT_CALL";
+  | "CONCURRENT_CALL"
+  | "INVALID_ARGUMENT";
 
 /**
  * Safe error: carries only the action, a category, an optional HTTP status
@@ -174,4 +175,36 @@ export async function listMetadata(lang: "uk" | "ru" | "en" = "uk"): Promise<Met
   }
 
   return entries;
+}
+
+/**
+ * Metadata object names as returned by listMetadata, e.g. "catalogs.goods",
+ * "documents.sale", "informationRegisters.propValues": a type prefix, one dot,
+ * an identifier. Anything else is rejected before any request is sent.
+ */
+const OBJECT_NAME_PATTERN = /^[A-Za-z]+\.[A-Za-z][A-Za-z0-9_]*$/;
+
+/**
+ * getMetadata — the metadata definition of one object. The response
+ * structure is not documented, so it is not modelled yet: the plain JSON
+ * object is returned as-is for structural inspection by the PoC CLI. A
+ * non-object response is reported as UNEXPECTED_SHAPE (structure only).
+ */
+export async function getMetadata(
+  objectName: string,
+  lang: "uk" | "ru" | "en" = "uk",
+): Promise<Record<string, unknown>> {
+  const action: ReadOnlyAction = "getMetadata";
+
+  if (!OBJECT_NAME_PATTERN.test(objectName)) {
+    throw new DilovodPocError("INVALID_ARGUMENT", action, undefined, "objectName must look like <type>.<name>");
+  }
+
+  const data = await send(action, { objectName, lang });
+
+  if (!isPlainObject(data)) {
+    throw new DilovodPocError("UNEXPECTED_SHAPE", action, undefined, `response: ${describeShape(data)}`);
+  }
+
+  return data;
 }
